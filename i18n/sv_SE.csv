@@ -1,0 +1,3 @@
+"Aftershop enabled","Aftershop aktiverat"
+"Debug enabled","Debug aktiverat"
+"Log entries will be stored in var/log/resursbank_*.log (different log files are used for various operations).","Logdata sparas i var/log/resursbank_*.log (separata filer används för olika händelsetyper)."
