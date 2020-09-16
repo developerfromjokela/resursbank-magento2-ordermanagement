@@ -34,4 +34,21 @@ class Config extends AbstractConfig
             $scopeType
         );
     }
+
+    /**
+     * @param string|null $scopeCode
+     * @param string $scopeType
+     * @return bool
+     */
+    public function isDebugEnabled(
+        ?string $scopeCode = null,
+        string $scopeType = ScopeInterface::SCOPE_STORE
+    ): bool {
+        return $this->isEnabled(
+            self::GROUP,
+            'debug',
+            $scopeCode,
+            $scopeType
+        );
+    }
 }
