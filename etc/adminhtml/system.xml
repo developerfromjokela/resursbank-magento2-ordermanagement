@@ -23,6 +23,10 @@
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                             <config_path>resursbank/ordermanagement/debug</config_path>
                         </field>
+                        <field id="url_registration" translate="label" type="button" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Callback Registration</label>
+                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
+                        </field>
                     </group>
                 </group>
             </group>
