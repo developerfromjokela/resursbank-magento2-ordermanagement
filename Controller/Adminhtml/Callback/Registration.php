@@ -12,6 +12,7 @@ use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Url;
@@ -51,7 +52,12 @@ class Registration extends Action
     /**
      * Registration constructor.
      *
+     * @param Context $context
+     * @param CallbackHelper $callbackHelper
      * @param Log $log
+     * @param RequestInterface $request
+     * @param StoreManagerInterface $storeManager
+     * @param Url $urlHelper
      */
     public function __construct(
         Context $context,
@@ -73,9 +79,9 @@ class Registration extends Action
     /**
      * Register callback URLs
      *
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
+     * @return ResponseInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface
     {
         try {
             // Register callback URLs.

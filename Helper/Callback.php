@@ -45,8 +45,11 @@ class Callback extends AbstractHelper
 
     /**
      * Callback constructor.
-     *
+     * @param Context $context
+     * @param Api $api
+     * @param Credentials $credentials
      * @param DeploymentConfig $deploymentConfig
+     * @param RequestInterface $request
      */
     public function __construct(
         Context $context,
