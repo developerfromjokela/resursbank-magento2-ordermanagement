@@ -13,6 +13,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Url;
@@ -20,7 +21,7 @@ use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
 /**
- * @package Resursbank\Ordermanagement\Helper
+ * @package Resursbank\Ordermanagement\Controller\Adminhtml\Callback
  */
 class Registration extends Action
 {
@@ -79,9 +80,9 @@ class Registration extends Action
     /**
      * Register callback URLs
      *
-     * @return ResponseInterface
+     * @return void
      */
-    public function execute(): ResponseInterface
+    public function execute(): void
     {
         try {
             // Register callback URLs.
@@ -112,18 +113,16 @@ class Registration extends Action
     /**
      * Get the current store.
      *
-     * @return Store
+     * @return StoreInterface
      */
-    private function getStore(): Store
+    private function getStore(): StoreInterface
     {
         try {
             $storeId = (int) $this->request->getParam('store');
 
-            if ($storeId > 0) {
-                $store = $this->storeManager->getStore($storeId);
-            } else {
+            $store = $storeId > 0 ?
+                $this->storeManager->getStore($storeId) :
                 $store = $this->storeManager->getStore();
-            }
         } catch (Exception $e) {
             $this->log->exception($e);
         }

@@ -23,11 +23,10 @@ class Registration extends Button
      * @param AbstractElement $element
      * @return string
      * @throws LocalizedException
-     * @codingStandardsIgnoreStart (suppress unavoidable PHPCS warnings)
+     * @SuppressWarnings (PHPMD.CamelCaseMethodName)
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
-        // @codingStandardsIgnoreEnd
         return $this->create(
             $element,
             'Update callbacks',

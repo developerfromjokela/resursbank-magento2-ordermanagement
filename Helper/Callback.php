@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+use constant;
+use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -16,7 +18,6 @@ use Magento\Framework\UrlInterface;
 use Magento\Store\Model\Store;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
-use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 
 /**
  * @package Resursbank\Ordermanagement\Helper
@@ -91,7 +92,10 @@ class Callback extends AbstractHelper
 
         foreach ($types as $type) {
             $connection->setRegisterCallback(
-                constant('Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES::' . strtoupper($type)),
+                constant(
+                    'Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES::' .
+                    strtoupper($type)
+                ),
                 $this->urlCallbackTemplate($store, $type),
                 ['digestSalt' => $salt]
             );
@@ -103,6 +107,7 @@ class Callback extends AbstractHelper
     /**
      * Retrieve callback URL template.
      *
+     * @param Store $store
      * @param string $type
      * @return string
      * @throws Exception
