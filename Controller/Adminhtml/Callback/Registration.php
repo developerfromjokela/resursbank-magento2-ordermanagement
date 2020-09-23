@@ -14,9 +14,13 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
+/**
+ * @package Resursbank\Ordermanagement\Helper
+ */
 class Registration extends Action
 {
     /**
@@ -40,6 +44,11 @@ class Registration extends Action
     private $storeManager;
 
     /**
+     * @var Url
+     */
+    private $urlHelper;
+
+    /**
      * Registration constructor.
      *
      * @param Log $log
@@ -49,12 +58,14 @@ class Registration extends Action
         CallbackHelper $callbackHelper,
         Log $log,
         RequestInterface $request,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        Url $urlHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->log = $log;
         $this->request = $request;
         $this->storeManager = $storeManager;
+        $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
     }
@@ -74,10 +85,9 @@ class Registration extends Action
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
-                'Callback URLs were successfully registered.'
+                __('Callback URLs were successfully registered.')
             );
         } catch (Exception $e) {
-            var_dump($e); die;
             // Log error.
             $this->log->exception($e);
 
@@ -86,6 +96,11 @@ class Registration extends Action
                 __('Callback URLs failed to register.')
             );
         }
+
+        // Redirect back to the config section.
+        $this->_redirect($this->urlHelper->getAdminUrl(
+            'admin/system_config/edit/section/payment'
+        ));
     }
 
     /**

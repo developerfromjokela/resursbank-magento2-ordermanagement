@@ -12,6 +12,9 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\Context;
 use Resursbank\Core\Helper\AbstractLog;
 
+/**
+ * @package Resursbank\Ordermanagement\Helper
+ */
 class Log extends AbstractLog
 {
     /**

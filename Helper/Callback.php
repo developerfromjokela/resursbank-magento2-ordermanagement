@@ -18,6 +18,9 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 
+/**
+ * @package Resursbank\Ordermanagement\Helper
+ */
 class Callback extends AbstractHelper
 {
     /**
@@ -26,7 +29,7 @@ class Callback extends AbstractHelper
     private $api;
 
     /**
-     * @var Credentials 
+     * @var Credentials
      */
     private $credentials;
 

@@ -1,3 +1,5 @@
 "Aftershop enabled","Aftershop aktiverat"
 "Debug enabled","Debug aktiverat"
 "Log entries will be stored in var/log/resursbank_*.log (different log files are used for various operations).","Logdata sparas i var/log/resursbank_*.log (separata filer används för olika händelsetyper)."
+"Callback URLs were successfully registered.","Callback URL:er har registrerats."
+"Callback URLs failed to register.","Kunde inte registrera callback URL:er."
