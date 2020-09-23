@@ -115,12 +115,13 @@ class Callback extends AbstractHelper
     private function urlCallbackTemplate(Store $store, string $type) : string
     {
         $suffix = $type === 'test' ?
-            'param1/Alpha/param2/Bravo/param3/Charlie/param4/Delta/param5/Echo/' :
+            'param1/a/param2/b/param3/c/param4/d/param5/e/' :
             'paymentId/{paymentId}/digest/{digest}';
 
         return (
-            $store->getBaseUrl(UrlInterface::URL_TYPE_LINK, $this->request->isSecure()) .
-            "rest/v1/resursbank_ordermanagement/order/{$type}/{$suffix}"
+            $store->getBaseUrl(
+                UrlInterface::URL_TYPE_LINK, $this->request->isSecure()
+            ) . "rest/v1/resursbank_ordermanagement/order/{$type}/{$suffix}"
         );
     }
 }
