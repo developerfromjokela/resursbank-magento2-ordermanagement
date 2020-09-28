@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="resursbank_ordermanagement" frontName="resursbank_ordermanagement">
+            <module name="Resursbank_Ordermanagement" before="Magento_Backend" />
+        </route>
+    </router>
+</config>
