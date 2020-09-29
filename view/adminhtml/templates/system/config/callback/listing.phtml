@@ -1,0 +1,34 @@
+<?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+?>
+<?php
+/**
+ * @var $block \Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing
+ */
+?>
+
+<?php $callbacks = $block->callbackHelper->fetch(); ?>
+
+<?php if (count($callbacks)): ?>
+    <div>
+        <h3><?php echo __('Registered Callbacks') ?></h3>
+        <?php foreach ($callbacks as $callback): ?>
+            <p><b>[<?php echo $callback->eventType ?>]</b></p>
+            <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0; max-width: 290px; overflow-wrap: break-word;">
+                <?php echo (string) $callback->uriTemplate ?>
+            </p>
+        <?php endforeach; ?>
+    </div>
+<?php else: ?>
+        <p class="error-message">
+            <?php echo __(
+                'No registered callbacks found. Update callbacks, if ' .
+                'you don\'t get a list of &quot;Registered ' .
+                'Callbacks&quot;, please verify that the provided ' .
+                'username and password are accurate.'
+            ) ?>
+        </p>
+<?php endif; ?>
