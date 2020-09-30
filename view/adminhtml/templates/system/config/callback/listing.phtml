@@ -13,8 +13,8 @@
 <?php $callbacks = $block->callbackHelper->fetch(); ?>
 
 <?php if (count($callbacks)): ?>
+    <h3><?php echo __('Registered Callbacks') ?></h3>
     <div style="max-width: 290px; overflow-x: scroll;">
-        <h3><?php echo __('Registered Callbacks') ?></h3>
         <?php foreach ($callbacks as $callback): ?>
             <p><b>[<?php echo $callback->eventType ?>]</b></p>
             <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0;">
