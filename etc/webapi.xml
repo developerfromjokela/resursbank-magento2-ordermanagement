@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <!-- Payment is unfrozen, which means it can be captured. -->
+    <route url="/v1/resursbank_ordermanagement/order/unfreeze/paymentId/:paymentId/digest/:digest" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="unfreeze"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <!-- Payment has been booked by Resursbank. This means the payment has been unfrozen and is preparing to be finalized. -->
+    <route url="/v1/resursbank_ordermanagement/order/booked/paymentId/:paymentId/digest/:digest" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="booked"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <!-- Payment has been updated at Resursbank. -->
+    <route url="/v1/resursbank_ordermanagement/order/update/paymentId/:paymentId/digest/:digest" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="update"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <!-- Test to verify callback URLs are working. -->
+    <route url="/v1/resursbank_ordermanagement/order/test/param1/:param1/param2/:param2/param3/:param3/param4/:param4/param5/:param5/digest/:digest" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="test"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+</routes>
