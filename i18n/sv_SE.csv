@@ -4,3 +4,5 @@
 "Callback URLs were successfully registered.","Callback URL:er har registrerats."
 "Callback URLs failed to register.","Kunde inte registrera callback URL:er."
 "Callback Registration","Callback registrering"
+"Registered Callbacks","Registrerade callbacks"
+"No registered callbacks found. Update callbacks, if you don't get a list of &quot;Registered Callbacks&quot;, please verify that the provided username and password are accurate.","Inga registrerade callbacks hittades. Uppdatera callbacks, om du inte får en lista med &quot;Registrerade Callbacks&quot;, vänligen kontrollera att angett användarnamn och lösenord är korrekta."

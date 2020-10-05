@@ -105,6 +105,22 @@ class Callback extends AbstractHelper
     }
 
     /**
+     * Fetch registered callbacks.
+     *
+     * @return array
+     * @throws \Magento\Framework\Exception\ValidatorException
+     * @throws Exception
+     */
+    public function fetch(): array
+    {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig()
+        );
+
+        return $connection->getCallBacksByRest();
+    }
+
+    /**
      * Retrieve callback URL template.
      *
      * @param Store $store
