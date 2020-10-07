@@ -76,7 +76,7 @@ class Callback extends AbstractHelper
      */
     public function register(Store $store): self
     {
-        $salt = $this->deploymentConfig->get('crypt/key');
+        $salt = $this->salt();
 
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig($store->getCode())
@@ -121,6 +121,16 @@ class Callback extends AbstractHelper
     }
 
     /**
+     * Get the salt key.
+     *
+     * @return string
+     */
+    public function salt(): string
+    {
+        return $this->deploymentConfig->get('crypt/key');
+    }
+
+    /**
      * Retrieve callback URL template.
      *
      * @param Store $store
@@ -137,7 +147,7 @@ class Callback extends AbstractHelper
         return (
             $store->getBaseUrl(
                 UrlInterface::URL_TYPE_LINK, $this->request->isSecure()
-            ) . "rest/v1/resursbank_ordermanagement/order/{$type}/{$suffix}"
+            ) . "rest/V1/resursbank_ordermanagement/order/{$type}/{$suffix}"
         );
     }
 }
