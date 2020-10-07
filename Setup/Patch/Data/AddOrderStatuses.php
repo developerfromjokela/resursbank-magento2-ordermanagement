@@ -57,6 +57,9 @@ class AddOrderStatuses implements DataPatchInterface
 
     /**
      * {@inheritdoc}
+     *
+     * NOTE: We are utilising insertOnDuplicate specifically to avoid collisions
+     * with order statuses supplied through our deprecated module.
      */
     public function apply()
     {
