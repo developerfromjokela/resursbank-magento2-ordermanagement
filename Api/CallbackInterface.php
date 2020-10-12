@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Api;
 
 /**
- * Interface CallbackInterface
  * @package Resursbank\Ordermanagement\Api
  */
 interface CallbackInterface
@@ -21,7 +20,7 @@ interface CallbackInterface
      * @param string $digest
      * @return void
      */
-    public function unfreeze(string $paymentId, string $digest);
+    public function unfreeze(string $paymentId, string $digest): void;
 
     /**
      * Payment has been booked by Resursbank. This means the payment has been
@@ -31,7 +30,7 @@ interface CallbackInterface
      * @param string $digest
      * @return void
      */
-    public function booked(string $paymentId, string $digest);
+    public function booked(string $paymentId, string $digest): void;
 
     /**
      * Payment has been updated at Resursbank.
@@ -40,7 +39,7 @@ interface CallbackInterface
      * @param string $digest
      * @return void
      */
-    public function update(string $paymentId, string $digest);
+    public function update(string $paymentId, string $digest): void;
 
     /**
      * Handling inbound callback test from Resurs Bank. Store values in config
@@ -61,5 +60,5 @@ interface CallbackInterface
         string $param4,
         string $param5,
         string $digest
-    );
+    ): void;
 }

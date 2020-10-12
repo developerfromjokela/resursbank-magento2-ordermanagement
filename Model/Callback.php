@@ -54,6 +54,7 @@ class Callback implements CallbackInterface
      * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param Credentials $credentials
+     * @param Log $log
      * @param OrderInterface $orderInterface
      */
     public function __construct(
@@ -73,7 +74,7 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function unfreeze(string $paymentId, string $digest)
+    public function unfreeze(string $paymentId, string $digest): void
     {
         try {
             $this->execute('unfreeze', $paymentId, $digest);
@@ -85,10 +86,10 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function booked(string $paymentId, string $digest)
+    public function booked(string $paymentId, string $digest): void
     {
         try {
-            return $this->execute('update', $paymentId, $digest);
+            $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -97,10 +98,10 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function update(string $paymentId, string $digest)
+    public function update(string $paymentId, string $digest): void
     {
         try {
-            return $this->execute('update', $paymentId, $digest);
+            $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -116,8 +117,8 @@ class Callback implements CallbackInterface
         string $param4,
         string $param5,
         string $digest
-    ) {
-        return 'Not implemented';
+    ): void {
+        var_dump('Not implemented');
     }
 
     /**
