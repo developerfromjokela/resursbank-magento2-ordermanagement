@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+/**
+ * @package Resursbank\Ordermanagement\Helper
+ */
 class ResursbankStatuses
 {
     /**
