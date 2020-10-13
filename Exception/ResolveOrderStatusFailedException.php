@@ -10,6 +10,6 @@ namespace Resursbank\Ordermanagement\Exception;
 
 use Exception;
 
-class CallbackValidationException extends Exception
+class ResolveOrderStatusFailedException extends Exception
 {
 }

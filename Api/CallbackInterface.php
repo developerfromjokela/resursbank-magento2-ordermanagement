@@ -8,9 +8,8 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Api;
 
-/**
- * @package Resursbank\Ordermanagement\Api
- */
+use Magento\Framework\Webapi\Exception as WebapiException;
+
 interface CallbackInterface
 {
     /**
@@ -19,6 +18,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
+     * @throws WebapiException
      */
     public function unfreeze(string $paymentId, string $digest): void;
 
@@ -29,6 +29,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
+     * @throws WebapiException
      */
     public function booked(string $paymentId, string $digest): void;
 
@@ -38,6 +39,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
+     * @throws WebapiException
      */
     public function update(string $paymentId, string $digest): void;
 
@@ -52,6 +54,7 @@ interface CallbackInterface
      * @param string $param5
      * @param string $digest
      * @return void
+     * @throws WebapiException
      */
     public function test(
         string $param1,

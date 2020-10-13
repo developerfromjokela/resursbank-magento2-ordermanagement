@@ -19,9 +19,6 @@ use Magento\Store\Model\Store;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 
-/**
- * @package Resursbank\Ordermanagement\Helper
- */
 class Callback extends AbstractHelper
 {
     /**

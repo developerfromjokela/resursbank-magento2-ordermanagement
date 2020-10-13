@@ -20,9 +20,6 @@ use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
-/**
- * @package Resursbank\Ordermanagement\Controller\Adminhtml\Callback
- */
 class Registration extends Action
 {
     /**

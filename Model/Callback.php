@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Model;
 
 use Exception;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
@@ -16,6 +17,8 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
+use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
+use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
@@ -77,7 +80,7 @@ class Callback implements CallbackInterface
     public function unfreeze(string $paymentId, string $digest): void
     {
         try {
-            $this->execute('unfreeze', $paymentId, $digest);
+            $this->execute($paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -89,7 +92,7 @@ class Callback implements CallbackInterface
     public function booked(string $paymentId, string $digest): void
     {
         try {
-            $this->execute('update', $paymentId, $digest);
+            $this->execute($paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -101,7 +104,7 @@ class Callback implements CallbackInterface
     public function update(string $paymentId, string $digest): void
     {
         try {
-            $this->execute('update', $paymentId, $digest);
+            $this->execute($paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -124,14 +127,14 @@ class Callback implements CallbackInterface
     /**
      * General callback instructions.
      *
-     * @param string $method
      * @param string $paymentId
      * @param string $digest
      * @return Order
      * @throws CallbackValidationException
+     * @throws ValidatorException
+     * @throws OrderNotFoundException
      */
     private function execute(
-        string $method,
         string $paymentId,
         string $digest
     ): Order {
@@ -140,7 +143,7 @@ class Callback implements CallbackInterface
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
-            throw new Exception('Failed to locate order ' . $paymentId);
+            throw new OrderNotFoundException('Failed to locate order ' . $paymentId);
         }
 
         $this->syncStatusFromResurs($order);
@@ -167,17 +170,17 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * @param Exception $e
+     * @param Exception $exception
      * @return void
      * @throws WebapiException
      */
-    private function handleError(Exception $e): void
+    private function handleError(Exception $exception): void
     {
-        $this->log->error($e);
+        $this->log->exception($exception);
 
-        if ($e instanceof CallbackValidationException) {
+        if ($exception instanceof CallbackValidationException) {
             throw new WebapiException(
-                __($e->getMessage()),
+                __($exception->getMessage()),
                 0,
                 WebapiException::HTTP_NOT_ACCEPTABLE
             );
@@ -188,6 +191,8 @@ class Callback implements CallbackInterface
      * Resolve the status and state for the order by asking Resurs Bank.
      *
      * @param Order $order
+     * @throws ValidatorException
+     * @throws Exception
      */
     private function syncStatusFromResurs(Order $order): void
     {
@@ -210,6 +215,7 @@ class Callback implements CallbackInterface
      *
      * @param int $status
      * @return array
+     * @throws Exception
      */
     private function mapStateStatusFromResurs(int $status): array
     {
@@ -235,13 +241,12 @@ class Callback implements CallbackInterface
                 $orderState = Order::STATE_CLOSED;
                 break;
             default:
-                throw new Exception(
+                throw new ResolveOrderStatusFailedException(
                     sprintf(
                         'Failed to resolve order status (%s) from Resurs Bank.',
                         $status
                     )
                 );
-                break;
         }
 
         return [$orderStatus, $orderState];
