@@ -20,7 +20,7 @@ class Registration extends Button
      * @param AbstractElement $element
      * @return string
      * @throws LocalizedException
-     * @SuppressWarnings (PHPMD.CamelCaseMethodName)
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
