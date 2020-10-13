@@ -42,6 +42,7 @@ class Listing extends Field
      */
     public function render(AbstractElement $element): string
     {
+        /** @noinspection PhpUndefinedMethodInspection */
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
 
         return parent::render($element);

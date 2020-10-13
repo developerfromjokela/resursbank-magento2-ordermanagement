@@ -13,11 +13,14 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use function constant;
 
 class Callback extends AbstractHelper
 {
@@ -122,6 +125,8 @@ class Callback extends AbstractHelper
      * Get the salt key.
      *
      * @return string
+     * @throws FileSystemException
+     * @throws RuntimeException
      */
     public function salt(): string
     {

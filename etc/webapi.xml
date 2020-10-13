@@ -16,7 +16,7 @@
         </resources>
     </route>
 
-    <!-- Payment has been booked by Resursbank. This means the payment has been unfrozen and is preparing to be finalized. -->
+    <!-- Payment has been booked by Resurs Bank. This means the payment has been unfrozen and is preparing to be finalized. -->
     <route url="/V1/resursbank_ordermanagement/order/booked/paymentId/:paymentId/digest/:digest" method="POST">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="booked"/>
         <resources>
@@ -24,7 +24,7 @@
         </resources>
     </route>
 
-    <!-- Payment has been updated at Resursbank. -->
+    <!-- Payment has been updated at Resurs Bank. -->
     <route url="/V1/resursbank_ordermanagement/order/update/paymentId/:paymentId/digest/:digest" method="POST">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="update"/>
         <resources>
