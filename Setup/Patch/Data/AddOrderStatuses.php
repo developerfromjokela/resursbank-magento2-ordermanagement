@@ -12,9 +12,6 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 
-/**
- * @package Resursbank\Ordermanagement\Setup\Patch\Data
- */
 class AddOrderStatuses implements DataPatchInterface
 {
     /**

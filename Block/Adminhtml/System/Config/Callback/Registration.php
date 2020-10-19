@@ -12,9 +12,6 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\Exception\LocalizedException;
 use Resursbank\Core\Block\Adminhtml\System\Config\Button;
 
-/**
- * @package Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback
- */
 class Registration extends Button
 {
     /**
@@ -23,7 +20,7 @@ class Registration extends Button
      * @param AbstractElement $element
      * @return string
      * @throws LocalizedException
-     * @SuppressWarnings (PHPMD.CamelCaseMethodName)
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
     protected function _getElementHtml(AbstractElement $element): string
     {

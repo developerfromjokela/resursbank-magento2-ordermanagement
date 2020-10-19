@@ -8,20 +8,20 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
-use constant;
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\RuntimeException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Model\Store;
+use Magento\Store\Api\Data\StoreInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use function constant;
 
-/**
- * @package Resursbank\Ordermanagement\Helper
- */
 class Callback extends AbstractHelper
 {
     /**
@@ -70,13 +70,14 @@ class Callback extends AbstractHelper
     /**
      * Register all callback methods.
      *
-     * @param Store $store
+     * @param StoreInterface $store
      * @return self
+     * @throws ValidatorException
      * @throws Exception
      */
-    public function register(Store $store): self
+    public function register(StoreInterface $store): self
     {
-        $salt = $this->deploymentConfig->get('crypt/key');
+        $salt = $this->salt();
 
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig($store->getCode())
@@ -108,7 +109,7 @@ class Callback extends AbstractHelper
      * Fetch registered callbacks.
      *
      * @return array
-     * @throws \Magento\Framework\Exception\ValidatorException
+     * @throws ValidatorException
      * @throws Exception
      */
     public function fetch(): array
@@ -121,14 +122,25 @@ class Callback extends AbstractHelper
     }
 
     /**
+     * Get the salt key.
+     *
+     * @return string
+     * @throws FileSystemException
+     * @throws RuntimeException
+     */
+    public function salt(): string
+    {
+        return $this->deploymentConfig->get('crypt/key');
+    }
+
+    /**
      * Retrieve callback URL template.
      *
-     * @param Store $store
+     * @param StoreInterface $store
      * @param string $type
      * @return string
-     * @throws Exception
      */
-    private function urlCallbackTemplate(Store $store, string $type) : string
+    private function urlCallbackTemplate(StoreInterface $store, string $type) : string
     {
         $suffix = $type === 'test' ?
             'param1/a/param2/b/param3/c/param4/d/param5/e/' :
@@ -136,8 +148,9 @@ class Callback extends AbstractHelper
 
         return (
             $store->getBaseUrl(
-                UrlInterface::URL_TYPE_LINK, $this->request->isSecure()
-            ) . "rest/v1/resursbank_ordermanagement/order/{$type}/{$suffix}"
+                UrlInterface::URL_TYPE_LINK,
+                $this->request->isSecure()
+            ) . "rest/V1/resursbank_ordermanagement/order/{$type}/{$suffix}"
         );
     }
 }

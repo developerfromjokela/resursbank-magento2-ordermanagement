@@ -13,9 +13,6 @@ use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 
-/**
- * @package Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback
- */
 class Listing extends Field
 {
     /**
@@ -45,6 +42,7 @@ class Listing extends Field
      */
     public function render(AbstractElement $element): string
     {
+        /** @noinspection PhpUndefinedMethodInspection */
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
 
         return parent::render($element);
@@ -55,6 +53,8 @@ class Listing extends Field
      *
      * @param AbstractElement $element
      * @return string
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
