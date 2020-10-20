@@ -50,8 +50,6 @@ class TestReceivedAt extends Field
      */
     public function getTime(): string
     {
-        $text = '';
-
         try {
             $time = $this->config->getTestReceivedAt();
 
