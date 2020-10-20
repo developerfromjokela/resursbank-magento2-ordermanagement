@@ -13,8 +13,6 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Exception\FileSystemException;
-use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
@@ -122,11 +120,26 @@ class Callback extends AbstractHelper
     }
 
     /**
+     * Trigger the test-callback.
+     *
+     * @param StoreInterface $store
+     * @return void
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function test(StoreInterface $store): void
+    {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig($store->getCode())
+        );
+
+        $connection->triggerCallback();
+    }
+
+    /**
      * Get the salt key.
      *
      * @return string
-     * @throws FileSystemException
-     * @throws RuntimeException
      */
     public function salt(): string
     {
