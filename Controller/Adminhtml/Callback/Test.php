@@ -87,7 +87,7 @@ class Test extends Action
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
-                __('Test-callback was sent out.')
+                __('Test callback was sent')
             );
         } catch (Exception $e) {
             // Log error.
@@ -95,7 +95,7 @@ class Test extends Action
 
             // Add error message.
             $this->getMessageManager()->addErrorMessage(
-                __('Failed to send out the test-callback.')
+                __('Test callback could not be triggered')
             );
         }
 

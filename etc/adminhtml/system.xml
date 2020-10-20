@@ -33,7 +33,12 @@
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
                             <config_path>resursbank/ordermanagement/callback_test</config_path>
                         </field>
-                        <field id="url_list" translate="label" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="callback_test_received_at" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Test received at</label>
+                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestReceivedAt</frontend_model>
+                            <config_path>resursbank/ordermanagement/callback_test_received_at</config_path>
+                        </field>
+                        <field id="url_list" translate="label" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing</frontend_model>
                             <config_path>resursbank/ordermanagement/url_list</config_path>
                         </field>

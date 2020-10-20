@@ -6,3 +6,7 @@
 "Callback Registration","Callback registrering"
 "Registered Callbacks","Registrerade callbacks"
 "No registered callbacks found. Update callbacks, if you don't get a list of &quot;Registered Callbacks&quot;, please verify that the provided username and password are accurate.","Inga registrerade callbacks hittades. Uppdatera callbacks, om du inte får en lista med &quot;Registrerade Callbacks&quot;, vänligen kontrollera att angett användarnamn och lösenord är korrekta."
+"Test callback has not been received yet. Try triggering it using the button above.","Test callback:en har ej ännu inkommit. Försök trigga den med knappen ovan."
+"Could not retrieve timestamp from database.","Kunde inte hämta datum från databasen."
+"Test callback could not be triggered","Kunde inte trigga test callback:en."
+"Test callback was sent","Test callback:en skickades"

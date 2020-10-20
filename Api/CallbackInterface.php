@@ -52,7 +52,6 @@ interface CallbackInterface
      * @param string $param3
      * @param string $param4
      * @param string $param5
-     * @param string $digest
      * @return void
      * @throws WebapiException
      */
@@ -61,7 +60,6 @@ interface CallbackInterface
         string $param2,
         string $param3,
         string $param4,
-        string $param5,
-        string $digest
+        string $param5
     ): void;
 }
