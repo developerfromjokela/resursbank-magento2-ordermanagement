@@ -15,6 +15,7 @@ use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
@@ -57,6 +58,11 @@ class Callback implements CallbackInterface
     private $orderInterface;
 
     /**
+     * @var OrderSender
+     */
+    private $orderSender;
+
+    /**
      * Callback constructor.
      *
      * @param Api $api
@@ -64,19 +70,22 @@ class Callback implements CallbackInterface
      * @param Credentials $credentials
      * @param Log $log
      * @param OrderInterface $orderInterface
+     * @param OrderSender $orderSender
      */
     public function __construct(
         Api $api,
         CallbackHelper $callbackHelper,
         Credentials $credentials,
         Log $log,
-        OrderInterface $orderInterface
+        OrderInterface $orderInterface,
+        OrderSender $orderSender
     ) {
         $this->api = $api;
         $this->callbackHelper = $callbackHelper;
         $this->credentials = $credentials;
         $this->log = $log;
         $this->orderInterface = $orderInterface;
+        $this->orderSender = $orderSender;
     }
 
     /**
@@ -97,7 +106,10 @@ class Callback implements CallbackInterface
     public function booked(string $paymentId, string $digest): void
     {
         try {
-            $this->execute($paymentId, $digest);
+            $order = $this->execute($paymentId, $digest);
+
+            // Send order confirmation email.
+            $this->orderSender->send($order);
         } catch (Exception $e) {
             $this->handleError($e);
         }
