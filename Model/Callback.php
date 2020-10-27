@@ -227,6 +227,10 @@ class Callback implements CallbackInterface
 
         [$newStatus, $newState] = $this->mapStateStatusFromResurs($status);
 
+        if ($newState === Order::STATE_CANCELED) {
+            $order->cancel();
+        }
+
         $order->setStatus($newStatus);
         $order->setState($newState);
     }
