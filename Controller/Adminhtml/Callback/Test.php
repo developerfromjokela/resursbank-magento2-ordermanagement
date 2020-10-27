@@ -15,6 +15,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Url;
+use Resursbank\Ordermanagement\Exception\CallbackException;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
@@ -107,12 +108,16 @@ class Test extends Action
 
     /**
      * Get the current store.
-     * @todo Detta borde abstraheras från här och Registration.
      *
      * @return StoreInterface
+     * @throws CallbackException
+     * @todo Detta borde abstraheras från här och Registration.
+     *
      */
     private function getStore(): StoreInterface
     {
+        $store = null;
+
         try {
             $storeId = (int) $this->request->getParam('store');
 
@@ -121,6 +126,10 @@ class Test extends Action
                 $store = $this->storeManager->getStore();
         } catch (Exception $e) {
             $this->log->exception($e);
+        }
+
+        if (!($store instanceof StoreInterface)) {
+            throw new CallbackException('Failed to obtain store.');
         }
 
         return $store;

@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\AbstractConfig;
+use function is_numeric;
 
 class Config extends AbstractConfig
 {
@@ -56,18 +57,20 @@ class Config extends AbstractConfig
     /**
      * @param string|null $scopeCode
      * @param string $scopeType
-     * @return mixed
+     * @return int
      */
     public function getTestReceivedAt(
         ?string $scopeCode = null,
         string $scopeType = ScopeInterface::SCOPE_STORE
-    ) {
-        return $this->get(
+    ): int {
+        $result = $this->get(
             self::GROUP,
             'callback_test_received_at',
             $scopeCode,
             $scopeType
         );
+
+        return is_numeric($result) ? (int) $result : 0;
     }
 
     /**

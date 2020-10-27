@@ -53,8 +53,8 @@ class TestReceivedAt extends Field
         try {
             $time = $this->config->getTestReceivedAt();
 
-            $text = $time ?
-                date('Y-m-d H:i:s', (int) $time) :
+            $text = $time > 0 ?
+                date('Y-m-d H:i:s', $time) :
                 __(
                     'Test callback has not been received yet. Try triggering ' .
                     'it using the button above.'

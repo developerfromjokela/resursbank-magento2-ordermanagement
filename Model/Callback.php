@@ -10,6 +10,8 @@ namespace Resursbank\Ordermanagement\Model;
 
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -158,7 +160,9 @@ class Callback implements CallbackInterface
      * @param string $digest
      * @return Order
      * @throws CallbackValidationException
+     * @throws FileSystemException
      * @throws OrderNotFoundException
+     * @throws RuntimeException
      * @throws ValidatorException
      */
     private function execute(
@@ -170,7 +174,9 @@ class Callback implements CallbackInterface
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
-            throw new OrderNotFoundException('Failed to locate order ' . $paymentId);
+            throw new OrderNotFoundException(
+                'Failed to locate order ' . $paymentId
+            );
         }
 
         $this->syncStatusFromResurs($order);
@@ -184,6 +190,8 @@ class Callback implements CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @throws CallbackValidationException
+     * @throws FileSystemException
+     * @throws RuntimeException
      */
     private function validate(string $paymentId, string $digest): void
     {

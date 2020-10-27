@@ -13,6 +13,8 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
@@ -43,7 +45,6 @@ class Callback extends AbstractHelper
     private $request;
 
     /**
-     * Callback constructor.
      * @param Context $context
      * @param Api $api
      * @param Credentials $credentials
@@ -140,6 +141,8 @@ class Callback extends AbstractHelper
      * Get the salt key.
      *
      * @return string
+     * @throws FileSystemException
+     * @throws RuntimeException
      */
     public function salt(): string
     {
@@ -153,8 +156,10 @@ class Callback extends AbstractHelper
      * @param string $type
      * @return string
      */
-    private function urlCallbackTemplate(StoreInterface $store, string $type) : string
-    {
+    private function urlCallbackTemplate(
+        StoreInterface $store,
+        string $type
+    ) : string {
         $suffix = $type === 'test' ?
             'param1/a/param2/b/param3/c/param4/d/param5/e/' :
             'paymentId/{paymentId}/digest/{digest}';

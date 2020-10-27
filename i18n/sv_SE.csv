@@ -10,3 +10,5 @@
 "Could not retrieve timestamp from database.","Kunde inte hämta datum från databasen."
 "Test callback could not be triggered","Kunde inte trigga test callback:en."
 "Test callback was sent","Test callback:en skickades"
+"Test received at","Test mottogs"
+"Test Callbacks","Test Callbacks"
