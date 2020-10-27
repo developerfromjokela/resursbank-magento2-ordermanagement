@@ -16,6 +16,7 @@ use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
@@ -64,6 +65,11 @@ class Callback implements CallbackInterface
     private $config;
 
     /**
+     * @var OrderSender
+     */
+    private $orderSender;
+
+    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
@@ -77,6 +83,7 @@ class Callback implements CallbackInterface
      * @param Credentials $credentials
      * @param Log $log
      * @param OrderInterface $orderInterface
+     * @param OrderSender $orderSender
      * @param TypeListInterface $cacheTypeList
      */
     public function __construct(
@@ -86,6 +93,7 @@ class Callback implements CallbackInterface
         Credentials $credentials,
         Log $log,
         OrderInterface $orderInterface,
+        OrderSender $orderSender,
         TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
@@ -94,6 +102,7 @@ class Callback implements CallbackInterface
         $this->credentials = $credentials;
         $this->log = $log;
         $this->orderInterface = $orderInterface;
+        $this->orderSender = $orderSender;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -115,7 +124,10 @@ class Callback implements CallbackInterface
     public function booked(string $paymentId, string $digest): void
     {
         try {
-            $this->execute($paymentId, $digest);
+            $order = $this->execute($paymentId, $digest);
+
+            // Send order confirmation email.
+            $this->orderSender->send($order);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -240,6 +252,10 @@ class Callback implements CallbackInterface
         );
 
         [$newStatus, $newState] = $this->mapStateStatusFromResurs($status);
+
+        if ($newState === Order::STATE_CANCELED) {
+            $order->cancel();
+        }
 
         $order->setStatus($newStatus);
         $order->setState($newState);
