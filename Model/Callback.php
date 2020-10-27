@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Model;
 
 use Exception;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
@@ -23,6 +24,7 @@ use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
+use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
@@ -58,34 +60,50 @@ class Callback implements CallbackInterface
     private $orderInterface;
 
     /**
+     * @var ConfigHelper
+     */
+    private $config;
+
+    /**
      * @var OrderSender
      */
     private $orderSender;
+
+    /**
+     * @var TypeListInterface
+     */
+    private $cacheTypeList;
 
     /**
      * Callback constructor.
      *
      * @param Api $api
      * @param CallbackHelper $callbackHelper
+     * @param ConfigHelper $config
      * @param Credentials $credentials
      * @param Log $log
      * @param OrderInterface $orderInterface
      * @param OrderSender $orderSender
+     * @param TypeListInterface $cacheTypeList
      */
     public function __construct(
         Api $api,
         CallbackHelper $callbackHelper,
+        ConfigHelper $config,
         Credentials $credentials,
         Log $log,
         OrderInterface $orderInterface,
-        OrderSender $orderSender
+        OrderSender $orderSender,
+        TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
         $this->callbackHelper = $callbackHelper;
+        $this->config = $config;
         $this->credentials = $credentials;
         $this->log = $log;
         $this->orderInterface = $orderInterface;
         $this->orderSender = $orderSender;
+        $this->cacheTypeList = $cacheTypeList;
     }
 
     /**
@@ -135,10 +153,16 @@ class Callback implements CallbackInterface
         string $param2,
         string $param3,
         string $param4,
-        string $param5,
-        string $digest
+        string $param5
     ): void {
-        var_dump('Not implemented');
+        try {
+            // Mark time we received the test callback.
+            $this->config->setTestReceivedAt(time());
+            // Clear the config cache so this value show up.
+            $this->cacheTypeList->cleanType('config');
+        } catch (Exception $e) {
+            $this->handleError($e);
+        }
     }
 
     /**
@@ -162,7 +186,9 @@ class Callback implements CallbackInterface
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
-            throw new OrderNotFoundException('Failed to locate order ' . $paymentId);
+            throw new OrderNotFoundException(
+                'Failed to locate order ' . $paymentId
+            );
         }
 
         $this->syncStatusFromResurs($order);

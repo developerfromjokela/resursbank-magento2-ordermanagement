@@ -45,7 +45,6 @@ class Callback extends AbstractHelper
     private $request;
 
     /**
-     * Callback constructor.
      * @param Context $context
      * @param Api $api
      * @param Credentials $credentials
@@ -122,6 +121,23 @@ class Callback extends AbstractHelper
     }
 
     /**
+     * Trigger the test-callback.
+     *
+     * @param StoreInterface $store
+     * @return void
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function test(StoreInterface $store): void
+    {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig($store->getCode())
+        );
+
+        $connection->triggerCallback();
+    }
+
+    /**
      * Get the salt key.
      *
      * @return string
@@ -140,8 +156,10 @@ class Callback extends AbstractHelper
      * @param string $type
      * @return string
      */
-    private function urlCallbackTemplate(StoreInterface $store, string $type) : string
-    {
+    private function urlCallbackTemplate(
+        StoreInterface $store,
+        string $type
+    ) : string {
         $suffix = $type === 'test' ?
             'param1/a/param2/b/param3/c/param4/d/param5/e/' :
             'paymentId/{paymentId}/digest/{digest}';
