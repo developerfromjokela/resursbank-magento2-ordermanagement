@@ -11,9 +11,7 @@ namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\App\RequestInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Helper\Store as StoreHelper;
 use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -31,14 +29,9 @@ class Registration extends Action
     private $log;
 
     /**
-     * @var RequestInterface
+     * @var StoreHelper
      */
-    private $request;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
+    private $storeHelper;
 
     /**
      * @var Url
@@ -51,22 +44,19 @@ class Registration extends Action
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Log $log
-     * @param RequestInterface $request
-     * @param StoreManagerInterface $storeManager
+     * @param StoreHelper $storeHelper
      * @param Url $urlHelper
      */
     public function __construct(
         Context $context,
         CallbackHelper $callbackHelper,
         Log $log,
-        RequestInterface $request,
-        StoreManagerInterface $storeManager,
+        StoreHelper $storeHelper,
         Url $urlHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->log = $log;
-        $this->request = $request;
-        $this->storeManager = $storeManager;
+        $this->storeHelper = $storeHelper;
         $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
@@ -82,7 +72,7 @@ class Registration extends Action
         try {
             // Register callback URLs.
             $this->callbackHelper->register(
-                $this->getStore()
+                $this->storeHelper->fromRequest()
             );
 
             // Add success message.
@@ -103,25 +93,5 @@ class Registration extends Action
         $this->_redirect($this->urlHelper->getAdminUrl(
             'admin/system_config/edit/section/payment'
         ));
-    }
-
-    /**
-     * Get the current store.
-     *
-     * @return StoreInterface
-     */
-    private function getStore(): StoreInterface
-    {
-        try {
-            $storeId = (int) $this->request->getParam('store');
-
-            $store = $storeId > 0 ?
-                $this->storeManager->getStore($storeId) :
-                $store = $this->storeManager->getStore();
-        } catch (Exception $e) {
-            $this->log->exception($e);
-        }
-
-        return $store;
     }
 }
