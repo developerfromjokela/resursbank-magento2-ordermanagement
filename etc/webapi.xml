@@ -17,7 +17,7 @@
     </route>
 
     <!-- Payment has been booked by Resurs Bank. This means the payment has been unfrozen and is preparing to be finalized. -->
-    <route url="/V1/resursbank_ordermanagement/order/booked/paymentId/:paymentId/digest/:digest" method="GET">
+    <route url="/V1/resursbank_ordermanagement/order/booked/paymentId/:paymentId/digest/:digest" method="POST">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="booked"/>
         <resources>
             <resource ref="anonymous" />
