@@ -259,6 +259,7 @@ class Callback implements CallbackInterface
 
         $order->setStatus($newStatus);
         $order->setState($newState);
+        $order->save();
     }
 
     /**
