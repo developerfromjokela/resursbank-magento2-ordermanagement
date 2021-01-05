@@ -24,6 +24,7 @@ use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
+use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
@@ -55,6 +56,11 @@ class Callback implements CallbackInterface
     private $log;
 
     /**
+     * @var CallbackLog
+     */
+    private $callbackLog;
+
+    /**
      * @var OrderInterface
      */
     private $orderInterface;
@@ -82,6 +88,7 @@ class Callback implements CallbackInterface
      * @param ConfigHelper $config
      * @param Credentials $credentials
      * @param Log $log
+     * @param CallbackLog $callbackLog
      * @param OrderInterface $orderInterface
      * @param OrderSender $orderSender
      * @param TypeListInterface $cacheTypeList
@@ -92,6 +99,7 @@ class Callback implements CallbackInterface
         ConfigHelper $config,
         Credentials $credentials,
         Log $log,
+        CallbackLog $callbackLog,
         OrderInterface $orderInterface,
         OrderSender $orderSender,
         TypeListInterface $cacheTypeList
@@ -101,6 +109,7 @@ class Callback implements CallbackInterface
         $this->config = $config;
         $this->credentials = $credentials;
         $this->log = $log;
+        $this->callbackLog = $callbackLog;
         $this->orderInterface = $orderInterface;
         $this->orderSender = $orderSender;
         $this->cacheTypeList = $cacheTypeList;
@@ -112,7 +121,7 @@ class Callback implements CallbackInterface
     public function unfreeze(string $paymentId, string $digest): void
     {
         try {
-            $this->execute($paymentId, $digest);
+            $this->execute('unfreeze', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -124,7 +133,7 @@ class Callback implements CallbackInterface
     public function booked(string $paymentId, string $digest): void
     {
         try {
-            $order = $this->execute($paymentId, $digest);
+            $order = $this->execute('booked', $paymentId, $digest);
 
             // Send order confirmation email.
             $this->orderSender->send($order);
@@ -139,7 +148,7 @@ class Callback implements CallbackInterface
     public function update(string $paymentId, string $digest): void
     {
         try {
-            $this->execute($paymentId, $digest);
+            $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -156,6 +165,8 @@ class Callback implements CallbackInterface
         string $param5
     ): void {
         try {
+            $this->logIncomming('test', '', '');
+
             // Mark time we received the test callback.
             $this->config->setTestReceivedAt(time());
             // Clear the config cache so this value show up.
@@ -168,6 +179,7 @@ class Callback implements CallbackInterface
     /**
      * General callback instructions.
      *
+     * @param string $type
      * @param string $paymentId
      * @param string $digest
      * @return Order
@@ -178,10 +190,13 @@ class Callback implements CallbackInterface
      * @throws ValidatorException
      */
     private function execute(
+        string $type,
         string $paymentId,
         string $digest
     ): Order {
         $this->validate($paymentId, $digest);
+
+        $this->logIncomming($type, $paymentId, $digest);
 
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
@@ -212,7 +227,9 @@ class Callback implements CallbackInterface
         );
 
         if ($ourDigest !== $digest) {
-            throw new CallbackValidationException('Invalid callback digest.');
+            throw new CallbackValidationException(
+                "Invalid digest - PaymentId: {$paymentId}. Digest: {$digest}"
+            );
         }
     }
 
@@ -302,5 +319,24 @@ class Callback implements CallbackInterface
         }
 
         return [$orderStatus, $orderState];
+    }
+
+    /**
+     * Log incomming callbacks.
+     *
+     * @param string $type
+     * @param string|null $paymentId
+     * @param string|null $digest
+     */
+    private function logIncomming(
+        string $type,
+        string $paymentId,
+        string $digest
+    ): void {
+        if ($this->callbackLog->shouldLog()) {
+            $this->callbackLog->info(
+                "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
+            );
+        }
     }
 }
