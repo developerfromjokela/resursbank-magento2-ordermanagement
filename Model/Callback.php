@@ -17,6 +17,7 @@ use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
@@ -66,6 +67,11 @@ class Callback implements CallbackInterface
     private $orderInterface;
 
     /**
+     * @var OrderRepository
+     */
+    private $orderRepository;
+
+    /**
      * @var ConfigHelper
      */
     private $config;
@@ -90,6 +96,7 @@ class Callback implements CallbackInterface
      * @param Log $log
      * @param CallbackLog $callbackLog
      * @param OrderInterface $orderInterface
+     * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param TypeListInterface $cacheTypeList
      */
@@ -101,6 +108,7 @@ class Callback implements CallbackInterface
         Log $log,
         CallbackLog $callbackLog,
         OrderInterface $orderInterface,
+        OrderRepository $orderRepository,
         OrderSender $orderSender,
         TypeListInterface $cacheTypeList
     ) {
@@ -111,6 +119,7 @@ class Callback implements CallbackInterface
         $this->log = $log;
         $this->callbackLog = $callbackLog;
         $this->orderInterface = $orderInterface;
+        $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
         $this->cacheTypeList = $cacheTypeList;
     }
@@ -276,7 +285,8 @@ class Callback implements CallbackInterface
 
         $order->setStatus($newStatus);
         $order->setState($newState);
-        $order->save();
+
+        $this->orderRepository->save($order);
     }
 
     /**
