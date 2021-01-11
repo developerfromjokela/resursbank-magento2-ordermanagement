@@ -21,6 +21,16 @@ class Config extends AbstractConfig
     public const GROUP = 'ordermanagement';
 
     /**
+     * @var string
+     */
+    public const TRIGGER_KEY = 'triggeredAt';
+
+    /**
+     * @var string
+     */
+    public const RECEIVED_KEY = 'receivedAt';
+
+    /**
      * @param string|null $scopeCode
      * @param string $scopeType
      * @return bool
@@ -57,12 +67,12 @@ class Config extends AbstractConfig
     /**
      * @param string|null $scopeCode
      * @param string $scopeType
-     * @return int
+     * @return array
      */
     public function getTestReceivedAt(
         ?string $scopeCode = null,
         string $scopeType = ScopeInterface::SCOPE_STORE
-    ): int {
+    ): object {
         $result = $this->get(
             self::GROUP,
             'callback_test_received_at',
@@ -70,7 +80,7 @@ class Config extends AbstractConfig
             $scopeType
         );
 
-        return is_numeric($result) ? (int) $result : 0;
+        return json_decode($result);
     }
 
     /**
@@ -78,12 +88,12 @@ class Config extends AbstractConfig
      * @param int $scopeId
      * @return mixed
      */
-    public function setTestTriggeredAt(int $value, int $scopeId = 0): void
+    public function setTestTriggered(int $value, int $scopeId = 0): void
     {
         $this->set(
             self::GROUP,
             'callback_test_received_at',
-            json_encode(['triggeredAt' => $value, 'receivedAt' => null]),
+            json_encode([self::TRIGGER_KEY => $value, self::RECEIVED_KEY => null]),
             $scopeId,
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
@@ -94,14 +104,12 @@ class Config extends AbstractConfig
      * @param int $scopeId
      * @return mixed
      */
-    public function setTestReceivedAt(
-        int $value,
-        int $scopeId = 0
-    ): void {
+    public function setTestReceived(int $value, int $scopeId = 0): void
+    {
         $this->set(
             self::GROUP,
             'callback_test_received_at',
-            (string) $value,
+            json_encode([self::TRIGGER_KEY => null, self::RECEIVED_KEY => $value]),
             $scopeId,
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );

@@ -177,7 +177,7 @@ class Callback implements CallbackInterface
             $this->logIncomming('test', '', '');
 
             // Mark time we received the test callback.
-            $this->config->setTestReceivedAt(time());
+            $this->config->setTestReceived(time());
             // Clear the config cache so this value show up.
             $this->cacheTypeList->cleanType('config');
         } catch (Exception $e) {

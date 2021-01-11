@@ -51,14 +51,24 @@ class TestReceivedAt extends Field
     public function getTime(): string
     {
         try {
-            $time = $this->config->getTestReceivedAt();
+            $testData = $this->config->getTestReceivedAt();
 
-            $text = $time > 0 ?
+            if (!is_null($testData->{ConfigHelper::TRIGGER_KEY})) {
+                $text = __(
+                    'Test callback was triggered at %1 but has not yet been received. ' .
+                    'Try reloading the page.',
+                    date('Y-m-d H:i:s', $testData->{ConfigHelper::TRIGGER_KEY})
+                );
+            } else {
+                $text = date('Y-m-d H:i:s', $testData->{ConfigHelper::RECEIVED_KEY});
+            }
+
+            /*$text = $time > 0 ?
                 date('Y-m-d H:i:s', $time) :
                 __(
                     'Test callback has not been received yet. Try triggering ' .
                     'it using the button above.'
-                );
+                );*/
         } catch (Exception $e) {
             $this->log->exception($e);
 

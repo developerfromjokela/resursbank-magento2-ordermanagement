@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Resursbank\Core\Helper\Store as StoreHelper;
 use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
@@ -40,6 +41,11 @@ class Test extends Action
     private $storeHelper;
 
     /**
+     * @var TypeListInterface
+     */
+    private $cacheTypeList;
+
+    /**
      * @var Url
      */
     private $urlHelper;
@@ -52,6 +58,7 @@ class Test extends Action
      * @param Config $config
      * @param Log $log
      * @param StoreHelper $storeHelper
+     * @param TypeListInterface $cacheTypeList
      * @param Url $urlHelper
      */
     public function __construct(
@@ -60,12 +67,14 @@ class Test extends Action
         Config $config,
         Log $log,
         StoreHelper $storeHelper,
+        TypeListInterface $cacheTypeList,
         Url $urlHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
         $this->log = $log;
         $this->storeHelper = $storeHelper;
+        $this->cacheTypeList = $cacheTypeList;
         $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
@@ -84,7 +93,9 @@ class Test extends Action
                 $this->storeHelper->fromRequest()
             );
 
-            $this->config->setTestTriggeredAt(time());
+            $this->config->setTestTriggered(time());
+
+            $this->cacheTypeList->cleanType('config');
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
