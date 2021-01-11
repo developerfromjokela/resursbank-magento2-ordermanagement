@@ -72,7 +72,7 @@ class Config extends AbstractConfig
     public function getTestReceivedAt(
         ?string $scopeCode = null,
         string $scopeType = ScopeInterface::SCOPE_STORE
-    ): object {
+    ): ?object {
         $result = $this->get(
             self::GROUP,
             'callback_test_received_at',
@@ -80,7 +80,7 @@ class Config extends AbstractConfig
             $scopeType
         );
 
-        return json_decode($result);
+        return $result ? json_decode($result) : null;
     }
 
     /**

@@ -53,22 +53,22 @@ class TestReceivedAt extends Field
         try {
             $testData = $this->config->getTestReceivedAt();
 
-            if (!is_null($testData->{ConfigHelper::TRIGGER_KEY})) {
+            if (is_null($testData)) {
                 $text = __(
-                    'Test callback was triggered at %1 but has not yet been received. ' .
-                    'Try reloading the page.',
-                    date('Y-m-d H:i:s', $testData->{ConfigHelper::TRIGGER_KEY})
+                    'Test callback has not been triggered yet. Try triggering ' .
+                    'it using the button above.'
                 );
             } else {
-                $text = date('Y-m-d H:i:s', $testData->{ConfigHelper::RECEIVED_KEY});
+                if (!is_null($testData->{ConfigHelper::TRIGGER_KEY})) {
+                    $text = __(
+                        'Test callback was triggered at %1 but has not yet been received. ' .
+                        'Try reloading the page.',
+                        date('Y-m-d H:i:s', $testData->{ConfigHelper::TRIGGER_KEY})
+                    );
+                } else {
+                    $text = date('Y-m-d H:i:s', $testData->{ConfigHelper::RECEIVED_KEY});
+                }
             }
-
-            /*$text = $time > 0 ?
-                date('Y-m-d H:i:s', $time) :
-                __(
-                    'Test callback has not been received yet. Try triggering ' .
-                    'it using the button above.'
-                );*/
         } catch (Exception $e) {
             $this->log->exception($e);
 
