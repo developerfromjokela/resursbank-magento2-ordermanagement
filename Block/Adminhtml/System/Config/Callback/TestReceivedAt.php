@@ -53,7 +53,7 @@ class TestReceivedAt extends Field
         try {
             $testData = $this->config->getTestReceivedAt();
 
-            if ($testData === '') {
+            if ($testData === null) {
                 $text = __(
                     'Test callback has not been triggered yet. Try ' .
                     'triggering it using the button above.'

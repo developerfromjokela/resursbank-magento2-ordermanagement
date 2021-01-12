@@ -85,14 +85,16 @@ class Config extends AbstractConfig
     /**
      * @param int $value
      * @param int $scopeId
-     * @return mixed
+     * @return void
      */
     public function setTestTriggered(int $value, int $scopeId = 0): void
     {
         $this->set(
             self::GROUP,
             'callback_test_received_at',
-            json_encode([self::TRIGGER_KEY => $value, self::RECEIVED_KEY => null]),
+            json_encode(
+                [self::TRIGGER_KEY => $value, self::RECEIVED_KEY => null]
+            ),
             $scopeId,
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
@@ -101,14 +103,16 @@ class Config extends AbstractConfig
     /**
      * @param int $value
      * @param int $scopeId
-     * @return mixed
+     * @return void
      */
     public function setTestReceived(int $value, int $scopeId = 0): void
     {
         $this->set(
             self::GROUP,
             'callback_test_received_at',
-            json_encode([self::TRIGGER_KEY => null, self::RECEIVED_KEY => $value]),
+            json_encode(
+                [self::TRIGGER_KEY => null, self::RECEIVED_KEY => $value]
+            ),
             $scopeId,
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
