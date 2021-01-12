@@ -11,7 +11,6 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\AbstractConfig;
-use function is_numeric;
 
 class Config extends AbstractConfig
 {
@@ -67,7 +66,7 @@ class Config extends AbstractConfig
     /**
      * @param string|null $scopeCode
      * @param string $scopeType
-     * @return array
+     * @return null|object
      */
     public function getTestReceivedAt(
         ?string $scopeCode = null,
