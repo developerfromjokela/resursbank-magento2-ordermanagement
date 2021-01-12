@@ -11,9 +11,11 @@ namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Resursbank\Core\Helper\Store as StoreHelper;
 use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
+use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 
 class Test extends Action
@@ -22,6 +24,11 @@ class Test extends Action
      * @var CallbackHelper
      */
     private $callbackHelper;
+
+    /**
+     * @var Config
+     */
+    private $config;
 
     /**
      * @var Log
@@ -34,36 +41,45 @@ class Test extends Action
     private $storeHelper;
 
     /**
+     * @var TypeListInterface
+     */
+    private $cacheTypeList;
+
+    /**
      * @var Url
      */
     private $urlHelper;
 
     /**
-     * Registration constructor.
-     *
      * @param Context $context
      * @param CallbackHelper $callbackHelper
+     * @param Config $config
      * @param Log $log
      * @param StoreHelper $storeHelper
+     * @param TypeListInterface $cacheTypeList
      * @param Url $urlHelper
      */
     public function __construct(
         Context $context,
         CallbackHelper $callbackHelper,
+        Config $config,
         Log $log,
         StoreHelper $storeHelper,
+        TypeListInterface $cacheTypeList,
         Url $urlHelper
     ) {
         $this->callbackHelper = $callbackHelper;
+        $this->config = $config;
         $this->log = $log;
         $this->storeHelper = $storeHelper;
+        $this->cacheTypeList = $cacheTypeList;
         $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
     }
 
     /**
-     * Register callback URLs
+     * Register callback URLs.
      *
      * @return void
      */
@@ -74,6 +90,10 @@ class Test extends Action
             $this->callbackHelper->test(
                 $this->storeHelper->fromRequest()
             );
+
+            $this->config->setTestTriggered(time());
+
+            $this->cacheTypeList->cleanType('config');
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
