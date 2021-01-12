@@ -46,8 +46,6 @@ class Test extends Action
     private $cacheTypeList;
 
     /**
-     * Registration constructor.
-     *
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Config $config
@@ -73,7 +71,7 @@ class Test extends Action
     }
 
     /**
-     * Register callback URLs
+     * Register callback URLs.
      *
      * @return void
      */
