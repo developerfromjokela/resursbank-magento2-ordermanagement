@@ -46,18 +46,12 @@ class Test extends Action
     private $cacheTypeList;
 
     /**
-     * @var Url
-     */
-    private $urlHelper;
-
-    /**
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Config $config
      * @param Log $log
      * @param StoreHelper $storeHelper
      * @param TypeListInterface $cacheTypeList
-     * @param Url $urlHelper
      */
     public function __construct(
         Context $context,
@@ -65,15 +59,13 @@ class Test extends Action
         Config $config,
         Log $log,
         StoreHelper $storeHelper,
-        TypeListInterface $cacheTypeList,
-        Url $urlHelper
+        TypeListInterface $cacheTypeList
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
         $this->log = $log;
         $this->storeHelper = $storeHelper;
         $this->cacheTypeList = $cacheTypeList;
-        $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
     }
@@ -109,9 +101,6 @@ class Test extends Action
             );
         }
 
-        // Redirect back to the config section.
-        $this->_redirect($this->urlHelper->getAdminUrl(
-            'admin/system_config/edit/section/payment'
-        ));
+        $this->_redirect($this->_redirect->getRefererUrl());
     }
 }

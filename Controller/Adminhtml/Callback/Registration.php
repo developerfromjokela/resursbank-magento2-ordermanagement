@@ -34,30 +34,22 @@ class Registration extends Action
     private $storeHelper;
 
     /**
-     * @var Url
-     */
-    private $urlHelper;
-
-    /**
      * Registration constructor.
      *
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Log $log
      * @param StoreHelper $storeHelper
-     * @param Url $urlHelper
      */
     public function __construct(
         Context $context,
         CallbackHelper $callbackHelper,
         Log $log,
-        StoreHelper $storeHelper,
-        Url $urlHelper
+        StoreHelper $storeHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->log = $log;
         $this->storeHelper = $storeHelper;
-        $this->urlHelper = $urlHelper;
 
         parent::__construct($context);
     }
@@ -89,9 +81,6 @@ class Registration extends Action
             );
         }
 
-        // Redirect back to the config section.
-        $this->_redirect($this->urlHelper->getAdminUrl(
-            'admin/system_config/edit/section/payment'
-        ));
+        $this->_redirect($this->_redirect->getRefererUrl());
     }
 }
