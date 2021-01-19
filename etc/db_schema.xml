@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="resursbank_checkout_payment_history" resource="default" engine="innodb" comment="Resurs Bank Payment History Table">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Prim Key"/>
+        <column xsi:type="int" name="payment_id" padding="10" unsigned="true" nullable="false" comment="Order payment reference."/>
+        <column xsi:type="varchar" name="event" nullable="false" length="255" comment="Event that was triggered."/>
+        <column xsi:type="smallint" name="user" padding="5" unsigned="true" nullable="false" comment="User that triggered the event."/>
+        <column xsi:type="text" name="extra" nullable="true" comment="Additional information about what happened."/>
+        <column xsi:type="varchar" name="state_from" nullable="true" length="255" comment="What state the payment went from."/>
+        <column xsi:type="varchar" name="state_to" nullable="true" length="255" comment="What state the payment went to."/>
+        <column xsi:type="varchar" name="status_from" nullable="true" length="255" comment="What status the payment went from."/>
+        <column xsi:type="varchar" name="status_to" nullable="true" length="255" comment="What status the payment went to."/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_PAYMENT_HISTORY_PAYMENT_ID" table="resursbank_checkout_payment_history" column="payment_id" referenceTable="sales_order_payment" referenceColumn="entity_id"/>
+    </table>
+</schema>
