@@ -9,7 +9,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
 
     <!-- Payment is unfrozen, which means it can be captured. -->
-    <route url="/V1/resursbank_ordermanagement/order/unfreeze/paymentId/:paymentId/digest/:digest" method="POST">
+    <route url="/V1/resursbank_ordermanagement/order/unfreeze/paymentId/:paymentId/digest/:digest" method="GET">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="unfreeze"/>
         <resources>
             <resource ref="anonymous" />
@@ -25,7 +25,7 @@
     </route>
 
     <!-- Payment has been updated at Resurs Bank. -->
-    <route url="/V1/resursbank_ordermanagement/order/update/paymentId/:paymentId/digest/:digest" method="POST">
+    <route url="/V1/resursbank_ordermanagement/order/update/paymentId/:paymentId/digest/:digest" method="GET">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="update"/>
         <resources>
             <resource ref="anonymous" />
@@ -33,7 +33,7 @@
     </route>
 
     <!-- Test to verify callback URLs are working. -->
-    <route url="/V1/resursbank_ordermanagement/order/test/param1/:param1/param2/:param2/param3/:param3/param4/:param4/param5/:param5" method="POST">
+    <route url="/V1/resursbank_ordermanagement/order/test/param1/:param1/param2/:param2/param3/:param3/param4/:param4/param5/:param5" method="GET">
         <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="test"/>
         <resources>
             <resource ref="anonymous" />
