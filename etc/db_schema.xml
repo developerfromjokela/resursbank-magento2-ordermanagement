@@ -10,7 +10,7 @@
         <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Prim Key"/>
         <column xsi:type="int" name="payment_id" padding="10" unsigned="true" nullable="false" comment="Order payment reference."/>
         <column xsi:type="varchar" name="event" nullable="false" length="255" comment="Event that was triggered."/>
-        <column xsi:type="smallint" name="user" padding="5" unsigned="true" nullable="false" comment="User that triggered the event."/>
+        <column xsi:type="varchar" name="user" length="255" nullable="false" comment="User that triggered the event."/>
         <column xsi:type="text" name="extra" nullable="true" comment="Additional information about what happened."/>
         <column xsi:type="varchar" name="state_from" nullable="true" length="255" comment="What state the payment went from."/>
         <column xsi:type="varchar" name="state_to" nullable="true" length="255" comment="What state the payment went to."/>

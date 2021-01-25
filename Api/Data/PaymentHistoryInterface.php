@@ -7,6 +7,58 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const ENTITY_ID = 'id';
+
+    /**
+     * Relationship to Magento\Sales\Model\Order\Payment entity.
+     *
+     * @var string
+     */
+    public const ENTITY_PAYMENT_ID = 'payment_id';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_EVENT = 'event';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_USER = 'user';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_EXTRA = 'extra';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_STATE_FROM = 'state_from';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_STATE_TO = 'state_to';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_STATUS_FROM = 'status_from';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_STATUS_TO = 'status_to';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_CREATED_AT = 'created_at';
+
+    /**
+     * @var string
+     */
     public const EVENT_CALLBACK_UNFREEZE = 'callback_unfreeze';
 
     /**
@@ -27,6 +79,29 @@ interface PaymentHistoryInterface
         self::EVENT_CALLBACK_UNFREEZE => 'Callback "Unfreeze" received.',
         self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.'
     ];
+
+    /**
+     * @var string
+     */
+    public const USER_CUSTOMER = 'customer';
+
+    /**
+     * @var string
+     */
+    public const USER_RESURS_BANK = 'resurs_bank';
+
+    /**
+     * @var string
+     */
+    public const USER_CLIENT = 'client';
+
+    /**
+     * Get ID.
+     *
+     * @param int|null $default
+     * @return int|null
+     */
+    public function getId(int $default = null): ?int;
 
     /**
      * Get payment ID.
@@ -61,22 +136,20 @@ interface PaymentHistoryInterface
     public function setEvent(string $event): PaymentHistoryInterface;
 
     /**
-     * Get user that triggered the event. Users are represented by an integer,
-     * which indicates what group that user belongs to.
+     * Get user that triggered the event.
      *
-     * @param int|null $default
-     * @return int
+     * @param string|null $default
+     * @return string
      */
-    public function getUser(int $default = null): int;
+    public function getUser(string $default = null): ?string;
 
     /**
-     * Set user that triggered the event. Users are represented by an integer,
-     * which indicates what group that user belongs to.
+     * Set user that triggered the event.
      *
-     * @param int $user
+     * @param string $user
      * @return PaymentHistoryInterface
      */
-    public function setUser(int $user): PaymentHistoryInterface;
+    public function setUser(string $user): PaymentHistoryInterface;
 
     /**
      * Get extra information about the event.

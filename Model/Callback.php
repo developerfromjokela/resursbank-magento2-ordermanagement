@@ -21,6 +21,8 @@ use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
+use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
@@ -82,6 +84,16 @@ class Callback implements CallbackInterface
     private $orderSender;
 
     /**
+     * @var PaymentHistoryFactory
+     */
+    private $phFactory;
+
+    /**
+     * @var PaymentHistoryRepositoryInterface
+     */
+    private $phRepository;
+
+    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
@@ -98,6 +110,7 @@ class Callback implements CallbackInterface
      * @param OrderInterface $orderInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
+     * @param PaymentHistoryFactory $phFactory
      * @param TypeListInterface $cacheTypeList
      */
     public function __construct(
@@ -110,6 +123,8 @@ class Callback implements CallbackInterface
         OrderInterface $orderInterface,
         OrderRepository $orderRepository,
         OrderSender $orderSender,
+        PaymentHistoryFactory $phFactory,
+        PaymentHistoryRepositoryInterface $phRepository,
         TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
@@ -121,6 +136,8 @@ class Callback implements CallbackInterface
         $this->orderInterface = $orderInterface;
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
+        $this->phFactory = $phFactory;
+        $this->phRepository = $phRepository;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -215,7 +232,19 @@ class Callback implements CallbackInterface
             );
         }
 
-        $this->syncStatusFromResurs($order);
+        $oldStatus = $order->getStatus();
+        $oldState = $order->getState();
+
+        [$newStatus, $newState] = $this->syncStatusFromResurs($order);
+
+        $this->addPaymentHistoryEntry(
+            strtoupper($type),
+            (int) $order->getPayment()->getEntityId(),
+            $oldStatus,
+            $newStatus,
+            $oldState,
+            $newState
+        );
 
         return $order;
     }
@@ -264,10 +293,11 @@ class Callback implements CallbackInterface
      * Resolve the status and state for the order by asking Resurs Bank.
      *
      * @param Order $order
+     * @return array
      * @throws ValidatorException
      * @throws Exception
      */
-    private function syncStatusFromResurs(Order $order): void
+    private function syncStatusFromResurs(Order $order): array
     {
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig()
@@ -287,6 +317,8 @@ class Callback implements CallbackInterface
         $order->setState($newState);
 
         $this->orderRepository->save($order);
+
+        return [$newStatus, $newState];
     }
 
     /**
@@ -348,5 +380,40 @@ class Callback implements CallbackInterface
                 "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
             );
         }
+    }
+
+    /**
+     * Add an entry of the event into Payment history.
+     *
+     * @param string $type
+     * @param string $paymentId
+     * @param string $oldStatus
+     * @param string $newStatus
+     * @param string $oldState
+     * @param string $newState
+     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     */
+    private function addPaymentHistoryEntry(
+        string $type,
+        int $paymentId,
+        string $oldStatus,
+        string $newStatus,
+        string $oldState,
+        string $newState
+    ): void {
+        $entry = $this->phFactory->create();
+        $entry
+            ->setPaymentId($paymentId)
+            ->setEvent(constant(sprintf(
+                '%s::%s',
+                PaymentHistoryInterface::class,
+                "EVENT_CALLBACK_{$type}"
+            )))
+            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
+            ->setStateFrom($oldState)
+            ->setStateTo($newState)
+            ->setStatusFrom($oldStatus)
+            ->setStatusTo($newStatus);
+        $this->phRepository->save($entry);
     }
 }

@@ -25,9 +25,9 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getId(int $default = null): int
+    public function getId(int $default = null): ?int
     {
-        $data = $this->_getData('id');
+        $data = $this->_getData(self::ENTITY_ID);
 
         return $data === null ? $default : (int)$data;
     }
@@ -37,7 +37,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getPaymentId(int $default = null): int
     {
-        $data = $this->_getData('payment_id');
+        $data = $this->_getData(self::ENTITY_PAYMENT_ID);
 
         return $data === null ? $default : (int)$data;
     }
@@ -47,7 +47,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setPaymentId(int $identifier): PaymentHistoryInterface
     {
-        return $this->setData('payment_id', $identifier);
+        return $this->setData(self::ENTITY_PAYMENT_ID, $identifier);
     }
 
     /**
@@ -55,7 +55,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getEvent(string $default = null): string
     {
-        $data = $this->_getData('event');
+        $data = $this->_getData(self::ENTITY_EVENT);
 
         return $data === null ? $default : (string)$data;
     }
@@ -65,25 +65,25 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setEvent(string $event): PaymentHistoryInterface
     {
-        return $this->setData('event', $event);
+        return $this->setData(self::ENTITY_EVENT, $event);
     }
 
     /**
      * @inheritDoc
      */
-    public function getUser(int $default = null): int
+    public function getUser(string $default = null): ?string
     {
-        $data = $this->_getData('user');
+        $data = $this->_getData(self::ENTITY_USER);
 
-        return $data === null ? $default : (int)$data;
+        return $data ?? $default;
     }
 
     /**
      * @inheritDoc
      */
-    public function setUser(int $user): PaymentHistoryInterface
+    public function setUser(string $user): PaymentHistoryInterface
     {
-        return $this->setData('user', $user);
+        return $this->setData(self::ENTITY_USER, $user);
     }
 
     /**
@@ -91,7 +91,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getExtra(string $default = null): string
     {
-        return $this->_getData('extra') ?? $default;
+        return $this->_getData(self::ENTITY_EXTRA) ?? $default;
     }
 
     /**
@@ -99,7 +99,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setExtra(string $extra): PaymentHistoryInterface
     {
-        return $this->setData('extra', $extra);
+        return $this->setData(self::ENTITY_EXTRA, $extra);
     }
 
     /**
@@ -107,7 +107,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getStateFrom(string $default = null): string
     {
-        return $this->_getData('state_from') ?? $default;
+        return $this->_getData(self::ENTITY_STATE_FROM) ?? $default;
     }
 
     /**
@@ -115,7 +115,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setStateFrom(string $state): PaymentHistoryInterface
     {
-        return $this->setData('state_from', $state);
+        return $this->setData(self::ENTITY_STATE_FROM, $state);
     }
 
     /**
@@ -123,7 +123,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getStateTo(string $default = null): string
     {
-        return $this->_getData('state_to') ?? $default;
+        return $this->_getData(self::ENTITY_STATE_TO) ?? $default;
     }
 
     /**
@@ -131,7 +131,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setStateTo(string $state): PaymentHistoryInterface
     {
-        return $this->setData('state_to', $state);
+        return $this->setData(self::ENTITY_STATE_TO, $state);
     }
 
     /**
@@ -139,7 +139,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getStatusFrom(string $default = null): string
     {
-        return $this->_getData('status_from') ?? $default;
+        return $this->_getData(self::ENTITY_STATUS_FROM) ?? $default;
     }
 
     /**
@@ -147,7 +147,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setStatusFrom(string $status): PaymentHistoryInterface
     {
-        return $this->setData('status_from', $status);
+        return $this->setData(self::ENTITY_STATUS_FROM, $status);
     }
 
     /**
@@ -155,7 +155,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getStatusTo(string $default = null): string
     {
-        return $this->_getData('status_to') ?? $default;
+        return $this->_getData(self::ENTITY_STATUS_TO) ?? $default;
     }
 
     /**
@@ -163,7 +163,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setStatusTo(string $status): PaymentHistoryInterface
     {
-        return $this->setData('status_to', $status);
+        return $this->setData(self::ENTITY_STATUS_TO, $status);
     }
 
     /**
@@ -171,7 +171,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getCreatedAt(string $default = null): string
     {
-        return $this->_getData('created_at') ?? $default;
+        return $this->_getData(self::ENTITY_CREATED_AT) ?? $default;
     }
 
     /**
@@ -179,7 +179,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function setCreatedAt(string $createdAt): PaymentHistoryInterface
     {
-        return $this->setData('created_at', $createdAt);
+        return $this->setData(self::ENTITY_CREATED_AT, $createdAt);
     }
 
     /**

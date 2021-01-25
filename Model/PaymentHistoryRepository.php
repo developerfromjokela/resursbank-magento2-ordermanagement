@@ -21,15 +21,22 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     private $resourceModel;
 
     /**
+     * @var PaymentHistoryFactory
+     */
+    private $phFactory;
+
+    /**
      * PaymentHistoryRepository constructor.
      * @param ResourceModel $resourceModel
+     * @param PaymentHistoryFactory $phFactory
      */
     public function __construct(
-        ResourceModel $resourceModel
+        ResourceModel $resourceModel,
+        PaymentHistoryFactory $phFactory
     ) {
         $this->resourceModel = $resourceModel;
+        $this->phFactory = $phFactory;
     }
-
 
     /**
      * @inheritDoc
@@ -65,13 +72,7 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
      */
     public function get(int $identifier): PaymentHistoryInterface
     {
-        die(
-            "Hittar inte PaymentHistoryFactory i vår gamla modul. När det är hittat
-            borde jag kunn testa att implementera detta på callbacks och sätta
-            lite events när de kommer in."
-        );
-
-        $history = $this->paymentHistoryFactory->create();
+        $history = $this->phFactory->create();
         $history->getResource()->load($history, $identifier);
 
         if (!$history->getId()) {
