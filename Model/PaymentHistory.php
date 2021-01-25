@@ -187,12 +187,6 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function eventLabel(string $event): string
     {
-        $labels = [
-            self::EVENT_CALLBACK_BOOKED => 'Callback "Booked" received.',
-            self::EVENT_CALLBACK_UNFREEZE => 'Callback "Unfreeze" received.',
-            self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.'
-        ];
-
-        return $labels[$event] ?? '';
+        return self::EVENT_LABELS[$event] ?? '';
     }
 }

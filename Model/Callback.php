@@ -111,6 +111,7 @@ class Callback implements CallbackInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param PaymentHistoryFactory $phFactory
+     * @param PaymentHistoryRepositoryInterface $phRepository
      * @param TypeListInterface $cacheTypeList
      */
     public function __construct(
