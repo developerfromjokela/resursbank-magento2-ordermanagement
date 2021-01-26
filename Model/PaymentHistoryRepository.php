@@ -21,14 +21,15 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     private $resourceModel;
 
     /**
+     * @noinspection PhpUndefinedClassInspection
      * @var PaymentHistoryFactory
      */
     private $phFactory;
 
     /**
-     * PaymentHistoryRepository constructor.
      * @param ResourceModel $resourceModel
      * @param PaymentHistoryFactory $phFactory
+     * @noinspection PhpUndefinedClassInspection
      */
     public function __construct(
         ResourceModel $resourceModel,
@@ -44,6 +45,7 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     public function save(
         PaymentHistoryInterface $entry
     ): PaymentHistoryInterface {
+        /** @var PaymentHistory $entry */
         $this->resourceModel->save($entry);
 
         return $entry;
@@ -52,8 +54,10 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function delete(PaymentHistoryInterface $entry): bool
-    {
+    public function delete(
+        PaymentHistoryInterface $entry
+    ): bool {
+        /** @var PaymentHistory $entry */
         $this->resourceModel->delete($entry);
 
         return true;
@@ -62,22 +66,29 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function deleteById(int $identifier): bool
-    {
+    public function deleteById(
+        int $identifier
+    ): bool {
         return $this->delete($this->get($identifier));
     }
 
     /**
      * @inheritDoc
      */
-    public function get(int $identifier): PaymentHistoryInterface
-    {
+    public function get(
+        int $identifier
+    ): PaymentHistoryInterface {
+        /* @noinspection PhpUndefinedMethodInspection */
         $history = $this->phFactory->create();
+
         $history->getResource()->load($history, $identifier);
 
         if (!$history->getId()) {
             throw new NoSuchEntityException(
-                __('Unable to find payment history entry with ID %1', $identifier)
+                __(
+                    'Unable to find payment history entry with ID %1',
+                    $identifier
+                )
             );
         }
 

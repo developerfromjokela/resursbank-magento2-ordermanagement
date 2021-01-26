@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Model;
 
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
@@ -32,9 +33,12 @@ use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+use \Magento\Sales\Api\Data\OrderPaymentInterface;
+use function constant;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @noinspection EfferentObjectCouplingInspection
  */
 class Callback implements CallbackInterface
 {
@@ -84,6 +88,7 @@ class Callback implements CallbackInterface
     private $orderSender;
 
     /**
+     * @noinspection PhpUndefinedClassInspection
      * @var PaymentHistoryFactory
      */
     private $phFactory;
@@ -113,6 +118,8 @@ class Callback implements CallbackInterface
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param TypeListInterface $cacheTypeList
+     * @noinspection PhpUndefinedClassInspection
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Api $api,
@@ -192,7 +199,7 @@ class Callback implements CallbackInterface
         string $param5
     ): void {
         try {
-            $this->logIncomming('test', '', '');
+            $this->logIncoming('test', '', '');
 
             // Mark time we received the test callback.
             $this->config->setTestReceived(time());
@@ -215,6 +222,7 @@ class Callback implements CallbackInterface
      * @throws OrderNotFoundException
      * @throws RuntimeException
      * @throws ValidatorException
+     * @throws AlreadyExistsException
      */
     private function execute(
         string $type,
@@ -223,13 +231,20 @@ class Callback implements CallbackInterface
     ): Order {
         $this->validate($paymentId, $digest);
 
-        $this->logIncomming($type, $paymentId, $digest);
+        $this->logIncoming($type, $paymentId, $digest);
 
+        /** @var Order $order */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
                 'Failed to locate order ' . $paymentId
+            );
+        }
+
+        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+            throw new RuntimeException(
+                __('Missing payment data on order %1', $order->getId())
             );
         }
 
@@ -365,13 +380,13 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Log incomming callbacks.
+     * Log incoming callbacks.
      *
      * @param string $type
      * @param string|null $paymentId
      * @param string|null $digest
      */
-    private function logIncomming(
+    private function logIncoming(
         string $type,
         string $paymentId,
         string $digest
@@ -387,12 +402,12 @@ class Callback implements CallbackInterface
      * Add an entry of the event into Payment history.
      *
      * @param string $type
-     * @param string $paymentId
+     * @param int $paymentId
      * @param string $oldStatus
      * @param string $newStatus
      * @param string $oldState
      * @param string $newState
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     * @throws AlreadyExistsException
      */
     private function addPaymentHistoryEntry(
         string $type,
@@ -402,7 +417,9 @@ class Callback implements CallbackInterface
         string $oldState,
         string $newState
     ): void {
+        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
+
         $entry
             ->setPaymentId($paymentId)
             ->setEvent(constant(sprintf(

@@ -15,7 +15,8 @@ use Resursbank\Ordermanagement\Model\ResourceModel\PaymentHistory as ResourceMod
 class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
 {
     /**
-     * Constructor.
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+     * @noinspection MagicMethodsValidityInspection
      */
     public function _construct(): void
     {
@@ -55,9 +56,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getEvent(string $default = null): ?string
     {
-        $data = $this->_getData(self::ENTITY_EVENT);
-
-        return $data === null ? $default : (string)$data;
+        return $this->_getData(self::ENTITY_EVENT) ?? $default;
     }
 
     /**
@@ -73,9 +72,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      */
     public function getUser(string $default = null): ?string
     {
-        $data = $this->_getData(self::ENTITY_USER);
-
-        return $data ?? $default;
+        return $this->_getData(self::ENTITY_USER) ?? $default;
     }
 
     /**
