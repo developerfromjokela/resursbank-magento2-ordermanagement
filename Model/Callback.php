@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Model;
 
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
@@ -21,6 +22,8 @@ use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
+use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
@@ -30,9 +33,12 @@ use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+use \Magento\Sales\Api\Data\OrderPaymentInterface;
+use function constant;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @noinspection EfferentObjectCouplingInspection
  */
 class Callback implements CallbackInterface
 {
@@ -82,6 +88,17 @@ class Callback implements CallbackInterface
     private $orderSender;
 
     /**
+     * @noinspection PhpUndefinedClassInspection
+     * @var PaymentHistoryFactory
+     */
+    private $phFactory;
+
+    /**
+     * @var PaymentHistoryRepositoryInterface
+     */
+    private $phRepository;
+
+    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
@@ -98,7 +115,11 @@ class Callback implements CallbackInterface
      * @param OrderInterface $orderInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
+     * @param PaymentHistoryFactory $phFactory
+     * @param PaymentHistoryRepositoryInterface $phRepository
      * @param TypeListInterface $cacheTypeList
+     * @noinspection PhpUndefinedClassInspection
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Api $api,
@@ -110,6 +131,8 @@ class Callback implements CallbackInterface
         OrderInterface $orderInterface,
         OrderRepository $orderRepository,
         OrderSender $orderSender,
+        PaymentHistoryFactory $phFactory,
+        PaymentHistoryRepositoryInterface $phRepository,
         TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
@@ -121,6 +144,8 @@ class Callback implements CallbackInterface
         $this->orderInterface = $orderInterface;
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
+        $this->phFactory = $phFactory;
+        $this->phRepository = $phRepository;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -174,7 +199,7 @@ class Callback implements CallbackInterface
         string $param5
     ): void {
         try {
-            $this->logIncomming('test', '', '');
+            $this->logIncoming('test', '', '');
 
             // Mark time we received the test callback.
             $this->config->setTestReceived(time());
@@ -197,6 +222,7 @@ class Callback implements CallbackInterface
      * @throws OrderNotFoundException
      * @throws RuntimeException
      * @throws ValidatorException
+     * @throws AlreadyExistsException
      */
     private function execute(
         string $type,
@@ -205,8 +231,9 @@ class Callback implements CallbackInterface
     ): Order {
         $this->validate($paymentId, $digest);
 
-        $this->logIncomming($type, $paymentId, $digest);
+        $this->logIncoming($type, $paymentId, $digest);
 
+        /** @var Order $order */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
@@ -215,7 +242,25 @@ class Callback implements CallbackInterface
             );
         }
 
-        $this->syncStatusFromResurs($order);
+        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+            throw new RuntimeException(
+                __('Missing payment data on order %1', $order->getId())
+            );
+        }
+
+        $oldStatus = $order->getStatus();
+        $oldState = $order->getState();
+
+        [$newStatus, $newState] = $this->syncStatusFromResurs($order);
+
+        $this->addPaymentHistoryEntry(
+            strtoupper($type),
+            (int) $order->getPayment()->getEntityId(),
+            $oldStatus,
+            $newStatus,
+            $oldState,
+            $newState
+        );
 
         return $order;
     }
@@ -264,10 +309,11 @@ class Callback implements CallbackInterface
      * Resolve the status and state for the order by asking Resurs Bank.
      *
      * @param Order $order
+     * @return array
      * @throws ValidatorException
      * @throws Exception
      */
-    private function syncStatusFromResurs(Order $order): void
+    private function syncStatusFromResurs(Order $order): array
     {
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig()
@@ -287,6 +333,8 @@ class Callback implements CallbackInterface
         $order->setState($newState);
 
         $this->orderRepository->save($order);
+
+        return [$newStatus, $newState];
     }
 
     /**
@@ -332,13 +380,13 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Log incomming callbacks.
+     * Log incoming callbacks.
      *
      * @param string $type
      * @param string|null $paymentId
      * @param string|null $digest
      */
-    private function logIncomming(
+    private function logIncoming(
         string $type,
         string $paymentId,
         string $digest
@@ -348,5 +396,42 @@ class Callback implements CallbackInterface
                 "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
             );
         }
+    }
+
+    /**
+     * Add an entry of the event into Payment history.
+     *
+     * @param string $type
+     * @param int $paymentId
+     * @param string $oldStatus
+     * @param string $newStatus
+     * @param string $oldState
+     * @param string $newState
+     * @throws AlreadyExistsException
+     */
+    private function addPaymentHistoryEntry(
+        string $type,
+        int $paymentId,
+        string $oldStatus,
+        string $newStatus,
+        string $oldState,
+        string $newState
+    ): void {
+        /* @noinspection PhpUndefinedMethodInspection */
+        $entry = $this->phFactory->create();
+
+        $entry
+            ->setPaymentId($paymentId)
+            ->setEvent(constant(sprintf(
+                '%s::%s',
+                PaymentHistoryInterface::class,
+                "EVENT_CALLBACK_{$type}"
+            )))
+            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
+            ->setStateFrom($oldState)
+            ->setStateTo($newState)
+            ->setStatusFrom($oldStatus)
+            ->setStatusTo($newStatus);
+        $this->phRepository->save($entry);
     }
 }
