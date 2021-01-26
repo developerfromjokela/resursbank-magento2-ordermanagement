@@ -12,6 +12,7 @@
                 <can_capture>1</can_capture>
                 <can_cancel>1</can_cancel>
                 <can_void>1</can_void>
+                <can_refund>1</can_refund>
             </resursbank_default>
         </payment>
         <resursbank>

@@ -27,11 +27,13 @@ use Magento\Framework\Exception\PaymentException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Model\InfoInterface;
+use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
+use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use stdClass;
@@ -62,23 +64,31 @@ class ApiPayment extends AbstractHelper
     private $log;
 
     /**
+     * @var CreditmemoConverter
+     */
+    private $creditmemoConverter;
+
+    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
      * @param Credentials $credentials
      * @param Log $log
+     * @param CreditmemoConverter $creditmemoConverter
      */
     public function __construct(
         Context $context,
         AdminHelper $adminHelper,
         Api $api,
         Credentials $credentials,
-        Log $log
+        Log $log,
+        CreditmemoConverter $creditmemoConverter
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
         $this->credentials = $credentials;
         $this->log = $log;
+        $this->creditmemoConverter = $creditmemoConverter;
 
         parent::__construct($context);
     }
@@ -234,6 +244,63 @@ class ApiPayment extends AbstractHelper
         }
 
         return true;
+    }
+
+    /**
+     * @param string $paymentId
+     * @param Creditmemo $memo
+     * @param ResursBank|null $connection
+     * @return bool Whether the operation was successful. Will default to
+     * false if the payment does not exist, and true if the payment has already
+     * been refunded.
+     * @throws ResursException
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function refundPayment(
+        string $paymentId,
+        Creditmemo $memo,
+        ?ResursBank $connection = null
+    ): bool {
+        $result = false;
+        $connection = $this->getDefaultConnection($connection);
+        $exists = $this->exists($paymentId, $connection);
+        $canRefund = $connection->canCredit($paymentId);
+
+        if ($exists && $canRefund) {
+            // Set platform / user reference.
+            $connection->setRealClientName('Magento2');
+            $connection->setLoggedInUser($this->adminHelper->getUserName());
+            $connection->setPreferredId($paymentId);
+            $result = $connection->creditPayment(
+                $paymentId,
+                $this->creditmemoConverter->convertItemsToArrays(
+                    $this->creditmemoConverter->convert($memo)
+                )
+            );
+        } elseif ($exists && !$canRefund) {
+            // Here we assume that the payment has already been refunded.
+            $result = true;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $paymentId
+     * @param ResursBank|null $connection
+     * @return bool
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function isRefunded(
+        string $paymentId,
+        ?ResursBank $connection = null
+    ): bool {
+        $connection = $this->getDefaultConnection($connection);
+
+        return $this->exists($paymentId, $connection) &&
+            !$connection->canCredit($paymentId);
     }
 
     /**
