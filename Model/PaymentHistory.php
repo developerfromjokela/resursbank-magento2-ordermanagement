@@ -35,7 +35,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getPaymentId(int $default = null): int
+    public function getPaymentId(int $default = null): ?int
     {
         $data = $this->_getData(self::ENTITY_PAYMENT_ID);
 
@@ -53,7 +53,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getEvent(string $default = null): string
+    public function getEvent(string $default = null): ?string
     {
         $data = $this->_getData(self::ENTITY_EVENT);
 
@@ -89,7 +89,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getExtra(string $default = null): string
+    public function getExtra(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_EXTRA) ?? $default;
     }
@@ -105,7 +105,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStateFrom(string $default = null): string
+    public function getStateFrom(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_STATE_FROM) ?? $default;
     }
@@ -121,7 +121,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStateTo(string $default = null): string
+    public function getStateTo(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_STATE_TO) ?? $default;
     }
@@ -137,7 +137,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStatusFrom(string $default = null): string
+    public function getStatusFrom(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_STATUS_FROM) ?? $default;
     }
@@ -153,7 +153,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStatusTo(string $default = null): string
+    public function getStatusTo(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_STATUS_TO) ?? $default;
     }
@@ -169,7 +169,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getCreatedAt(string $default = null): string
+    public function getCreatedAt(string $default = null): ?string
     {
         return $this->_getData(self::ENTITY_CREATED_AT) ?? $default;
     }
