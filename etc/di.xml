@@ -31,4 +31,8 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <!-- Payment History -->
+    <preference for="Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface" type="Resursbank\Ordermanagement\Model\PaymentHistory" />
+    <preference for="Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface" type="Resursbank\Ordermanagement\Model\PaymentHistoryRepository" />
 </config>
