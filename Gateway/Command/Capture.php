@@ -9,11 +9,11 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
-use InvalidArgumentException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
+use Magento\Payment\Gateway\Helper\SubjectReader;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
@@ -37,11 +37,6 @@ class Capture implements CommandInterface
     private $apiPayment;
 
     /**
-     * @var Command
-     */
-    private $command;
-
-    /**
      * @var Api
      */
     private $api;
@@ -62,34 +57,31 @@ class Capture implements CommandInterface
      * @param Api $api
      * @param Credentials $credentials
      * @param ApiPayment $apiPayment
-     * @param Command $command
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         Config $config,
         Api $api,
-        Credentials $credentials,
-        Command $command
+        Credentials $credentials
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->config = $config;
         $this->api = $api;
         $this->credentials = $credentials;
-        $this->command = $command;
     }
 
     /**
-     * @param array $commandSubject
+     * @param array $subject
      * @return ResultInterface|null
      * @throws PaymentException
      */
     public function execute(
-        array $commandSubject
+        array $subject
     ): ?ResultInterface {
         try {
-            $paymentData = $this->command->getPaymentDataObject($commandSubject);
+            $paymentData = SubjectReader::readPayment($subject);
 
             if ($this->isEnabled($paymentData)) {
                 $connection = $this->api->getConnection(
@@ -107,7 +99,7 @@ class Capture implements CommandInterface
                 );
 
                 $this->log->info(
-                    "Successfully captured payment of order {$paymentId}."
+                    'Successfully captured payment of order ' . $paymentId
                 );
             }
         } catch (Exception $e) {
@@ -128,7 +120,6 @@ class Capture implements CommandInterface
      *
      * @param PaymentDataObjectInterface $orderPayment
      * @return bool
-     * @todo Check if payment exist at Resurs Bank before we do this.
      */
     protected function isEnabled(
         PaymentDataObjectInterface $orderPayment
