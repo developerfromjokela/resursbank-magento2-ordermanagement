@@ -13,3 +13,4 @@
 "Test callback was sent","Test callback:en skickades"
 "Test received at","Test mottogs"
 "Test Callbacks","Test Callbacks"
+"Failed to finalize payment.","Finalisering av betalning misslyckades."

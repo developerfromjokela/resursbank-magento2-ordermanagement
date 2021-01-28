@@ -104,6 +104,8 @@ class Capture implements CommandInterface
             }
         } catch (Exception $e) {
             $this->log->exception($e);
+
+            throw new PaymentException(__('Failed to finalize payment.'));
         }
 
         return null;
