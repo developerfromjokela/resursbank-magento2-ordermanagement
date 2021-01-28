@@ -1,18 +1,7 @@
 <?php
 /**
- * Copyright 2016 Resurs Bank AB
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
  */
 
 declare(strict_types=1);
@@ -28,6 +17,10 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\RBEcomPHP\ResursBank;
 use stdClass;
+use function in_array;
+use function is_array;
+use function is_object;
+use function is_string;
 
 class ApiPayment extends AbstractHelper
 {
@@ -50,13 +43,14 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Check if a payment debited.
+     * Check if a payment is finalized (debited).
      *
      * @param stdClass $apiPayment
      * @return bool
      */
-    public function isFinalized(stdClass $apiPayment): bool
-    {
+    public function isFinalized(
+        stdClass $apiPayment
+    ): bool {
         return (
             is_object($apiPayment) &&
             isset($apiPayment->finalized) &&
@@ -91,21 +85,6 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Payment can only be captured if the payment at Resurs Bank is not marked
-     * as "finalized" and the payment is not fully or partially debited.
-     *
-     * @param stdClass $apiPayment
-     * @return bool
-     */
-    private function canFinalize(stdClass $apiPayment): bool
-    {
-        return (
-            !$this->isFinalized($apiPayment) &&
-            !$this->hasStatus($apiPayment, 'IS_DEBITED')
-        );
-    }
-
-    /**
      * Finalize Resursbank payment.
      *
      * @param InfoInterface $orderPayment
@@ -125,20 +104,23 @@ class ApiPayment extends AbstractHelper
         if ($this->canFinalize($apiPayment)) {
             if (!($orderPayment instanceof Payment)) {
                 throw new PaymentDataException(__(
-                    "Resursbank payment {$paymentId} could not be finalized " .
-                    "because there was a problem with the payment in Magento."
+                    'Resurs Bank payment %1 could not be finalized because ' .
+                    'there was a problem with the payment in Magento.',
+                    $paymentId
                 ));
             }
 
             if ($apiPayment->frozen) {
                 throw new PaymentDataException(__(
-                    "Resursbank payment {$paymentId} is still frozen."
+                    'Resurs Bank payment %1 is still frozen.',
+                    $paymentId
                 ));
             }
 
             if (!$this->isDebitable($apiPayment)) {
                 throw new PaymentDataException(__(
-                    "Resursbank payment {$paymentId} cannot be debited yet."
+                    'Resurs Bank payment %1 is not debitable.',
+                    $paymentId
                 ));
             }
 
@@ -151,7 +133,8 @@ class ApiPayment extends AbstractHelper
 
             if (!$connection->finalizePayment($paymentId)) {
                 throw new PaymentDataException(__(
-                    "Failed to finalize Resursbank payment {$paymentId}."
+                    'Failed to finalize Resurs Bank payment %1.',
+                    $paymentId
                 ));
             }
 
@@ -163,16 +146,30 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Check if payment can be debited.
+     * Check if payment is debitable.
      *
      * @param stdClass $payment
      * @return bool
      */
-    public function isDebitable(stdClass $payment): bool
-    {
-        return $this->hasStatus(
-            $payment,
-            'DEBITABLE'
+    public function isDebitable(
+        stdClass $payment
+    ): bool {
+        return $this->hasStatus($payment, 'DEBITABLE');
+    }
+
+    /**
+     * Payment can only be captured if the payment at Resurs Bank is not marked
+     * as "finalized" and the payment is not fully or partially debited.
+     *
+     * @param stdClass $apiPayment
+     * @return bool
+     */
+    private function canFinalize(
+        stdClass $apiPayment
+    ): bool {
+        return (
+            !$this->isFinalized($apiPayment) &&
+            !$this->hasStatus($apiPayment, 'IS_DEBITED')
         );
     }
 }
