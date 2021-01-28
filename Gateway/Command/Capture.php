@@ -105,11 +105,7 @@ class Capture implements CommandInterface
         } catch (Exception $e) {
             $this->log->exception($e);
 
-            throw new PaymentException(__(
-                'Something went wrong when trying to place the order. ' .
-                'Please try again, or select another payment method. You ' .
-                'could also try refreshing the page.'
-            ));
+            throw new PaymentException(__('Failed to finalize payment.'));
         }
 
         return null;
