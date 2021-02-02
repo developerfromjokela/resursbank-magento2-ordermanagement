@@ -9,9 +9,11 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Api;
 
 use Exception;
+use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistorySearchResultsInterface;
 
 interface PaymentHistoryRepositoryInterface
 {
@@ -35,6 +37,17 @@ interface PaymentHistoryRepositoryInterface
      * @throws LocalizedException
      */
     public function get(int $identifier): PaymentHistoryInterface;
+
+    /**
+     * Retrieve entries matching the specified criteria.
+     *
+     * @param SearchCriteriaInterface $searchCriteria
+     * @return PaymentHistorySearchResultsInterface
+     * @throws LocalizedException
+     */
+    public function getList(
+        SearchCriteriaInterface $searchCriteria
+    ): PaymentHistorySearchResultsInterface;
 
     /**
      * Delete entry.

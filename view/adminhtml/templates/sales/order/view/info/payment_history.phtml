@@ -1,0 +1,29 @@
+<?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+?>
+<?php
+/**
+ * @var $block Magento\Sales\Block\Order\View
+ */
+
+/** @var Magento\Sales\Model\Order $order */
+$order = $block->getOrder();
+
+/** @var Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentHistory $viewModel */
+$viewModel = $block->getViewModel();
+?>
+
+<?php if ($viewModel->visible($order)) : ?>
+    <?php
+    $events = $viewModel->getTableDataFromOrder($order);
+    var_dump($events); die;
+    ?>
+
+    <div id="resursbank-ordermanagement-order-view-payment-history"
+         data-bind="scope: 'payment-history'">
+        <!-- ko template: getTemplate() --><!-- /ko -->
+    </div>
+<?php endif; ?>
