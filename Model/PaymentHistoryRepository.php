@@ -105,7 +105,6 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     public function get(
         int $identifier
     ): PaymentHistoryInterface {
-        /* @noinspection PhpUndefinedMethodInspection */
         $history = $this->phFactory->create();
 
         $history->getResource()->load($history, $identifier);

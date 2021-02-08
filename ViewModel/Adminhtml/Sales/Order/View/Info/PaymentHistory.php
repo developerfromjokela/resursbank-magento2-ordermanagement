@@ -9,14 +9,12 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
-use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
-use Resursbank\Ordermanagement\Api\Data\PaymentHistorySearchResultsInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
 use RuntimeException;
@@ -34,11 +32,6 @@ class PaymentHistory implements ArgumentInterface
     private $paymentMethods;
 
     /**
-     * @var PaymentHistorySearchResultsInterface
-     */
-    private $paymentSearchResults;
-
-    /**
      * @var SearchCriteriaBuilder
      */
     private $searchBuilder;
@@ -49,32 +42,21 @@ class PaymentHistory implements ArgumentInterface
     private $log;
 
     /**
-     * @var Session
-     */
-    private $session;
-
-    /**
      * @param PaymentMethods $paymentMethods
      * @param PaymentHistoryRepositoryInterface $repository
-     * @param PaymentHistorySearchResultsInterface $paymentSearchResults
      * @param SearchCriteriaBuilder $searchBuilder
      * @param Log $log
-     * @param Session $session
      */
     public function __construct(
         PaymentMethods $paymentMethods,
         PaymentHistoryRepositoryInterface $repository,
-        PaymentHistorySearchResultsInterface $paymentSearchResults,
         SearchCriteriaBuilder $searchBuilder,
-        Log $log,
-        Session $session
+        Log $log
     ) {
         $this->paymentMethods = $paymentMethods;
         $this->repository = $repository;
-        $this->paymentSearchResults = $paymentSearchResults;
         $this->searchBuilder = $searchBuilder;
         $this->log = $log;
-        $this->session = $session;
     }
 
     /**
@@ -96,8 +78,7 @@ class PaymentHistory implements ArgumentInterface
 
             $criteria = $this->searchBuilder->addFilter(
                 PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-                $order->getPayment()->getEntityId(),
-                'eq'
+                $order->getPayment()->getEntityId()
             )->create();
 
             $items = $this->repository
