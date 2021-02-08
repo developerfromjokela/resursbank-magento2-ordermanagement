@@ -162,8 +162,8 @@ class PaymentHistory implements ArgumentInterface
      */
     public function getHeading(Order $order): string
     {
-        return '#' . $order->getIncrementId() . ' Payment History' .
-            $this->getOrderEnvironment($order);
+        return '#' . $order->getIncrementId() . ' Payment History [' .
+            $this->getOrderEnvironment($order) . ']';
     }
 
     /**
@@ -175,7 +175,7 @@ class PaymentHistory implements ArgumentInterface
      */
     public function getOrderEnvironment(Order $order): string
     {
-        return 'test';
+        return (string) $order->getData('resursbank_environment');
     }
 
     /**
