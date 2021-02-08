@@ -19,11 +19,26 @@ $viewModel = $block->getViewModel();
 <?php if ($viewModel->visible($order)) : ?>
     <?php
     $events = $viewModel->getTableDataFromOrder($order);
-    var_dump($events); die;
     ?>
 
     <div id="resursbank-ordermanagement-order-view-payment-history"
          data-bind="scope: 'payment-history'">
         <!-- ko template: getTemplate() --><!-- /ko -->
     </div>
+
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Magento_Ui/js/core/app": {
+                    "components": {
+                        "payment-history": {
+                            "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
+                            "events": <?php echo json_encode($events); ?>,
+                            "heading": <?php echo json_encode($viewModel->getHeading($order)); ?>
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 <?php endif; ?>

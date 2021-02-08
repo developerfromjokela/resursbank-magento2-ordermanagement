@@ -103,7 +103,6 @@ class PaymentHistory implements ArgumentInterface
             $items = $this->repository
                 ->getList($criteria)
                 ->getItems();
-
         } catch (Exception $e) {
             $this->log->error(
                 'Could not retrieve list of payment history events for ' .
@@ -156,24 +155,15 @@ class PaymentHistory implements ArgumentInterface
     }
 
     /**
-     * Returns the incremental ID of the given order.
+     * Get the Payment History modal heading.
      *
      * @param Order $order
      * @return string
      */
-    public function getOrderNumber(Order $order): string
+    public function getHeading(Order $order): string
     {
-        return $order->getIncrementId();
-    }
-
-    /**
-     * Returns the username of the currently logged in user.
-     *
-     * @return string
-     */
-    public function getLoggedInUsername(): string
-    {
-        return $this->session->getUser()->getUserName();
+        return '#' . $order->getIncrementId() . ' Payment History' .
+            $this->getOrderEnvironment($order);
     }
 
     /**

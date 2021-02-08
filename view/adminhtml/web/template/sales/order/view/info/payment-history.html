@@ -1,0 +1,44 @@
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+
+<div>
+    <button type="button"
+            class="action">
+            <span data-bind="
+                  i18n: 'View Payment History',
+                  event: {click: openModal}"></span>
+    </button>
+    <div id="resursbank-payment-history-modal-content"
+         class="content">
+        <table>
+            <thead>
+            <tr>
+                <th data-bind="i18n: 'Event'"></th>
+                <th data-bind="i18n: 'Performed by'"></th>
+                <th data-bind="i18n: 'When'"></th>
+                <th data-bind="i18n: 'State From'"></th>
+                <th data-bind="i18n: 'State To'"></th>
+                <th data-bind="i18n: 'Status From'"></th>
+                <th data-bind="i18n: 'Status To'"></th>
+                <th data-bind="i18n: 'Additional information'"></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: events" afterRender="initModal">
+            <tr>
+                <td data-bind="text: event"></td>
+                <td data-bind="text: user"></td>
+                <td data-bind="text: timestamp"></td>
+                <td data-bind="text: state_from"></td>
+                <td data-bind="text: state_to"></td>
+                <td data-bind="text: status_from"></td>
+                <td data-bind="text: status_to"></td>
+                <td data-bind="text: extra"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
