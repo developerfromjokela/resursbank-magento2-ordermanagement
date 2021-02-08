@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Resursbank\Core\Helper\PaymentMethods;
@@ -103,10 +104,11 @@ class PaymentHistory implements ArgumentInterface
     public function eventToTableData(PaymentHistoryInterface $event): array
     {
         $eventAction = $event->getEvent();
+        $eventLabel = $event->eventLabel($eventAction);
         $user = $event->getUser();
 
         return [
-            'event' => $eventAction === null ? '' : $event->eventLabel($eventAction),
+            'event' => $eventAction === null ? '' : $eventLabel,
             'user' => $user === null ? '' : $event->userLabel($user),
             'timestamp' => $event->getCreatedAt(''),
             'extra' => $event->getExtra(''),
@@ -122,14 +124,21 @@ class PaymentHistory implements ArgumentInterface
      * data to a presentational form.
      *
      * @param Order $order
-     * @return array
+     * @return string
      */
-    public function getTableDataFromOrder(Order $order): array
-    {
+    public function getTableDataFromOrder(
+        Order $order
+    ): string {
         $arr = [];
 
         foreach ($this->getEvents($order) as $event) {
             $arr[] = $this->eventToTableData($event);
+        }
+
+        try {
+            $arr = json_encode($arr, JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            $this->log->exception($e);
         }
 
         return $arr;
@@ -139,12 +148,15 @@ class PaymentHistory implements ArgumentInterface
      * Get the Payment History modal heading.
      *
      * @param Order $order
-     * @return string
+     * @return Phrase
      */
-    public function getHeading(Order $order): string
+    public function getHeading(Order $order): Phrase
     {
-        return '#' . $order->getIncrementId() . ' Payment History [' .
-            $this->getOrderEnvironment($order) . ']';
+        return __(
+            '#%1 Payment History [%2]',
+            $order->getIncrementId(),
+            $this->getOrderEnvironment($order)
+        );
     }
 
     /**

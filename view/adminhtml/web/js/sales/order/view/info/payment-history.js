@@ -50,17 +50,13 @@ define(
                         '#resursbank-payment-history-modal-content'
                     );
 
-                    let modalTitle = modalContentEl.attr('data-title')
-                        ? $.mage.__(modalContentEl.attr('data-title'))
-                        : $.mage.__('Resurs Bank - Order Payment History')
-
                     if (modalContentEl.length === 1) {
                         modal = Modal({
                             autoOpen: false,
                             type: 'popup',
                             responsive: true,
                             innerScroll: true,
-                            title: modalTitle,
+                            title: this.heading,
                             modalClass: 'custom-modal',
                             buttons: []
                         }, modalContentEl);

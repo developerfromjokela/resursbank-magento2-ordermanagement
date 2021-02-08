@@ -6,21 +6,18 @@
 ?>
 <?php
 /**
- * @var $block Magento\Sales\Block\Order\View
+ * @var Magento\Sales\Block\Order\View $block
  */
 
 /** @var Magento\Sales\Model\Order $order */
 $order = $block->getOrder();
 
 /** @var Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentHistory $viewModel */
+/** @noinspection PhpUndefinedMethodInspection */
 $viewModel = $block->getViewModel();
 ?>
 
 <?php if ($viewModel->visible($order)) : ?>
-    <?php
-    $events = $viewModel->getTableDataFromOrder($order);
-    ?>
-
     <div id="resursbank-ordermanagement-order-view-payment-history"
          data-bind="scope: 'payment-history'">
         <!-- ko template: getTemplate() --><!-- /ko -->
@@ -33,8 +30,8 @@ $viewModel = $block->getViewModel();
                     "components": {
                         "payment-history": {
                             "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
-                            "events": <?php echo json_encode($events); ?>,
-                            "heading": <?php echo json_encode($viewModel->getHeading($order)); ?>
+                            "events": <?php echo $viewModel->getTableDataFromOrder($order); ?>,
+                            "heading": "<?php echo $viewModel->getHeading($order); ?>"
                         }
                     }
                 }
