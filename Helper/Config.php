@@ -34,7 +34,7 @@ class Config extends AbstractConfig
      * @param string $scopeType
      * @return bool
      */
-    public function isAftershopEnabled(
+    public function isAfterShopEnabled(
         ?string $scopeCode = null,
         string $scopeType = ScopeInterface::SCOPE_STORE
     ): bool {
