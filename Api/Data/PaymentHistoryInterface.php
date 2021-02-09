@@ -102,6 +102,15 @@ interface PaymentHistoryInterface
     public const USER_CLIENT = 'client';
 
     /**
+     * @var array
+     */
+    public const USER_LABELS = [
+        self::USER_CUSTOMER => 'Customer',
+        self::USER_RESURS_BANK => 'Resurs Bank',
+        self::USER_CLIENT => 'Client'
+    ];
+
+    /**
      * Get ID.
      *
      * @param int|null $default
@@ -262,4 +271,12 @@ interface PaymentHistoryInterface
      * @return string
      */
     public function eventLabel(string $event): string;
+
+    /**
+     * Get the label for the user.
+     *
+     * @param string $user
+     * @return string
+     */
+    public function userLabel(string $user): string;
 }
