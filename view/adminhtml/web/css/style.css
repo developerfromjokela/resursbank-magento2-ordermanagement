@@ -1,0 +1,41 @@
+/*
+    =======================================================================
+
+    Payment history modal.
+
+    =======================================================================
+ */
+#resursbank-payment-history-modal-content {
+    text-align: left;
+}
+
+#resursbank-payment-history-modal-content .buttons {
+    padding: 100px 0 10px 0;
+    display: -ms-flexbox;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#resursbank-payment-history-modal-content .subtitle .section .header {
+    font-size: 15px;
+    font-weight: bold;
+    color: #8c8c8c;
+    margin-bottom: 5px;
+}
+
+#resursbank-payment-history-modal-content .subtitle .section:nth-child(1n+2) {
+    margin-top: 20px;
+}
+
+#resursbank-payment-history-modal-content table {
+    width: 100%;
+}
+
+#resursbank-payment-history-modal-content td,
+#resursbank-payment-history-modal-content th {
+    padding: 10px;
+}
+
+#resursbank-payment-history-modal-content tr:nth-of-type(2n+1) td {
+    background-color: #f1f1f1;
+}
