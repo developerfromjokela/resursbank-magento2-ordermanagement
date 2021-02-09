@@ -186,4 +186,12 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     {
         return self::EVENT_LABELS[$event] ?? '';
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function userLabel(string $user): string
+    {
+        return self::USER_LABELS[$user] ?? '';
+    }
 }
