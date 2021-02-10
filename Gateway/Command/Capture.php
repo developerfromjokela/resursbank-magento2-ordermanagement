@@ -16,10 +16,12 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Command;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -52,24 +54,32 @@ class Capture implements CommandInterface
     private $credentials;
 
     /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Log $log
+     * @param ApiPayment $apiPayment
      * @param Config $config
      * @param Api $api
      * @param Credentials $credentials
-     * @param ApiPayment $apiPayment
+     * @param PaymentHistory $paymentHistory
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         Config $config,
         Api $api,
-        Credentials $credentials
+        Credentials $credentials,
+        PaymentHistory $paymentHistory
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->config = $config;
         $this->api = $api;
         $this->credentials = $credentials;
+        $this->paymentHistory = $paymentHistory;
     }
 
     /**
@@ -82,6 +92,12 @@ class Capture implements CommandInterface
     ): ?ResultInterface {
         try {
             $paymentData = SubjectReader::readPayment($subject);
+
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_CAPTURE_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             if ($this->isEnabled($paymentData)) {
                 $connection = $this->api->getConnection(

@@ -94,7 +94,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function setExtra(string $extra): PaymentHistoryInterface
+    public function setExtra(?string $extra): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_EXTRA, $extra);
     }
@@ -110,7 +110,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function setStateFrom(string $state): PaymentHistoryInterface
+    public function setStateFrom(?string $state): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_STATE_FROM, $state);
     }
@@ -126,7 +126,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function setStateTo(string $state): PaymentHistoryInterface
+    public function setStateTo(?string $state): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_STATE_TO, $state);
     }
@@ -142,7 +142,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function setStatusFrom(string $status): PaymentHistoryInterface
+    public function setStatusFrom(?string $status): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_STATUS_FROM, $status);
     }
@@ -158,7 +158,7 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function setStatusTo(string $status): PaymentHistoryInterface
+    public function setStatusTo(?string $status): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_STATUS_TO, $status);
     }
