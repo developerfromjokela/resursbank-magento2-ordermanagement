@@ -86,13 +86,14 @@ class Capture implements CommandInterface
      * @param array $subject
      * @return ResultInterface|null
      * @throws PaymentException
+     * @throws \Magento\Framework\Exception\AlreadyExistsException
      */
     public function execute(
         array $subject
     ): ?ResultInterface {
-        try {
-            $paymentData = SubjectReader::readPayment($subject);
+        $paymentData = SubjectReader::readPayment($subject);
 
+        try {
             $this->paymentHistory->createEntry(
                 (int) $paymentData->getPayment()->getEntityId(),
                 PaymentHistoryInterface::EVENT_CAPTURE_CALLED,
@@ -120,6 +121,12 @@ class Capture implements CommandInterface
             }
         } catch (Exception $e) {
             $this->log->exception($e);
+
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_CAPTURE_FAILED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             throw new PaymentException(__('Failed to finalize payment.'));
         }

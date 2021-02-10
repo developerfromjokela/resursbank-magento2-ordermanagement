@@ -14,6 +14,7 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\RBEcomPHP\ResursBank;
 use stdClass;
@@ -30,14 +31,22 @@ class ApiPayment extends AbstractHelper
     private $adminHelper;
 
     /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
+     * @param PaymentHistory $paymentHistory
      */
     public function __construct(
         Context $context,
-        AdminHelper $adminHelper
+        AdminHelper $adminHelper,
+        PaymentHistory $paymentHistory
     ) {
         $this->adminHelper = $adminHelper;
+        $this->paymentHistory = $paymentHistory;
 
         parent::__construct($context);
     }
@@ -130,6 +139,13 @@ class ApiPayment extends AbstractHelper
 
             // Without this ECom will lose the payment reference.
             $connection->setPreferredId($paymentId);
+
+            // Log that we have performed the API call.
+            $this->paymentHistory->createEntry(
+                (int) $orderPayment->getEntityId(),
+                PaymentHistoryInterface::EVENT_CAPTURE_API_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             if (!$connection->finalizePayment($paymentId)) {
                 throw new PaymentDataException(__(
