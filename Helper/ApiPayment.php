@@ -9,6 +9,10 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Exception;
+use function in_array;
+use function is_array;
+use function is_object;
+use function is_string;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
@@ -26,10 +30,6 @@ use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use stdClass;
-use function in_array;
-use function is_array;
-use function is_object;
-use function is_string;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -53,11 +53,6 @@ class ApiPayment extends AbstractHelper
     private $adminHelper;
 
     /**
-     * @var Log
-     */
-    private $log;
-
-    /**
      * @var CreditmemoConverter
      */
     private $creditmemoConverter;
@@ -67,7 +62,6 @@ class ApiPayment extends AbstractHelper
      * @param AdminHelper $adminHelper
      * @param Api $api
      * @param Credentials $credentials
-     * @param Log $log
      * @param CreditmemoConverter $creditmemoConverter
      */
     public function __construct(
@@ -75,13 +69,11 @@ class ApiPayment extends AbstractHelper
         AdminHelper $adminHelper,
         Api $api,
         Credentials $credentials,
-        Log $log,
         CreditmemoConverter $creditmemoConverter
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
         $this->credentials = $credentials;
-        $this->log = $log;
         $this->creditmemoConverter = $creditmemoConverter;
 
         parent::__construct($context);
@@ -130,7 +122,7 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Finalize Resursbank payment.
+     * Finalize payment at Resurs Bank.
      *
      * @param InfoInterface $orderPayment
      * @param stdClass $apiPayment
@@ -169,12 +161,7 @@ class ApiPayment extends AbstractHelper
                 ));
             }
 
-            // Set platform / user reference.
-            $connection->setRealClientName('Magento2');
-            $connection->setLoggedInUser($this->adminHelper->getUserName());
-
-            // Without this ECom will lose the payment reference.
-            $connection->setPreferredId($paymentId);
+            $this->setConnectionAfterShopData($connection, $paymentId);
 
             if (!$connection->finalizePayment($paymentId)) {
                 throw new PaymentDataException(__(
@@ -194,7 +181,7 @@ class ApiPayment extends AbstractHelper
      * Cancel payment at Resurs Bank.
      *
      * @param PaymentDataObjectInterface $paymentData
-     * @return bool
+     * @return void
      * @throws LocalizedException
      * @throws PaymentException
      * @throws ValidatorException
@@ -202,34 +189,21 @@ class ApiPayment extends AbstractHelper
      */
     public function cancelPayment(
         PaymentDataObjectInterface $paymentData
-    ): bool {
-        $order = $paymentData->getOrder();
-        $paymentId = $order->getOrderIncrementId();
+    ): void {
+        $paymentId = $paymentData->getOrder()->getOrderIncrementId();
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig()
         );
 
-        if ($this->exists($paymentId) &&
-            !$connection->getIsAnnulled([$paymentId])
-        ) {
-            $this->log->info("Cancelling payment {$paymentId}");
-
-            $connection->setRealClientName('Magento2');
-            $connection->setLoggedInUser($this->adminHelper->getUserName());
-            $connection->setPreferredId($paymentId);
+        if (!$connection->getIsAnnulled([$paymentId])) {
+            $this->setConnectionAfterShopData($connection, $paymentId);
 
             if (!$connection->annulPayment($paymentId)) {
                 throw new PaymentException(__(
                     'An error occurred while communicating with the API.'
                 ));
             }
-
-            $this->log->info(
-                "Successfully cancelled payment {$paymentId}"
-            );
         }
-
-        return true;
     }
 
     /**
@@ -336,7 +310,7 @@ class ApiPayment extends AbstractHelper
             $result = $this->getDefaultConnection($connection)
                     ->getPayment($paymentId) !== null;
         } catch (Exception $e) {
-            // If there is no payment we will receive an Exception from ECom.
+            // The Exception does not necessarily mean an error occurred.
             if (!$this->validateMissingPaymentException($e)) {
                 throw $e;
             }
@@ -346,8 +320,7 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Validate that an Exception was thrown because a payment was actually
-     * missing.
+     * Match Exception against expected Exception from a missing payment.
      *
      * @param Exception $error
      * @return bool
@@ -378,5 +351,20 @@ class ApiPayment extends AbstractHelper
             $this->api->getConnection(
                 $this->credentials->resolveFromConfig()
             );
+    }
+
+    /**
+     * Apply common data to API connection object (platform,  payment etc).
+     *
+     * @param ResursBank $connection
+     * @param string $paymentId
+     */
+    private function setConnectionAfterShopData(
+        ResursBank $connection,
+        string $paymentId
+    ): void {
+        $connection->setRealClientName('Magento2');
+        $connection->setLoggedInUser($this->adminHelper->getUserName());
+        $connection->setPreferredId($paymentId);
     }
 }
