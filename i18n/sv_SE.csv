@@ -14,3 +14,4 @@
 "Test received at","Test mottogs"
 "Test Callbacks","Test Callbacks"
 "Failed to finalize payment.","Finalisering av betalning misslyckades."
+"Failed to cancel payment.","Annullering av betalning misslyckades."
