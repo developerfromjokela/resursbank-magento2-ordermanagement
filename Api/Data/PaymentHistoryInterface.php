@@ -93,6 +93,16 @@ interface PaymentHistoryInterface
     public const EVENT_CAPTURE_API_CALLED = 'capture_api_called';
 
     /**
+     * @var string
+     */
+    public const EVENT_CANCEL_CALLED = 'cancel_called';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CANCEL_FAILED = 'cancel_failed';
+
+    /**
      * @array
      */
     public const EVENT_LABELS = [
@@ -101,7 +111,9 @@ interface PaymentHistoryInterface
         self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.',
         self::EVENT_CAPTURE_CALLED => 'Capture payment was called.',
         self::EVENT_CAPTURE_FAILED => 'Capture payment failed. Check the logs.',
-        self::EVENT_CAPTURE_API_CALLED => 'Capture payment API was called.'
+        self::EVENT_CAPTURE_API_CALLED => 'Capture payment API was called.',
+        self::EVENT_CANCEL_CALLED => 'Cancel payment was called.',
+        self::EVENT_CANCEL_FAILED => 'Cancel payment failed. Check the logs.'
     ];
 
     /**
