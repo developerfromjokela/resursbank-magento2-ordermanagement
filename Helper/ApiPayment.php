@@ -208,7 +208,7 @@ class ApiPayment extends AbstractHelper
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
                 (int) $paymentData->getPayment()->getEntityId(),
-                PaymentHistoryInterface::EVENT_CAPTURE_API_CALLED,
+                PaymentHistoryInterface::EVENT_CANCEL_API_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
 
