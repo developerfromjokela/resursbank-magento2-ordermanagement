@@ -62,8 +62,9 @@ class CreditmemoConverter extends AbstractConverter
      * @return PaymentItem[]
      * @throws Exception
      */
-    public function convert(Creditmemo $entity): array
-    {
+    public function convert(
+        Creditmemo $entity
+    ): array {
         return array_merge(
             $this->getProductData($entity),
             array_merge(
@@ -92,8 +93,9 @@ class CreditmemoConverter extends AbstractConverter
      * @return PaymentItem[]
      * @throws Exception
      */
-    protected function getProductData(Creditmemo $entity): array
-    {
+    protected function getProductData(
+        Creditmemo $entity
+    ): array {
         $result = [];
 
         if ($this->includeProductData($entity)) {
@@ -101,6 +103,7 @@ class CreditmemoConverter extends AbstractConverter
                 if ($product->getQty() > 0 &&
                     !$this->hasConfigurableParent($product)
                 ) {
+                    /** @noinspection PhpUndefinedMethodInspection */
                     $item = $this->productItemFactory->create([
                         'product' => $product
                     ]);
@@ -119,8 +122,9 @@ class CreditmemoConverter extends AbstractConverter
      * @param Creditmemo $entity
      * @return bool
      */
-    public function includeProductData(Creditmemo $entity): bool
-    {
+    public function includeProductData(
+        Creditmemo $entity
+    ): bool {
         $items = $entity->getAllItems();
 
         return !empty($items);
@@ -132,8 +136,9 @@ class CreditmemoConverter extends AbstractConverter
      * @param Item $product
      * @return bool
      */
-    private function hasConfigurableParent(Item $product): bool
-    {
+    private function hasConfigurableParent(
+        Item $product
+    ): bool {
         $orderItem = $product->getOrderItem();
 
         return $orderItem instanceof OrderItemInterface &&

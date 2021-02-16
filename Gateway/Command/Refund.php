@@ -11,15 +11,15 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
-use Magento\Payment\Model\InfoInterface;
+use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
-use Resursbank\Core\Model\Payment\Resursbank;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
-use Resursbank\Ordermanagement\Helper\Command;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 
@@ -39,61 +39,49 @@ class Refund implements CommandInterface
     private $apiPayment;
 
     /**
-     * @var Command
-     */
-    private $command;
-
-    /**
      * @var Config
      */
     private $config;
 
     /**
+     * @var PaymentMethods
+     */
+    private $paymentMethods;
+
+    /**
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param Config $config
-     * @param Command $command
+     * @param PaymentMethods $paymentMethods
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         Config $config,
-        Command $command
+        PaymentMethods $paymentMethods
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->config = $config;
-        $this->command = $command;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
-     * @param array $commandSubject
+     * @param array $subject
      * @return ResultInterface|null
      * @throws PaymentException
      */
     public function execute(
-        array $commandSubject
+        array $subject
     ): ?ResultInterface {
         try {
-            $paymentData = $this->command->getPaymentDataObject(
-                $commandSubject
-            );
+            $paymentData = SubjectReader::readPayment($subject);
 
-            $payment = $paymentData->getPayment();
-            $paymentId = $paymentData->getOrder()->getOrderIncrementId();
-
-            if ($payment instanceof Payment &&
-                $payment->getCreditmemo() instanceof Creditmemo &&
-                !$this->apiPayment->isRefunded($paymentId) &&
-                $this->isEnabled($paymentData) &&
-                $this->validatePaymentMethod($paymentData->getPayment())
-            ) {
-                $wasRefunded = $this->apiPayment->refundPayment(
-                    $paymentId,
-                    $payment->getCreditmemo()
-                );
-
-                if (!$wasRefunded) {
+            if ($this->isEnabled($paymentData)) {
+                if (!$this->apiPayment->refundPayment(
+                    $paymentData->getOrder()->getOrderIncrementId(),
+                    $paymentData->getPayment()->getCreditmemo()
+                )) {
                     throw new PaymentException(__(
                         'An error occurred while communicating with the API.'
                     ));
@@ -102,13 +90,8 @@ class Refund implements CommandInterface
         } catch (Exception $e) {
             $this->log->exception($e);
 
-            $paymentData = $this->command->getPaymentDataObject(
-                $commandSubject
-            );
-
             throw new PaymentException(__(
-                'Something went wrong when trying to refund the order ' .
-                $paymentData->getOrder()->getOrderIncrementId()
+                'Something went wrong when trying to issue the refund.'
             ));
         }
 
@@ -116,36 +99,27 @@ class Refund implements CommandInterface
     }
 
     /**
-     * Check if gateway commands are enabled.
-     *
      * @param PaymentDataObjectInterface $paymentData
      * @return bool
+     * @throws ValidatorException
+     * @throws LocalizedException
      */
-    protected function isEnabled(
+    private function isEnabled(
         PaymentDataObjectInterface $paymentData
     ): bool {
         return (
+            $paymentData->getPayment() instanceof Payment &&
+            $paymentData->getPayment()->getCreditmemo() instanceof Creditmemo &&
             $this->config->isAfterShopEnabled(
                 (string)$paymentData->getOrder()->getStoreId()
             ) &&
-            $paymentData->getOrder()->getGrandTotalAmount() > 0
+            $paymentData->getOrder()->getGrandTotalAmount() > 0 &&
+            $this->paymentMethods->isResursBankMethod(
+                $paymentData->getPayment()->getMethodInstance()->getCode()
+            ) &&
+            !$this->apiPayment->isRefunded(
+                $paymentData->getOrder()->getOrderIncrementId()
+            )
         );
-    }
-
-    /**
-     * @param InfoInterface $orderPayment
-     * @return bool
-     * @throws LocalizedException
-     */
-    public function validatePaymentMethod(
-        InfoInterface $orderPayment
-    ): bool {
-        $code = substr(
-            $orderPayment->getMethodInstance()->getCode(),
-            0,
-            strlen(Resursbank::CODE_PREFIX)
-        );
-
-        return $code === Resursbank::CODE_PREFIX;
     }
 }

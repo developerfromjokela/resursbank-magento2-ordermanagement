@@ -229,9 +229,8 @@ class ApiPayment extends AbstractHelper
 
         if ($exists && $canRefund) {
             // Set platform / user reference.
-            $connection->setRealClientName('Magento2');
-            $connection->setLoggedInUser($this->adminHelper->getUserName());
-            $connection->setPreferredId($paymentId);
+            $this->setConnectionAfterShopData($connection, $paymentId);
+
             $result = $connection->creditPayment(
                 $paymentId,
                 $this->creditmemoConverter->convertItemsToArrays(
