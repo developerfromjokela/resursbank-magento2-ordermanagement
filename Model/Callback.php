@@ -31,6 +31,7 @@ use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 use \Magento\Sales\Api\Data\OrderPaymentInterface;
@@ -88,15 +89,9 @@ class Callback implements CallbackInterface
     private $orderSender;
 
     /**
-     * @noinspection PhpUndefinedClassInspection
-     * @var PaymentHistoryFactory
+     * @var PaymentHistoryHelper
      */
-    private $phFactory;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private $phRepository;
+    private $phHelper;
 
     /**
      * @var TypeListInterface
@@ -115,8 +110,6 @@ class Callback implements CallbackInterface
      * @param OrderInterface $orderInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
-     * @param PaymentHistoryFactory $phFactory
-     * @param PaymentHistoryRepositoryInterface $phRepository
      * @param TypeListInterface $cacheTypeList
      * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -131,8 +124,7 @@ class Callback implements CallbackInterface
         OrderInterface $orderInterface,
         OrderRepository $orderRepository,
         OrderSender $orderSender,
-        PaymentHistoryFactory $phFactory,
-        PaymentHistoryRepositoryInterface $phRepository,
+        PaymentHistoryHelper $phHelper,
         TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
@@ -142,10 +134,9 @@ class Callback implements CallbackInterface
         $this->log = $log;
         $this->callbackLog = $callbackLog;
         $this->orderInterface = $orderInterface;
+        $this->phHelper = $phHelper;
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
-        $this->phFactory = $phFactory;
-        $this->phRepository = $phRepository;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -253,13 +244,20 @@ class Callback implements CallbackInterface
 
         [$newStatus, $newState] = $this->syncStatusFromResurs($order);
 
-        $this->addPaymentHistoryEntry(
-            strtoupper($type),
+        $historyEvent = constant(sprintf(
+            '%s::%s',
+            PaymentHistoryInterface::class,
+            'EVENT_CALLBACK_' . strtoupper($type)
+        ));
+
+        $this->phHelper->createEntry(
             (int) $order->getPayment()->getEntityId(),
-            $oldStatus,
-            $newStatus,
+            $historyEvent,
+            PaymentHistoryInterface::USER_RESURS_BANK,
             $oldState,
-            $newState
+            $newState,
+            $oldStatus,
+            $newStatus
         );
 
         return $order;
@@ -396,42 +394,5 @@ class Callback implements CallbackInterface
                 "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
             );
         }
-    }
-
-    /**
-     * Add an entry of the event into Payment history.
-     *
-     * @param string $type
-     * @param int $paymentId
-     * @param string $oldStatus
-     * @param string $newStatus
-     * @param string $oldState
-     * @param string $newState
-     * @throws AlreadyExistsException
-     */
-    private function addPaymentHistoryEntry(
-        string $type,
-        int $paymentId,
-        string $oldStatus,
-        string $newStatus,
-        string $oldState,
-        string $newState
-    ): void {
-        /* @noinspection PhpUndefinedMethodInspection */
-        $entry = $this->phFactory->create();
-
-        $entry
-            ->setPaymentId($paymentId)
-            ->setEvent(constant(sprintf(
-                '%s::%s',
-                PaymentHistoryInterface::class,
-                "EVENT_CALLBACK_{$type}"
-            )))
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
-            ->setStateFrom($oldState)
-            ->setStateTo($newState)
-            ->setStatusFrom($oldStatus)
-            ->setStatusTo($newStatus);
-        $this->phRepository->save($entry);
     }
 }

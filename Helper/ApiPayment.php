@@ -9,6 +9,10 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Exception;
+use function in_array;
+use function is_array;
+use function is_object;
+use function is_string;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
@@ -20,17 +24,15 @@ use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use stdClass;
-use function in_array;
-use function is_array;
-use function is_object;
-use function is_string;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @noinspection EfferentObjectCouplingInspection
  */
 class ApiPayment extends AbstractHelper
 {
@@ -50,19 +52,27 @@ class ApiPayment extends AbstractHelper
     private $adminHelper;
 
     /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
+     * @param PaymentHistory $paymentHistory
      * @param Credentials $credentials
      */
     public function __construct(
         Context $context,
         AdminHelper $adminHelper,
         Api $api,
+        PaymentHistory $paymentHistory,
         Credentials $credentials
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
+        $this->paymentHistory = $paymentHistory;
         $this->credentials = $credentials;
 
         parent::__construct($context);
@@ -151,6 +161,13 @@ class ApiPayment extends AbstractHelper
             }
 
             $this->setConnectionAfterShopData($connection, $paymentId);
+
+            // Log that we have performed the API call.
+            $this->paymentHistory->createEntry(
+                (int) $orderPayment->getEntityId(),
+                PaymentHistoryInterface::EVENT_CAPTURE_API_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             if (!$connection->finalizePayment($paymentId)) {
                 throw new PaymentDataException(__(
