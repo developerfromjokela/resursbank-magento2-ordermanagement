@@ -9,6 +9,10 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Exception;
+use function in_array;
+use function is_array;
+use function is_object;
+use function is_string;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
@@ -18,20 +22,17 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
-use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use stdClass;
-use function in_array;
-use function is_array;
-use function is_object;
-use function is_string;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @noinspection EfferentObjectCouplingInspection
  */
 class ApiPayment extends AbstractHelper
 {

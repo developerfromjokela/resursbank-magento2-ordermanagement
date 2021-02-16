@@ -29,11 +29,9 @@ class PaymentHistory extends AbstractHelper
     private $phRepository;
 
     /**
-     * PaymentHistory constructor.
      * @param Context $context
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
-     * @noinspection PhpUndefinedClassInspection
      */
     public function __construct(
         Context $context,

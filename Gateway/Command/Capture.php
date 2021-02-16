@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
@@ -18,7 +19,6 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
-use Resursbank\Ordermanagement\Helper\Command;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
@@ -86,7 +86,7 @@ class Capture implements CommandInterface
      * @param array $subject
      * @return ResultInterface|null
      * @throws PaymentException
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     * @throws AlreadyExistsException
      */
     public function execute(
         array $subject
@@ -94,6 +94,7 @@ class Capture implements CommandInterface
         $paymentData = SubjectReader::readPayment($subject);
 
         try {
+            /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
                 (int) $paymentData->getPayment()->getEntityId(),
                 PaymentHistoryInterface::EVENT_CAPTURE_CALLED,
@@ -122,6 +123,7 @@ class Capture implements CommandInterface
         } catch (Exception $e) {
             $this->log->exception($e);
 
+            /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
                 (int) $paymentData->getPayment()->getEntityId(),
                 PaymentHistoryInterface::EVENT_CAPTURE_FAILED,
