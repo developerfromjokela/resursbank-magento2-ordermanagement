@@ -25,6 +25,7 @@ use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
 use Resursbank\RBEcomPHP\ResursBank;
@@ -58,9 +59,15 @@ class ApiPayment extends AbstractHelper
     private $creditmemoConverter;
 
     /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
+     * @param PaymentHistory $paymentHistory
      * @param Credentials $credentials
      * @param CreditmemoConverter $creditmemoConverter
      */
@@ -69,10 +76,12 @@ class ApiPayment extends AbstractHelper
         AdminHelper $adminHelper,
         Api $api,
         Credentials $credentials,
-        CreditmemoConverter $creditmemoConverter
+        CreditmemoConverter $creditmemoConverter,
+        PaymentHistory $paymentHistory
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
+        $this->paymentHistory = $paymentHistory;
         $this->credentials = $credentials;
         $this->creditmemoConverter = $creditmemoConverter;
 
@@ -162,6 +171,13 @@ class ApiPayment extends AbstractHelper
             }
 
             $this->setConnectionAfterShopData($connection, $paymentId);
+
+            // Log that we have performed the API call.
+            $this->paymentHistory->createEntry(
+                (int) $orderPayment->getEntityId(),
+                PaymentHistoryInterface::EVENT_CAPTURE_API_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             if (!$connection->finalizePayment($paymentId)) {
                 throw new PaymentDataException(__(
