@@ -214,6 +214,14 @@ class ApiPayment extends AbstractHelper
         if (!$connection->getIsAnnulled([$paymentId])) {
             $this->setConnectionAfterShopData($connection, $paymentId);
 
+            // Log that we have performed the API call.
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_CANCEL_API_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
+
             if (!$connection->annulPayment($paymentId)) {
                 throw new PaymentException(__(
                     'An error occurred while communicating with the API.'
