@@ -78,12 +78,48 @@ interface PaymentHistoryInterface
     public const EVENT_CALLBACK_UPDATE = 'callback_update';
 
     /**
+     * @var string
+     */
+    public const EVENT_CAPTURE_CALLED = 'capture_called';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CAPTURE_FAILED = 'capture_failed';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CAPTURE_API_CALLED = 'capture_api_called';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CANCEL_CALLED = 'cancel_called';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CANCEL_FAILED = 'cancel_failed';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CANCEL_API_CALLED = 'cancel_api_called';
+
+    /**
      * @array
      */
     public const EVENT_LABELS = [
         self::EVENT_CALLBACK_BOOKED => 'Callback "Booked" received.',
         self::EVENT_CALLBACK_UNFREEZE => 'Callback "Unfreeze" received.',
-        self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.'
+        self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.',
+        self::EVENT_CAPTURE_CALLED => 'Capture payment was called.',
+        self::EVENT_CAPTURE_FAILED => 'Capture payment failed. Check the logs.',
+        self::EVENT_CAPTURE_API_CALLED => 'Capture payment API was called.',
+        self::EVENT_CANCEL_CALLED => 'Cancel payment was called.',
+        self::EVENT_CANCEL_FAILED => 'Cancel payment failed. Check the logs.',
+        self::EVENT_CANCEL_API_CALLED => 'Cancel payment API was called.'
     ];
 
     /**
@@ -179,10 +215,10 @@ interface PaymentHistoryInterface
      * name of an admin (client) that triggered an event or reasons why an event
      * was triggered.
      *
-     * @param string $extra
+     * @param string|null $extra
      * @return PaymentHistoryInterface
      */
-    public function setExtra(string $extra): PaymentHistoryInterface;
+    public function setExtra(?string $extra): PaymentHistoryInterface;
 
     /**
      * Get the state_from information about the event.
@@ -195,10 +231,10 @@ interface PaymentHistoryInterface
     /**
      * Set the state that this entry went from.
      *
-     * @param string $state
+     * @param string|null $state
      * @return PaymentHistoryInterface
      */
-    public function setStateFrom(string $state): PaymentHistoryInterface;
+    public function setStateFrom(?string $state): PaymentHistoryInterface;
 
     /**
      * Get the state_to information about the event.
@@ -211,10 +247,10 @@ interface PaymentHistoryInterface
     /**
      * Set the state that this entry went to.
      *
-     * @param string $state
+     * @param string|null $state
      * @return PaymentHistoryInterface
      */
-    public function setStateTo(string $state): PaymentHistoryInterface;
+    public function setStateTo(?string $state): PaymentHistoryInterface;
 
     /**
      * Get the status_from information about the event.
@@ -227,10 +263,10 @@ interface PaymentHistoryInterface
     /**
      * Set the status that this entry went from.
      *
-     * @param string $status
+     * @param string|null $status
      * @return PaymentHistoryInterface
      */
-    public function setStatusFrom(string $status): PaymentHistoryInterface;
+    public function setStatusFrom(?string $status): PaymentHistoryInterface;
 
     /**
      * Get the status_to information about the event.
@@ -243,10 +279,10 @@ interface PaymentHistoryInterface
     /**
      * Set the status that this entry went to.
      *
-     * @param string $status
+     * @param string|null $status
      * @return PaymentHistoryInterface
      */
-    public function setStatusTo(string $status): PaymentHistoryInterface;
+    public function setStatusTo(?string $status): PaymentHistoryInterface;
 
     /**
      * Get the time when the event was created.

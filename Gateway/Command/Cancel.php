@@ -9,17 +9,21 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
-use Magento\Payment\Model\InfoInterface;
-use Resursbank\Core\Model\Payment\Resursbank;
+use Magento\Payment\Gateway\Helper\SubjectReader;
+use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
-use Resursbank\Ordermanagement\Helper\Command;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\Helper\PaymentHistory;
+use ResursException;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -37,97 +41,101 @@ class Cancel implements CommandInterface
     private $apiPayment;
 
     /**
-     * @var Command
-     */
-    private $command;
-
-    /**
      * @var Config
      */
     private $config;
 
     /**
+     * @var PaymentMethods
+     */
+    private $paymentMethods;
+
+    /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param Config $config
-     * @param Command $command
+     * @param PaymentMethods $paymentMethods
+     * @param PaymentHistory $paymentHistory
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         Config $config,
-        Command $command
+        PaymentMethods $paymentMethods,
+        PaymentHistory $paymentHistory
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->config = $config;
-        $this->command = $command;
+        $this->paymentMethods = $paymentMethods;
+        $this->paymentHistory = $paymentHistory;
     }
 
     /**
-     * @param array $commandSubject
+     * @param array $subject
      * @return ResultInterface|null
-     * @throws PaymentException
+     * @throws PaymentException|AlreadyExistsException
      */
     public function execute(
-        array $commandSubject
+        array $subject
     ): ?ResultInterface {
-        try {
-            $paymentData = $this->command->getPaymentDataObject(
-                $commandSubject
-            );
-            $paymentId = $paymentData->getOrder()->getOrderIncrementId();
+        $paymentData = SubjectReader::readPayment($subject);
 
-            if ($this->apiPayment->exists($paymentId) &&
-                $this->isEnabled($paymentData) &&
-                $this->validatePaymentMethod($paymentData->getPayment())
-            ) {
+        try {
+            /** @noinspection BadExceptionsProcessingInspection */
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_CANCEL_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
+
+            if ($this->isEnabled($paymentData)) {
                 $this->apiPayment->cancelPayment($paymentData);
             }
         } catch (Exception $e) {
             $this->log->exception($e);
 
-            throw new PaymentException(__(
-                'Something went wrong when trying to place the order. ' .
-                'Please try again, or select another payment method. You ' .
-                'could also try refreshing the page.'
-            ));
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_CANCEL_FAILED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
+
+            throw new PaymentException(__('Failed to cancel payment.'));
         }
 
         return null;
     }
 
     /**
-     * Check if gateway commands are enabled.
+     * Check if gateway command is enabled.
      *
      * @param PaymentDataObjectInterface $paymentData
      * @return bool
+     * @throws ValidatorException
+     * @throws ResursException
+     * @throws LocalizedException
      */
     protected function isEnabled(
         PaymentDataObjectInterface $paymentData
     ): bool {
+        $code = $paymentData->getPayment()->getMethodInstance()->getCode();
+        $paymentId = $paymentData->getOrder()->getOrderIncrementId();
+
         return (
             $this->config->isAfterShopEnabled(
                 (string)$paymentData->getOrder()->getStoreId()
             ) &&
-            $paymentData->getOrder()->getGrandTotalAmount() > 0
+            $paymentData->getOrder()->getGrandTotalAmount() > 0 &&
+            $this->paymentMethods->isResursBankMethod($code) &&
+            $this->apiPayment->exists($paymentId)
         );
-    }
-
-    /**
-     * @param InfoInterface $orderPayment
-     * @return bool
-     * @throws LocalizedException
-     */
-    public function validatePaymentMethod(
-        InfoInterface $orderPayment
-    ): bool {
-        $code = substr(
-            $orderPayment->getMethodInstance()->getCode(),
-            0,
-            strlen(Resursbank::CODE_PREFIX)
-        );
-
-        return $code === Resursbank::CODE_PREFIX;
     }
 }
