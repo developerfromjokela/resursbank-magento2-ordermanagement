@@ -73,7 +73,7 @@ class AppendPaymentInfo
                 $result = $this->paymentBlock->toHtml() . $result;
             }
         } catch (Exception $e) {
-            $this->log->error($e);
+            $this->log->error($e->getMessage());
         }
 
         return $result;
