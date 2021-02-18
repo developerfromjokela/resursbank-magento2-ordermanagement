@@ -42,4 +42,26 @@
     <preference for="Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface" type="Resursbank\Ordermanagement\Model\PaymentHistory" />
     <preference for="Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface" type="Resursbank\Ordermanagement\Model\PaymentHistoryRepository" />
     <preference for="Resursbank\Ordermanagement\Api\Data\PaymentHistorySearchResultsInterface" type="Resursbank\Ordermanagement\Model\PaymentHistory\SearchResults" />
+
+    <preference
+        for="Magento\Sales\Api\OrderRepositoryInterface"
+        type="Magento\Sales\Model\OrderRepository"
+    />
+    <preference
+        for="Magento\Store\Model\StoreManagerInterface"
+        type="Magento\Store\Model\StoreManager"
+    />
+    <preference
+        for="Magento\Framework\Pricing\PriceCurrencyInterface"
+        type="Magento\Directory\Model\PriceCurrency"
+    />
+
+    <!-- Payment information -->
+    <type name="Magento\Sales\Block\Adminhtml\Order\View\Info">
+        <!-- Prepend invoice information from Resursbank on order view information block. -->
+        <plugin
+            name="resursbank_ordermanagement_block_adminhtml_sales_order_view_info_after_to_html"
+            type="Resursbank\Ordermanagement\Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo"
+        />
+    </type>
 </config>
