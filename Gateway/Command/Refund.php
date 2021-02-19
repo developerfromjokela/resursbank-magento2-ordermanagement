@@ -67,7 +67,7 @@ class Refund implements CommandInterface
     }
 
     /**
-     * @param array $subject
+     * @param array<mixed> $subject
      * @return ResultInterface|null
      * @throws PaymentException
      */
@@ -80,7 +80,7 @@ class Refund implements CommandInterface
             if ($this->isEnabled($paymentData)) {
                 if (!$this->apiPayment->refundPayment(
                     $paymentData->getOrder()->getOrderIncrementId(),
-                    $paymentData->getPayment()->getCreditmemo()
+                    $paymentData->getPayment()->getCreditmemo()  /** @phpstan-ignore-line */
                 )) {
                     throw new PaymentException(__(
                         'An error occurred while communicating with the API.'

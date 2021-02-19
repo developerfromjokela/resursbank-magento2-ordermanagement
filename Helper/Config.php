@@ -79,6 +79,7 @@ class Config extends AbstractConfig
             $scopeType
         );
 
+        /** @noinspection JsonEncodingApiUsageInspection */
         return $result ? json_decode($result) : null;
     }
 
@@ -87,8 +88,11 @@ class Config extends AbstractConfig
      * @param int $scopeId
      * @return void
      */
-    public function setTestTriggered(int $value, int $scopeId = 0): void
-    {
+    public function setTestTriggered(
+        int $value,
+        int $scopeId = 0
+    ): void {
+        /** @noinspection JsonEncodingApiUsageInspection */
         $this->set(
             self::GROUP,
             'callback_test_received_at',
@@ -105,8 +109,11 @@ class Config extends AbstractConfig
      * @param int $scopeId
      * @return void
      */
-    public function setTestReceived(int $value, int $scopeId = 0): void
-    {
+    public function setTestReceived(
+        int $value,
+        int $scopeId = 0
+    ): void {
+        /** @noinspection JsonEncodingApiUsageInspection */
         $this->set(
             self::GROUP,
             'callback_test_received_at',

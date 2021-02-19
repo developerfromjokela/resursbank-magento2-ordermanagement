@@ -217,7 +217,7 @@ class ApiPayment extends AbstractHelper
             // Log that we have performed the API call.
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_CANCEL_API_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );

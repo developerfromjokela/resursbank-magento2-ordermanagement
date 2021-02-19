@@ -83,7 +83,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $subject
+     * @param array<mixed> $subject
      * @return ResultInterface|null
      * @throws PaymentException
      * @throws AlreadyExistsException
@@ -96,7 +96,7 @@ class Capture implements CommandInterface
         try {
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_CAPTURE_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
@@ -125,7 +125,7 @@ class Capture implements CommandInterface
 
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_CAPTURE_FAILED,
                 PaymentHistoryInterface::USER_CLIENT
             );

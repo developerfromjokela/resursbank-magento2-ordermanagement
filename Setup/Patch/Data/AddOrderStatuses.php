@@ -58,7 +58,7 @@ class AddOrderStatuses implements DataPatchInterface
      * NOTE: We are utilising insertOnDuplicate specifically to avoid collisions
      * with order statuses supplied through our deprecated module.
      */
-    public function apply()
+    public function apply(): self
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
@@ -73,5 +73,7 @@ class AddOrderStatuses implements DataPatchInterface
         }
 
         $this->moduleDataSetup->getConnection()->endSetup();
+
+        return $this;
     }
 }
