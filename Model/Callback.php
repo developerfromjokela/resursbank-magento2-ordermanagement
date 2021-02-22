@@ -23,7 +23,6 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
-use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
@@ -110,6 +109,7 @@ class Callback implements CallbackInterface
      * @param OrderInterface $orderInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
+     * @param PaymentHistoryHelper $phHelper
      * @param TypeListInterface $cacheTypeList
      * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -143,8 +143,10 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function unfreeze(string $paymentId, string $digest): void
-    {
+    public function unfreeze(
+        string $paymentId,
+        string $digest
+    ): void {
         try {
             $this->execute('unfreeze', $paymentId, $digest);
         } catch (Exception $e) {
@@ -155,8 +157,10 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function booked(string $paymentId, string $digest): void
-    {
+    public function booked(
+        string $paymentId,
+        string $digest
+    ): void {
         try {
             $order = $this->execute('booked', $paymentId, $digest);
 
@@ -170,8 +174,10 @@ class Callback implements CallbackInterface
     /**
      * @inheritDoc
      */
-    public function update(string $paymentId, string $digest): void
-    {
+    public function update(
+        string $paymentId,
+        string $digest
+    ): void {
         try {
             $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
@@ -225,6 +231,7 @@ class Callback implements CallbackInterface
         $this->logIncoming($type, $paymentId, $digest);
 
         /** @var Order $order */
+        /** @phpstan-ignore-next-line */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
@@ -272,8 +279,10 @@ class Callback implements CallbackInterface
      * @throws FileSystemException
      * @throws RuntimeException
      */
-    private function validate(string $paymentId, string $digest): void
-    {
+    private function validate(
+        string $paymentId,
+        string $digest
+    ): void {
         $ourDigest = strtoupper(
             sha1($paymentId . $this->callbackHelper->salt())
         );
@@ -290,8 +299,9 @@ class Callback implements CallbackInterface
      * @return void
      * @throws WebapiException
      */
-    private function handleError(Exception $exception): void
-    {
+    private function handleError(
+        Exception $exception
+    ): void {
         $this->log->exception($exception);
 
         if ($exception instanceof CallbackValidationException) {
@@ -307,12 +317,13 @@ class Callback implements CallbackInterface
      * Resolve the status and state for the order by asking Resurs Bank.
      *
      * @param Order $order
-     * @return array
+     * @return array<string>
      * @throws ValidatorException
      * @throws Exception
      */
-    private function syncStatusFromResurs(Order $order): array
-    {
+    private function syncStatusFromResurs(
+        Order $order
+    ): array {
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig()
         );
@@ -339,11 +350,12 @@ class Callback implements CallbackInterface
      * Get the new order status and state based on constants from eCom.
      *
      * @param int $status
-     * @return array
+     * @return array<string>
      * @throws Exception
      */
-    private function mapStateStatusFromResurs(int $status): array
-    {
+    private function mapStateStatusFromResurs(
+        int $status
+    ): array {
         switch ($status) {
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
                 $orderStatus = ResursbankStatuses::PAYMENT_REVIEW;
@@ -381,8 +393,8 @@ class Callback implements CallbackInterface
      * Log incoming callbacks.
      *
      * @param string $type
-     * @param string|null $paymentId
-     * @param string|null $digest
+     * @param string $paymentId
+     * @param string $digest
      */
     private function logIncoming(
         string $type,

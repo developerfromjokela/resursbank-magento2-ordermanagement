@@ -53,7 +53,7 @@ class ResursbankStatuses
     /**
      * Get the statuses with their label.
      *
-     * @return array
+     * @return array<array>
      */
     public function statuses(): array
     {

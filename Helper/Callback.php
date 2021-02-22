@@ -20,6 +20,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use stdClass;
 use function constant;
 
 class Callback extends AbstractHelper
@@ -107,7 +108,7 @@ class Callback extends AbstractHelper
     /**
      * Fetch registered callbacks.
      *
-     * @return array
+     * @return array<stdClass>
      * @throws ValidatorException
      * @throws Exception
      */
@@ -165,7 +166,7 @@ class Callback extends AbstractHelper
             'paymentId/{paymentId}/digest/{digest}';
 
         return (
-            $store->getBaseUrl(
+            $store->getBaseUrl( /** @phpstan-ignore-line */
                 UrlInterface::URL_TYPE_LINK,
                 $this->request->isSecure()
             ) . "rest/V1/resursbank_ordermanagement/order/{$type}/{$suffix}"

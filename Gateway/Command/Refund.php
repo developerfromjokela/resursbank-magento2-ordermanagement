@@ -78,7 +78,7 @@ class Refund implements CommandInterface
     }
 
     /**
-     * @param array $subject
+     * @param array<mixed> $subject
      * @return ResultInterface|null
      * @throws PaymentException|AlreadyExistsException
      */
@@ -90,7 +90,7 @@ class Refund implements CommandInterface
         try {
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_REFUND_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
@@ -98,7 +98,7 @@ class Refund implements CommandInterface
             if ($this->isEnabled($paymentData)) {
                 if (!$this->apiPayment->refundPayment(
                     $paymentData->getOrder()->getOrderIncrementId(),
-                    $paymentData->getPayment()->getCreditmemo(),
+                    $paymentData->getPayment()->getCreditmemo(),  /** @phpstan-ignore-line */
                     $paymentData
                 )) {
                     throw new PaymentException(__(
@@ -111,7 +111,7 @@ class Refund implements CommandInterface
 
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_REFUND_FAILED,
                 PaymentHistoryInterface::USER_CLIENT
             );
