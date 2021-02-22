@@ -85,7 +85,7 @@ class ProductItem extends AbstractItem
         $order = $this->product->getOrderItem();
         $pct = $order instanceof OrderItem ?
             (float)$order->getTaxPercent() :
-            0.0;
+            0.0; /** @phpstan-ignore-line */
 
         return (int)round($pct);
     }
