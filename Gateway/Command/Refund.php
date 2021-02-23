@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Framework\Exception\ValidatorException;
@@ -19,9 +20,11 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -49,38 +52,54 @@ class Refund implements CommandInterface
     private $paymentMethods;
 
     /**
+     * @var PaymentHistory
+     */
+    private $paymentHistory;
+
+    /**
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param Config $config
      * @param PaymentMethods $paymentMethods
+     * @param PaymentHistory $paymentHistory
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         Config $config,
-        PaymentMethods $paymentMethods
+        PaymentMethods $paymentMethods,
+        PaymentHistory $paymentHistory
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->config = $config;
         $this->paymentMethods = $paymentMethods;
+        $this->paymentHistory = $paymentHistory;
     }
 
     /**
      * @param array<mixed> $subject
      * @return ResultInterface|null
-     * @throws PaymentException
+     * @throws PaymentException|AlreadyExistsException
      */
     public function execute(
         array $subject
     ): ?ResultInterface {
+        $paymentData = SubjectReader::readPayment($subject);
+
         try {
-            $paymentData = SubjectReader::readPayment($subject);
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
+                PaymentHistoryInterface::EVENT_REFUND_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             if ($this->isEnabled($paymentData)) {
                 if (!$this->apiPayment->refundPayment(
                     $paymentData->getOrder()->getOrderIncrementId(),
-                    $paymentData->getPayment()->getCreditmemo()  /** @phpstan-ignore-line */
+                    $paymentData->getPayment()->getCreditmemo(),  /** @phpstan-ignore-line */
+                    $paymentData
                 )) {
                     throw new PaymentException(__(
                         'An error occurred while communicating with the API.'
@@ -89,6 +108,13 @@ class Refund implements CommandInterface
             }
         } catch (Exception $e) {
             $this->log->exception($e);
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
+                PaymentHistoryInterface::EVENT_REFUND_FAILED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             throw new PaymentException(__(
                 'Something went wrong when trying to issue the refund.'

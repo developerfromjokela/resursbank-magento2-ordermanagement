@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Exception;
+use Magento\Framework\Exception\AlreadyExistsException;
 use function in_array;
 use function is_array;
 use function is_object;
@@ -172,7 +173,6 @@ class ApiPayment extends AbstractHelper
 
             $this->setConnectionAfterShopData($connection, $paymentId);
 
-            // Log that we have performed the API call.
             $this->paymentHistory->createEntry(
                 (int) $orderPayment->getEntityId(),
                 PaymentHistoryInterface::EVENT_CAPTURE_API_CALLED,
@@ -214,7 +214,6 @@ class ApiPayment extends AbstractHelper
         if (!$connection->getIsAnnulled([$paymentId])) {
             $this->setConnectionAfterShopData($connection, $paymentId);
 
-            // Log that we have performed the API call.
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
                 (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
@@ -233,17 +232,19 @@ class ApiPayment extends AbstractHelper
     /**
      * @param string $paymentId
      * @param Creditmemo $memo
+     * @param PaymentDataObjectInterface $paymentData
      * @param ResursBank|null $connection
      * @return bool Whether the operation was successful. Will default to
      * false if the payment does not exist, and true if the payment has already
      * been refunded.
      * @throws ResursException
      * @throws ValidatorException
-     * @throws Exception
+     * @throws AlreadyExistsException
      */
     public function refundPayment(
         string $paymentId,
         Creditmemo $memo,
+        PaymentDataObjectInterface $paymentData,
         ?ResursBank $connection = null
     ): bool {
         $result = false;
@@ -254,6 +255,13 @@ class ApiPayment extends AbstractHelper
         if ($exists && $canRefund) {
             // Set platform / user reference.
             $this->setConnectionAfterShopData($connection, $paymentId);
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            $this->paymentHistory->createEntry(
+                (int) $paymentData->getPayment()->getEntityId(),
+                PaymentHistoryInterface::EVENT_REFUND_API_CALLED,
+                PaymentHistoryInterface::USER_CLIENT
+            );
 
             $result = $connection->creditPayment(
                 $paymentId,
