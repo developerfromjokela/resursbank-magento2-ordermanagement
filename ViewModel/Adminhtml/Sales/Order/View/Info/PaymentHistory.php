@@ -174,7 +174,9 @@ class PaymentHistory implements ArgumentInterface
     public function getOrderEnvironment(
         Order $order
     ): string {
-        return (string) $order->getData('resursbank_environment');
+        return $order->getData('resursbank_is_test') === '1'
+            ? 'Test'
+            : 'Production';
     }
 
     /**
