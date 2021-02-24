@@ -15,10 +15,12 @@ use Resursbank\Core\Model\Payment\Resursbank as ResursbankPayment;
 use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation as PaymentBlock;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
+use function is_string;
+use function strlen;
 
 /**
- * Prepends payment information (invoice information from Resurs Bank) to the
- * information block on the order view.
+ * Prepends payment information from Resurs Bank to the top of the order /
+ * invoice view.
  *
  * See: Block\Adminhtml\Sales\Order\View\Info\PaymentInformation
  */
@@ -30,14 +32,12 @@ class AppendPaymentInfo
     private $paymentBlock;
 
     /**
-     * Log helper.
-     *
      * @var Log
      */
     private $log;
 
     /**
-     * Payment helper.
+     * Payment API helper.
      *
      * @var ApiPayment
      */
@@ -59,15 +59,17 @@ class AppendPaymentInfo
     }
 
     /**
-     * Prepend checkout information to order information block.
+     * Prepend HTML to order / invoice view.
      *
      * @param Info $subject
      * @param string $result
      * @return string
      * @throws Exception
      */
-    public function afterToHtml(Info $subject, string $result): string
-    {
+    public function afterToHtml(
+        Info $subject,
+        string $result
+    ): string {
         try {
             if ($this->isEnabled($subject->getOrder())) {
                 $result = $this->paymentBlock->toHtml() . $result;
@@ -86,8 +88,9 @@ class AppendPaymentInfo
      * @return bool
      * @throws Exception
      */
-    private function isEnabled(OrderInterface $order): bool
-    {
+    private function isEnabled(
+        OrderInterface $order
+    ): bool {
         return $this->validate($order);
     }
 
@@ -106,8 +109,9 @@ class AppendPaymentInfo
      * @return bool
      * @throws Exception
      */
-    public function validate(OrderInterface $order): bool
-    {
+    public function validate(
+        OrderInterface $order
+    ): bool {
         return is_string($order->getIncrementId()) && (
             $this->validateMethod($order) &&
             $order->getGrandTotal() > 0 &&
@@ -123,8 +127,9 @@ class AppendPaymentInfo
      * @param OrderInterface $order
      * @return bool
      */
-    public function validateMethod(OrderInterface $order): bool
-    {
+    public function validateMethod(
+        OrderInterface $order
+    ): bool {
         $code = '';
 
         if ($order->getPayment() !== null) {

@@ -18,6 +18,9 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Helper\Config;
 use stdClass;
+use function is_array;
+use function is_int;
+use function is_string;
 
 class PaymentInformation implements ArgumentInterface
 {
@@ -27,7 +30,7 @@ class PaymentInformation implements ArgumentInterface
     private $checkoutHelper;
 
     /**
-     * @var null|mixed[]
+     * @var null|array<mixed>
      */
     private $paymentInfo;
 
@@ -88,8 +91,9 @@ class PaymentInformation implements ArgumentInterface
     /**
      * @param OrderInterface $order
      */
-    public function setOrder(OrderInterface $order): void
-    {
+    public function setOrder(
+        OrderInterface $order
+    ): void {
         $this->order = $order;
     }
 
@@ -97,8 +101,9 @@ class PaymentInformation implements ArgumentInterface
      * @param int|null $orderId
      * @return OrderInterface|null
      */
-    public function getOrder(?int $orderId): ?OrderInterface
-    {
+    public function getOrder(
+        ?int $orderId
+    ): ?OrderInterface {
         $result = $this->order;
 
         if (is_int($orderId)) {
@@ -114,11 +119,10 @@ class PaymentInformation implements ArgumentInterface
      * @param string $key
      * @return mixed|null|stdClass
      */
-    public function getPaymentInformation($key = '')
-    {
+    public function getPaymentInformation(
+        string $key = ''
+    ) {
         $result = null;
-
-        $key = (string) $key;
 
         if ($this->paymentInfo === null &&
             $this->order instanceof OrderInterface &&
@@ -234,17 +238,19 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
-     * Retrieve customer information from Resursbank payment.
+     * Retrieve customer information from Resurs Bank payment.
      *
      * @param string $key
      * @param bool $address
      * @return mixed
      */
-    public function getCustomerInformation($key = '', $address = false)
-    {
+    public function getCustomerInformation(
+        string $key = '',
+        bool $address = false
+    ) {
         $result = (array) $this->getPaymentInformation('customer');
 
-        if ($address) {
+        if (!empty($address)) {
             $result = (is_array($result) && isset($result['address'])) ?
                 (array) $result['address'] :
                 null;
@@ -364,8 +370,9 @@ class PaymentInformation implements ArgumentInterface
      * @param float $price
      * @return string
      */
-    public function formatPrice(float $price): string
-    {
+    public function formatPrice(
+        float $price
+    ): string {
         return $this->priceCurrency->format(
             $price,
             false,
@@ -380,8 +387,9 @@ class PaymentInformation implements ArgumentInterface
      * @param string $price
      * @return float
      */
-    public function convertPrice(string $price): float
-    {
+    public function convertPrice(
+        string $price
+    ): float {
         return $this->checkoutHelper->convertPrice((float) $price, false);
     }
 }

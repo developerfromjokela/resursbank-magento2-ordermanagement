@@ -287,11 +287,7 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-<<<<<<< HEAD
-     * Check if payment can be debited.
-=======
      * Check if Resurs Bank payment is debitable.
->>>>>>> dev/sprint-2
      *
      * @param stdClass $payment
      * @return bool

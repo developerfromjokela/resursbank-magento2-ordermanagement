@@ -56,9 +56,8 @@
         type="Magento\Directory\Model\PriceCurrency"
     />
 
-    <!-- Payment information -->
+    <!-- Display Resurs Bank payment info on order / invoice view. -->
     <type name="Magento\Sales\Block\Adminhtml\Order\View\Info">
-        <!-- Prepend invoice information from Resursbank on order view information block. -->
         <plugin
             name="resursbank_ordermanagement_block_adminhtml_sales_order_view_info_after_to_html"
             type="Resursbank\Ordermanagement\Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo"
