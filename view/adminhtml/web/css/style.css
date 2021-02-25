@@ -39,3 +39,57 @@
 #resursbank-payment-history-modal-content tr:nth-of-type(2n+1) td {
     background-color: #f1f1f1;
 }
+
+/*
+    =======================================================================
+
+    Order payment information.
+
+    =======================================================================
+ */
+.resursbank-ordermanagement-payment-information {
+    background-color: #afe3f9;
+}
+
+.resursbank-ordermanagement-payment-information .resursbank-logo {
+    margin-right: 10px;
+}
+
+.resursbank-ordermanagement-payment-information .resursbank-logo > .img {
+    background-image: url(i/logo.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    width: calc(340px / 4);
+    height: calc(120px / 4);
+}
+
+.resursbank-ordermanagement-payment-information .admin__table-secondary tbody tr th,
+.resursbank-ordermanagement-payment-information .admin__table-secondary tbody tr td {
+    color: black;
+    width: 50%;
+}
+
+.resursbank-ordermanagement-payment-information .admin__table-secondary tbody tr:nth-child(odd) th,
+.resursbank-ordermanagement-payment-information .admin__table-secondary tbody tr:nth-child(odd) td {
+    background:#85CAE8;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.resursbank-ordermanagement-payment-information .admin__page-section-item-title {
+    padding-left: 10px;
+    margin-top: 30px;
+}
+
+.resursbank-ordermanagement-payment-information .admin__page-section-title {
+    padding-left: 10px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.resursbank-ordermanagement-payment-information .admin__page-section-title .title {
+    width: 100%;
+    float: unset;
+}
