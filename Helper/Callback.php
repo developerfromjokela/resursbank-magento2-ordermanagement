@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+use function constant;
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -20,9 +21,11 @@ use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
-use Resursbank\Ordermanagement\Helper\Log;
-use function constant;
+use stdClass;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Callback extends AbstractHelper
 {
     /**
@@ -111,7 +114,8 @@ class Callback extends AbstractHelper
     /**
      * Fetch registered callbacks.
      *
-     * @return array
+     * @return array<stdClass>
+     * @throws Exception
      */
     public function fetch(): array
     {

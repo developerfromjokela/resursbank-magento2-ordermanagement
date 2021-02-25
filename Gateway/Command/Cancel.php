@@ -77,7 +77,7 @@ class Cancel implements CommandInterface
     }
 
     /**
-     * @param array $subject
+     * @param array<mixed> $subject
      * @return ResultInterface|null
      * @throws PaymentException|AlreadyExistsException
      */
@@ -89,8 +89,9 @@ class Cancel implements CommandInterface
         try {
             /** @noinspection BadExceptionsProcessingInspection */
             /** @noinspection PhpUndefinedMethodInspection */
+            /** @phpstan-ignore-next-line */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_CANCEL_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
@@ -102,8 +103,9 @@ class Cancel implements CommandInterface
             $this->log->exception($e);
 
             /** @noinspection PhpUndefinedMethodInspection */
+            /** @phpstan-ignore-next-line */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_CANCEL_FAILED,
                 PaymentHistoryInterface::USER_CLIENT
             );

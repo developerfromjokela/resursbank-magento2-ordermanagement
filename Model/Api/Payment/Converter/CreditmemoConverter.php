@@ -19,6 +19,7 @@ use Resursbank\Core\Model\Api\Payment\Converter\Item\ShippingItemFactory;
 use Resursbank\Core\Model\Api\Payment\Item as PaymentItem;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Creditmemo\ProductItemFactory;
+use function is_string;
 
 /**
  * Creditmemo entity conversion for payment payloads.
@@ -65,6 +66,8 @@ class CreditmemoConverter extends AbstractConverter
     public function convert(
         Creditmemo $entity
     ): array {
+        $shippingMethod = $entity->getOrder()->getShippingMethod();
+        
         return array_merge(
             $this->getProductData($entity),
             array_merge(
@@ -74,7 +77,7 @@ class CreditmemoConverter extends AbstractConverter
                     (float) $entity->getDiscountTaxCompensationAmount()
                 ),
                 $this->getShippingData(
-                    (string) $entity->getOrder()->getShippingMethod(),
+                    is_string($shippingMethod) ? $shippingMethod : '',
                     (string) $entity->getOrder()->getShippingDescription(),
                     (float) $entity->getShippingInclTax(),
                     $this->getTaxPercentage(

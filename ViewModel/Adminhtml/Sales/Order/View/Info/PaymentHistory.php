@@ -66,14 +66,15 @@ class PaymentHistory implements ArgumentInterface
      * @param Order $order
      * @return PaymentHistoryInterface[]
      */
-    public function getEvents(Order $order): array
-    {
+    public function getEvents(
+        Order $order
+    ): array {
         $items = [];
 
         try {
             if (!($order->getPayment() instanceof OrderPaymentInterface)) {
                 throw new RuntimeException(
-                    __('Missing payment data on order %1', $order->getId())
+                    'Missing payment data on order ' . $order->getId()
                 );
             }
 
@@ -82,6 +83,7 @@ class PaymentHistory implements ArgumentInterface
                 $order->getPayment()->getEntityId()
             )->create();
 
+            /** @var PaymentHistoryInterface[] $items */
             $items = $this->repository
                 ->getList($criteria)
                 ->getItems();
@@ -99,12 +101,13 @@ class PaymentHistory implements ArgumentInterface
      * Converts data from a payment history event to presentational data.
      *
      * @param PaymentHistoryInterface $event
-     * @return array
+     * @return array<string, string>
      */
-    public function eventToTableData(PaymentHistoryInterface $event): array
-    {
+    public function eventToTableData(
+        PaymentHistoryInterface $event
+    ): array {
         $eventAction = $event->getEvent();
-        $eventLabel = $event->eventLabel($eventAction);
+        $eventLabel = $event->eventLabel((string) $eventAction);
         $user = $event->getUser();
 
         return [
@@ -129,19 +132,20 @@ class PaymentHistory implements ArgumentInterface
     public function getTableDataFromOrder(
         Order $order
     ): string {
-        $arr = [];
+        $result = '{}';
+        $data = [];
 
         foreach ($this->getEvents($order) as $event) {
-            $arr[] = $this->eventToTableData($event);
+            $data[] = $this->eventToTableData($event);
         }
 
         try {
-            $arr = json_encode($arr, JSON_THROW_ON_ERROR);
+            $result = json_encode($data, JSON_THROW_ON_ERROR);
         } catch (Exception $e) {
             $this->log->exception($e);
         }
 
-        return $arr;
+        return $result;
     }
 
     /**
@@ -150,8 +154,9 @@ class PaymentHistory implements ArgumentInterface
      * @param Order $order
      * @return Phrase
      */
-    public function getHeading(Order $order): Phrase
-    {
+    public function getHeading(
+        Order $order
+    ): Phrase {
         return __(
             '#%1 Payment History [%2]',
             $order->getIncrementId(),
@@ -166,9 +171,12 @@ class PaymentHistory implements ArgumentInterface
      * @param Order $order
      * @return string
      */
-    public function getOrderEnvironment(Order $order): string
-    {
-        return (string) $order->getData('resursbank_environment');
+    public function getOrderEnvironment(
+        Order $order
+    ): string {
+        return (bool) $order->getData('resursbank_is_test')
+            ? 'Test'
+            : 'Production';
     }
 
     /**
@@ -177,8 +185,9 @@ class PaymentHistory implements ArgumentInterface
      * @param Order $order
      * @return boolean
      */
-    public function visible(Order $order) : bool
-    {
+    public function visible(
+        Order $order
+    ) : bool {
         if (!($order->getPayment() instanceof OrderPaymentInterface)) {
             return false;
         }
