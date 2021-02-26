@@ -21,6 +21,8 @@ use Magento\Framework\Exception\PaymentException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Model\InfoInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
@@ -489,5 +491,26 @@ class ApiPayment extends AbstractHelper
     ): bool {
         return $this->isPaymentUsable($paymentData) &&
             $this->exists($paymentData->getOrder()->getOrderIncrementId());
+    }
+
+    /**
+     * Checks if an order has payment information that it can display.
+     *
+     * @param OrderInterface $order
+     * @return bool
+     * @throws ResursException
+     * @throws ValidatorException
+     */
+    public function hasPaymentInfo(
+        OrderInterface $order
+    ): bool {
+        $payment = $order->getPayment();
+
+        return is_string($order->getIncrementId()) && (
+            $payment instanceof OrderPaymentInterface &&
+            $this->paymentMethods->isResursBankMethod($payment->getMethod()) &&
+            $order->getGrandTotal() > 0 &&
+            $this->exists($order->getIncrementId())
+        );
     }
 }
