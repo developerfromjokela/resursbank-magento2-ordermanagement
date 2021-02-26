@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+use function constant;
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -21,8 +22,10 @@ use Magento\Store\Api\Data\StoreInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use stdClass;
-use function constant;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Callback extends AbstractHelper
 {
     /**
@@ -46,23 +49,31 @@ class Callback extends AbstractHelper
     private $request;
 
     /**
+     * @var Log
+     */
+    private $log;
+
+    /**
      * @param Context $context
      * @param Api $api
      * @param Credentials $credentials
      * @param DeploymentConfig $deploymentConfig
      * @param RequestInterface $request
+     * @param Log $log
      */
     public function __construct(
         Context $context,
         Api $api,
         Credentials $credentials,
         DeploymentConfig $deploymentConfig,
-        RequestInterface $request
+        RequestInterface $request,
+        Log $log
     ) {
         $this->api = $api;
         $this->credentials = $credentials;
         $this->deploymentConfig = $deploymentConfig;
         $this->request = $request;
+        $this->log = $log;
 
         parent::__construct($context);
     }
@@ -84,12 +95,7 @@ class Callback extends AbstractHelper
         );
 
         // Callback types.
-        $types = [
-            'unfreeze',
-            'booked',
-            'update',
-            'test'
-        ];
+        $types = ['unfreeze', 'booked', 'update', 'test'];
 
         foreach ($types as $type) {
             $connection->setRegisterCallback(
@@ -109,16 +115,25 @@ class Callback extends AbstractHelper
      * Fetch registered callbacks.
      *
      * @return array<stdClass>
-     * @throws ValidatorException
      * @throws Exception
      */
     public function fetch(): array
     {
-        $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig()
-        );
+        $result = [];
 
-        return $connection->getCallBacksByRest();
+        try {
+            $credentials = $this->credentials->resolveFromConfig();
+
+            if ($this->credentials->hasCredentials($credentials)) {
+                $result = $this->api
+                    ->getConnection($credentials)
+                    ->getCallBacksByRest();
+            }
+        } catch (Exception $e) {
+            $this->log->exception($e);
+        }
+
+        return $result;
     }
 
     /**
@@ -165,6 +180,7 @@ class Callback extends AbstractHelper
             'param1/a/param2/b/param3/c/param4/d/param5/e/' :
             'paymentId/{paymentId}/digest/{digest}';
 
+        /** @noinspection PhpUndefinedMethodInspection */
         return (
             $store->getBaseUrl( /** @phpstan-ignore-line */
                 UrlInterface::URL_TYPE_LINK,
