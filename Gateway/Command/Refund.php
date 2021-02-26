@@ -77,7 +77,7 @@ class Refund implements CommandInterface
                 PaymentHistoryInterface::EVENT_REFUND_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
-            
+
             if ($this->apiPayment->canRefund($paymentData) &&
                 !$this->refund($paymentData)
             ) {
