@@ -11,17 +11,19 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\PaymentException;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
-use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
+use ResursException;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -44,11 +46,6 @@ class Capture implements CommandInterface
     private $api;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @var Credentials
      */
     private $credentials;
@@ -61,7 +58,6 @@ class Capture implements CommandInterface
     /**
      * @param Log $log
      * @param ApiPayment $apiPayment
-     * @param Config $config
      * @param Api $api
      * @param Credentials $credentials
      * @param PaymentHistory $paymentHistory
@@ -69,14 +65,12 @@ class Capture implements CommandInterface
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
-        Config $config,
         Api $api,
         Credentials $credentials,
         PaymentHistory $paymentHistory
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
-        $this->config = $config;
         $this->api = $api;
         $this->credentials = $credentials;
         $this->paymentHistory = $paymentHistory;
@@ -101,24 +95,8 @@ class Capture implements CommandInterface
                 PaymentHistoryInterface::USER_CLIENT
             );
 
-            if ($this->isEnabled($paymentData)) {
-                $connection = $this->api->getConnection(
-                    $this->credentials->resolveFromConfig()
-                );
-                $paymentId = $paymentData->getOrder()->getOrderIncrementId();
-                $apiPayment = $connection->getPayment($paymentId);
-                $orderPayment = $paymentData->getPayment();
-
-                $this->apiPayment->finalizePayment(
-                    $orderPayment,
-                    $apiPayment,
-                    $connection,
-                    $paymentId
-                );
-
-                $this->log->info(
-                    'Successfully captured payment of order ' . $paymentId
-                );
+            if ($this->apiPayment->canCapture($paymentData)) {
+                $this->capture($paymentData);
             }
         } catch (Exception $e) {
             $this->log->exception($e);
@@ -137,19 +115,31 @@ class Capture implements CommandInterface
     }
 
     /**
-     * Check if gateway commands are enabled.
-     *
-     * @param PaymentDataObjectInterface $orderPayment
-     * @return bool
+     * @param PaymentDataObjectInterface $paymentData
+     * @throws ValidatorException
+     * @throws ResursException
+     * @throws PaymentDataException
+     * @throws Exception
      */
-    protected function isEnabled(
-        PaymentDataObjectInterface $orderPayment
-    ): bool {
-        return (
-            $this->config->isAfterShopEnabled(
-                (string)$orderPayment->getOrder()->getStoreId()
-            ) &&
-            $orderPayment->getOrder()->getGrandTotalAmount() > 0
+    private function capture(
+        PaymentDataObjectInterface $paymentData
+    ): void {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig()
+        );
+        $paymentId = $paymentData->getOrder()->getOrderIncrementId();
+        $apiPayment = $connection->getPayment($paymentId);
+        $orderPayment = $paymentData->getPayment();
+
+        $this->apiPayment->finalizePayment(
+            $orderPayment,
+            $apiPayment,
+            $connection,
+            $paymentId
+        );
+
+        $this->log->info(
+            'Successfully captured payment of order ' . $paymentId
         );
     }
 }

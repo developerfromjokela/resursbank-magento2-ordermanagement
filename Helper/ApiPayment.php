@@ -9,13 +9,13 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Exception;
-use Magento\Framework\Exception\AlreadyExistsException;
 use function in_array;
 use function is_array;
 use function is_object;
 use function is_string;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Framework\Exception\ValidatorException;
@@ -26,6 +26,7 @@ use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
@@ -65,12 +66,24 @@ class ApiPayment extends AbstractHelper
     private $paymentHistory;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var PaymentMethods
+     */
+    private $paymentMethods;
+
+    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
-     * @param PaymentHistory $paymentHistory
      * @param Credentials $credentials
      * @param CreditmemoConverter $creditmemoConverter
+     * @param PaymentHistory $paymentHistory
+     * @param Config $config
+     * @param PaymentMethods $paymentMethods
      */
     public function __construct(
         Context $context,
@@ -78,13 +91,17 @@ class ApiPayment extends AbstractHelper
         Api $api,
         Credentials $credentials,
         CreditmemoConverter $creditmemoConverter,
-        PaymentHistory $paymentHistory
+        PaymentHistory $paymentHistory,
+        Config $config,
+        PaymentMethods $paymentMethods
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
         $this->paymentHistory = $paymentHistory;
         $this->credentials = $credentials;
         $this->creditmemoConverter = $creditmemoConverter;
+        $this->config = $config;
+        $this->paymentMethods = $paymentMethods;
 
         parent::__construct($context);
     }
@@ -240,6 +257,7 @@ class ApiPayment extends AbstractHelper
      * @throws ResursException
      * @throws ValidatorException
      * @throws AlreadyExistsException
+     * @throws Exception
      */
     public function refundPayment(
         string $paymentId,
@@ -258,7 +276,7 @@ class ApiPayment extends AbstractHelper
 
             /** @noinspection PhpUndefinedMethodInspection */
             $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(),
+                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
                 PaymentHistoryInterface::EVENT_REFUND_API_CALLED,
                 PaymentHistoryInterface::USER_CLIENT
             );
@@ -290,8 +308,7 @@ class ApiPayment extends AbstractHelper
     ): bool {
         $connection = $this->getDefaultConnection($connection);
 
-        return $this->exists($paymentId, $connection) &&
-            !$connection->canCredit($paymentId);
+        return !$connection->canCredit($paymentId);
     }
 
     /**
@@ -397,5 +414,82 @@ class ApiPayment extends AbstractHelper
         $connection->setRealClientName('Magento2');
         $connection->setLoggedInUser($this->adminHelper->getUserName());
         $connection->setPreferredId($paymentId);
+    }
+
+    /**
+     * Checks if payment data from a gateway command can be used further with
+     * the Resurs Bank API (capture, cancel, refund etc.)
+     *
+     * @param PaymentDataObjectInterface $paymentData
+     * @return bool
+     * @throws LocalizedException
+     * @throws ResursException
+     */
+    public function isPaymentUsable(
+        PaymentDataObjectInterface $paymentData
+    ): bool {
+        return (
+            $this->config->isAfterShopEnabled(
+                (string)$paymentData->getOrder()->getStoreId()
+            ) &&
+            $this->paymentMethods->isResursBankMethod(
+                $paymentData->getPayment()->getMethodInstance()->getCode()
+            ) &&
+            $paymentData->getOrder()->getGrandTotalAmount() > 0 &&
+            $this->exists($paymentData->getOrder()->getOrderIncrementId())
+        );
+    }
+
+    /**
+     * Checks if payment data from a gateway command can be used to refund a
+     * payment entry in the Resurs Bank API.
+     *
+     * @param PaymentDataObjectInterface $paymentData
+     * @return bool
+     * @throws ValidatorException
+     * @throws LocalizedException
+     * @throws ResursException
+     */
+    public function canRefund(
+        PaymentDataObjectInterface $paymentData
+    ): bool {
+        $payment = $paymentData->getPayment();
+
+        return $this->isPaymentUsable($paymentData) &&
+            $payment instanceof Payment &&
+            $payment->getCreditmemo() instanceof Creditmemo &&
+            !$this->isRefunded(
+                $paymentData->getOrder()->getOrderIncrementId()
+            );
+    }
+
+    /**
+     * Checks if payment data from a gateway command can be used to debit a
+     * payment entry in the Resurs Bank API.
+     *
+     * @param PaymentDataObjectInterface $paymentData
+     * @return bool
+     * @throws LocalizedException
+     * @throws ResursException
+     */
+    public function canCapture(
+        PaymentDataObjectInterface $paymentData
+    ): bool {
+        return $this->isPaymentUsable($paymentData);
+    }
+
+    /**
+     * Checks if payment data from a gateway command can be used to cancel a
+     * payment entry in the Resurs Bank API.
+     *
+     * @param PaymentDataObjectInterface $paymentData
+     * @return bool
+     * @throws LocalizedException
+     * @throws ResursException
+     */
+    public function canCancel(
+        PaymentDataObjectInterface $paymentData
+    ): bool {
+        return $this->isPaymentUsable($paymentData);
     }
 }
