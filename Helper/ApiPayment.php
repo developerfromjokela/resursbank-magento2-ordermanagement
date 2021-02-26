@@ -308,8 +308,7 @@ class ApiPayment extends AbstractHelper
     ): bool {
         $connection = $this->getDefaultConnection($connection);
 
-        return $this->exists($paymentId, $connection) &&
-            !$connection->canCredit($paymentId);
+        return !$connection->canCredit($paymentId);
     }
 
     /**
@@ -424,6 +423,7 @@ class ApiPayment extends AbstractHelper
      * @param PaymentDataObjectInterface $paymentData
      * @return bool
      * @throws LocalizedException
+     * @throws ResursException
      */
     public function isPaymentUsable(
         PaymentDataObjectInterface $paymentData
@@ -435,7 +435,8 @@ class ApiPayment extends AbstractHelper
             $this->paymentMethods->isResursBankMethod(
                 $paymentData->getPayment()->getMethodInstance()->getCode()
             ) &&
-            $paymentData->getOrder()->getGrandTotalAmount() > 0
+            $paymentData->getOrder()->getGrandTotalAmount() > 0 &&
+            $this->exists($paymentData->getOrder()->getOrderIncrementId())
         );
     }
 
@@ -447,6 +448,7 @@ class ApiPayment extends AbstractHelper
      * @return bool
      * @throws ValidatorException
      * @throws LocalizedException
+     * @throws ResursException
      */
     public function canRefund(
         PaymentDataObjectInterface $paymentData
@@ -462,12 +464,13 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Checks if payment data from a gateway command can be used to create an
+     * Checks if payment data from a gateway command can be used to debit a
      * payment entry in the Resurs Bank API.
      *
      * @param PaymentDataObjectInterface $paymentData
      * @return bool
      * @throws LocalizedException
+     * @throws ResursException
      */
     public function canCapture(
         PaymentDataObjectInterface $paymentData
@@ -487,7 +490,6 @@ class ApiPayment extends AbstractHelper
     public function canCancel(
         PaymentDataObjectInterface $paymentData
     ): bool {
-        return $this->isPaymentUsable($paymentData) &&
-            $this->exists($paymentData->getOrder()->getOrderIncrementId());
+        return $this->isPaymentUsable($paymentData);
     }
 }
