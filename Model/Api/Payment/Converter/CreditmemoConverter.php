@@ -67,7 +67,7 @@ class CreditmemoConverter extends AbstractConverter
         Creditmemo $entity
     ): array {
         $shippingMethod = $entity->getOrder()->getShippingMethod();
-        
+
         return array_merge(
             $this->getProductData($entity),
             array_merge(

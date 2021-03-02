@@ -10,25 +10,26 @@
     <!-- Callback interface. -->
     <preference for="Resursbank\Ordermanagement\Api\CallbackInterface" type="Resursbank\Ordermanagement\Model\Callback" />
 
-    <!-- Payment method configuration. -->
-    <type name="Resursbank\Core\Model\Payment\Resursbank">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">
-                ResursbankGatewayCommandPool
-            </argument>
-        </arguments>
-    </type>
+<!--    &lt;!&ndash; Payment method configuration. &ndash;&gt;-->
+<!--    <type name="Resursbank\Core\Model\Payment\Resursbank">-->
+<!--        <arguments>-->
+<!--            <argument name="commandPool" xsi:type="object">-->
+<!--                ResursbankGatewayCommandPool-->
+<!--            </argument>-->
+<!--        </arguments>-->
+<!--    </type>-->
 
     <!-- Gateway command pool configuration. -->
-    <virtualType
-        name="ResursbankGatewayCommandPool"
-        type="Magento\Payment\Gateway\Command\CommandPool">
+    <virtualType name="ResursbankGatewayCommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="capture" xsi:type="string">
                     Resursbank\Ordermanagement\Gateway\Command\Capture
                 </item>
                 <item name="cancel" xsi:type="string">
+                    Resursbank\Ordermanagement\Gateway\Command\Cancel
+                </item>
+                <item name="void" xsi:type="string">
                     Resursbank\Ordermanagement\Gateway\Command\Cancel
                 </item>
                 <item name="refund" xsi:type="string">

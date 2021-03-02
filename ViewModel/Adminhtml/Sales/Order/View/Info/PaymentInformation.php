@@ -10,13 +10,14 @@ namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
 use Magento\Checkout\Helper\Data;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Resursbank\Core\Helper\Api;
-use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Ordermanagement\Helper\ApiPayment as Api;
 use Resursbank\Ordermanagement\Helper\Config;
+use ResursException;
 use stdClass;
 use function is_array;
 use function is_int;
@@ -50,11 +51,6 @@ class PaymentInformation implements ArgumentInterface
     private $api;
 
     /**
-     * @var Credentials
-     */
-    private $credentials;
-
-    /**
      * @var Config
      */
     private $config;
@@ -68,7 +64,6 @@ class PaymentInformation implements ArgumentInterface
      * @param Data $checkoutHelper
      * @param OrderRepositoryInterface $orderRepository
      * @param Api $api
-     * @param Credentials $credentials
      * @param Config $config
      * @param PriceCurrencyInterface $priceCurrency
      */
@@ -76,14 +71,12 @@ class PaymentInformation implements ArgumentInterface
         Data $checkoutHelper,
         OrderRepositoryInterface $orderRepository,
         Api $api,
-        Credentials $credentials,
         Config $config,
         PriceCurrencyInterface $priceCurrency
     ) {
         $this->checkoutHelper = $checkoutHelper;
         $this->orderRepository = $orderRepository;
         $this->api = $api;
-        $this->credentials = $credentials;
         $this->config = $config;
         $this->priceCurrency = $priceCurrency;
     }
@@ -118,6 +111,9 @@ class PaymentInformation implements ArgumentInterface
      *
      * @param string $key
      * @return mixed|null|stdClass
+     * @throws ValidatorException
+     * @throws ResursException
+     * @noinspection BadExceptionsProcessingInspection
      */
     public function getPaymentInformation(
         string $key = ''
@@ -128,16 +124,7 @@ class PaymentInformation implements ArgumentInterface
             $this->order instanceof OrderInterface &&
             is_string($this->order->getIncrementId())
         ) {
-            try {
-                $this->paymentInfo = (array) $this->api->getConnection(
-                    $this->credentials->resolveFromConfig()
-                )->getPayment($this->order->getIncrementId());
-            } catch (Exception $e) {
-                // Something went wrong while getting the payment information
-                // from Resurs Bank. This should not prevent the order page from
-                // rendering though.
-                $this->paymentInfo = [];
-            }
+            $this->paymentInfo = $this->api->getPayment($this->order);
         }
 
         if (empty($key)) {
