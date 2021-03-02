@@ -95,7 +95,7 @@ class Refund implements CommandInterface
              */
             if ($connection !== null &&
                 $memo instanceof Creditmemo &&
-                $connection->canCredit($paymentId)
+                $connection->canCredit($paymentId) /** @phpstan-ignore-line */
             ) {
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_REFUND_API_CALLED);

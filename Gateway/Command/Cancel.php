@@ -75,6 +75,7 @@ class Cancel implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_CANCEL_CALLED);
 
+            /** @phpstan-ignore-next-line */
             if ($connection !== null && $connection->canAnnul($paymentId)) {
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_CANCEL_API_CALLED);

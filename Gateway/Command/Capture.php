@@ -75,6 +75,7 @@ class Capture implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_CAPTURE_CALLED);
 
+            /** @phpstan-ignore-next-line */
             if ($connection !== null && $connection->canDebit($paymentId)) {
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
