@@ -20,7 +20,9 @@
     </type>
 
     <!-- Gateway command pool configuration. -->
-    <virtualType name="ResursbankGatewayCommandPool">
+    <virtualType
+        name="ResursbankGatewayCommandPool"
+        type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="capture" xsi:type="string">

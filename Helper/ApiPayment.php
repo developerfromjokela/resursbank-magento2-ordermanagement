@@ -109,6 +109,8 @@ class ApiPayment extends AbstractHelper
          * lacks a lot of specifications we require in our business logic for
          * API calls. Because of this, we load the order from the database
          * directly. This is expensive, but for now there is no alternative.
+         * This should have a negligible impact on Aftershop calls made from the
+         * administration panel when handling the order.
          */
         $order = $this->orderRepository->get($paymentData->getOrder()->getId());
 
@@ -131,9 +133,16 @@ class ApiPayment extends AbstractHelper
     public function getConnectionFromOrder(
         OrderInterface $order
     ): ResursBank {
+        // Establish API connection.
         $connection = $this->api->getConnection($this->getCredentials($order));
+
+        // Apply metadata to simplify debugging.
         $connection->setRealClientName('Magento2');
+
+        // Track what user performed Aftershop actions.
         $connection->setLoggedInUser($this->adminHelper->getUserName());
+
+        // Ensure we perform actions on the orders corresponding payment.
         $connection->setPreferredId($order->getIncrementId());
 
         return $connection;
@@ -167,25 +176,22 @@ class ApiPayment extends AbstractHelper
         OrderInterface $order
     ): array {
         $result = [];
-        $connection = $this->getConnectionFromOrder($order);
+        $payment = $this->getConnectionFromOrder($order)
+            ->getPayment($order->getIncrementId());
 
-        if ($connection !== null) {
-            $payment = $connection->getPayment($order->getIncrementId());
+        if ($payment instanceof stdClass) {
+            $result = (array) $payment;
+        }
 
-            if ($payment instanceof stdClass) {
-                $result = (array) $payment;
-            }
-
-            if (empty($result)) {
-                throw new ValidatorException(__('Missing payment data.'));
-            }
+        if (empty($result)) {
+            throw new ValidatorException(__('Missing payment data.'));
         }
 
         return $result;
     }
 
     /**
-     * Check if AfterShop methods are enabled based on provided payment data.
+     * Check if Aftershop methods are enabled based on order data.
      *
      * @param OrderInterface $order
      * @return bool

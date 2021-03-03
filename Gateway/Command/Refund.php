@@ -73,7 +73,10 @@ class Refund implements CommandInterface
     public function execute(
         array $subject
     ): ?ResultInterface {
+        // Shortcut for improved readability.
         $history = &$this->paymentHistory;
+
+        // Resolve data from command subject.
         $data = SubjectReader::readPayment($subject);
         $paymentId = $data->getOrder()->getOrderIncrementId();
 
@@ -91,16 +94,17 @@ class Refund implements CommandInterface
             /** @noinspection NotOptimalIfConditionsInspection */
             /**
              * NOTE: canCredit will execute API calls which are more expensive
-             * than the database transactions to obtain the creditmemo.
+             * than the database transactions to obtain the creditmemo. So the
+             * if statement is actually properly optimized.
              */
             if ($connection !== null &&
                 $memo instanceof Creditmemo &&
-                $connection->canCredit($paymentId) /** @phpstan-ignore-line */
+                $connection->canCredit($paymentId)
             ) {
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_REFUND_API_CALLED);
 
-                // Debit payment.
+                // Refund payment.
                 $connection->creditPayment(
                     $paymentId,
                     $this->creditmemoConverter->convertItemsToArrays(

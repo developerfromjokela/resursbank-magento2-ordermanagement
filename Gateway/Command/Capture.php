@@ -63,7 +63,10 @@ class Capture implements CommandInterface
     public function execute(
         array $subject
     ): ?ResultInterface {
+        // Shortcut for improved readability.
         $history = &$this->paymentHistory;
+
+        // Resolve data from command subject.
         $data = SubjectReader::readPayment($subject);
         $paymentId = $data->getOrder()->getOrderIncrementId();
 
@@ -75,12 +78,11 @@ class Capture implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_CAPTURE_CALLED);
 
-            /** @phpstan-ignore-next-line */
             if ($connection !== null && $connection->canDebit($paymentId)) {
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
 
-                // Debit payment.
+                // Capture payment.
                 $connection->finalizePayment($paymentId);
             }
 
