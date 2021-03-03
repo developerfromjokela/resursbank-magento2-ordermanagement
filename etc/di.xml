@@ -10,14 +10,14 @@
     <!-- Callback interface. -->
     <preference for="Resursbank\Ordermanagement\Api\CallbackInterface" type="Resursbank\Ordermanagement\Model\Callback" />
 
-<!--    &lt;!&ndash; Payment method configuration. &ndash;&gt;-->
-<!--    <type name="Resursbank\Core\Model\Payment\Resursbank">-->
-<!--        <arguments>-->
-<!--            <argument name="commandPool" xsi:type="object">-->
-<!--                ResursbankGatewayCommandPool-->
-<!--            </argument>-->
-<!--        </arguments>-->
-<!--    </type>-->
+    <!-- Payment method configuration. -->
+    <type name="Resursbank\Core\Model\Payment\Resursbank">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">
+                ResursbankGatewayCommandPool
+            </argument>
+        </arguments>
+    </type>
 
     <!-- Gateway command pool configuration. -->
     <virtualType name="ResursbankGatewayCommandPool">
