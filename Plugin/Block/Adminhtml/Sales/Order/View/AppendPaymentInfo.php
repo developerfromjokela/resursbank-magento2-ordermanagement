@@ -67,7 +67,7 @@ class AppendPaymentInfo
         string $result
     ): string {
         try {
-            if ($this->apiPayment->hasPaymentInfo($subject->getOrder())) {
+            if ($this->apiPayment->validateOrder($subject->getOrder())) {
                 $result = $this->paymentBlock->toHtml() . $result;
             }
         } catch (Exception $e) {

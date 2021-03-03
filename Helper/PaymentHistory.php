@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
@@ -79,5 +80,24 @@ class PaymentHistory extends AbstractHelper
             ->setStatusFrom($statusFrom)
             ->setStatusTo($statusTo);
         $this->phRepository->save($entry);
+    }
+
+    /**
+     * Create payment history entry from command subject data.
+     *
+     * @param PaymentDataObjectInterface $data
+     * @param string $event
+     * @throws AlreadyExistsException
+     */
+    public function entryFromCmd(
+        PaymentDataObjectInterface $data,
+        string $event
+    ): void {
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->createEntry(
+            (int) $data->getPayment()->getId(), /** @phpstan-ignore-line */
+            $event,
+            PaymentHistoryInterface::USER_CLIENT
+        );
     }
 }

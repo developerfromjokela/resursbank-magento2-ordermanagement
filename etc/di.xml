@@ -31,6 +31,9 @@
                 <item name="cancel" xsi:type="string">
                     Resursbank\Ordermanagement\Gateway\Command\Cancel
                 </item>
+                <item name="void" xsi:type="string">
+                    Resursbank\Ordermanagement\Gateway\Command\Cancel
+                </item>
                 <item name="refund" xsi:type="string">
                     Resursbank\Ordermanagement\Gateway\Command\Refund
                 </item>

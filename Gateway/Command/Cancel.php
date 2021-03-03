@@ -14,7 +14,7 @@ use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
@@ -57,37 +57,40 @@ class Cancel implements CommandInterface
     /**
      * @param array<mixed> $subject
      * @return ResultInterface|null
-     * @throws PaymentException|AlreadyExistsException
+     * @throws PaymentException
+     * @throws AlreadyExistsException
      */
     public function execute(
         array $subject
     ): ?ResultInterface {
-        $paymentData = SubjectReader::readPayment($subject);
+        // Shortcut for improved readability.
+        $history = &$this->paymentHistory;
 
+        // Resolve data from command subject.
+        $data = SubjectReader::readPayment($subject);
+        $paymentId = $data->getOrder()->getOrderIncrementId();
+
+        /** @noinspection BadExceptionsProcessingInspection */
         try {
-            /** @noinspection BadExceptionsProcessingInspection */
-            /** @noinspection PhpUndefinedMethodInspection */
-            /** @phpstan-ignore-next-line */
-            $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
-                PaymentHistoryInterface::EVENT_CANCEL_CALLED,
-                PaymentHistoryInterface::USER_CLIENT
-            );
+            // Establish API connection.
+            $connection = $this->apiPayment->getConnectionCommandSubject($data);
 
-            if ($this->apiPayment->canCancel($paymentData)) {
-                $this->apiPayment->cancelPayment($paymentData);
+            // Log command being called.
+            $history->entryFromCmd($data, History::EVENT_CANCEL_CALLED);
+
+            if ($connection !== null && $connection->canAnnul($paymentId)) {
+                // Log API method being called.
+                $history->entryFromCmd($data, History::EVENT_CANCEL_API_CALLED);
+
+                // Cancel payment.
+                $connection->annulPayment($paymentId);
             }
         } catch (Exception $e) {
+            // Log error.
             $this->log->exception($e);
+            $history->entryFromCmd($data, History::EVENT_CANCEL_FAILED);
 
-            /** @noinspection PhpUndefinedMethodInspection */
-            /** @phpstan-ignore-next-line */
-            $this->paymentHistory->createEntry(
-                (int) $paymentData->getPayment()->getEntityId(), /** @phpstan-ignore-line */
-                PaymentHistoryInterface::EVENT_CANCEL_FAILED,
-                PaymentHistoryInterface::USER_CLIENT
-            );
-
+            // Pass safe error upstream.
             throw new PaymentException(__('Failed to cancel payment.'));
         }
 

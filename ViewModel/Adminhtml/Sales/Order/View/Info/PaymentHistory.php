@@ -101,7 +101,7 @@ class PaymentHistory implements ArgumentInterface
      * Converts data from a payment history event to presentational data.
      *
      * @param PaymentHistoryInterface $event
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     public function eventToTableData(
         PaymentHistoryInterface $event
