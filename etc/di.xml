@@ -59,6 +59,11 @@
         type="Magento\Directory\Model\PriceCurrency"
     />
 
+    <!-- Prevent order confirmation email from being sent upon order creation. -->
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="resursbank_ordermanagement_stop_order_confirmation_email" type="Resursbank\Ordermanagement\Plugin\Order\StopConfirmationEmail" />
+    </type>
+
     <!-- Display Resurs Bank payment info on order / invoice view. -->
     <type name="Magento\Sales\Block\Adminhtml\Order\View\Info">
         <plugin
