@@ -10,14 +10,13 @@ namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
 use Magento\Checkout\Helper\Data;
-use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Resursbank\Ordermanagement\Helper\ApiPayment as Api;
+use Resursbank\Core\Helper\Api;
 use Resursbank\Ordermanagement\Helper\Config;
-use ResursException;
+use Resursbank\Ordermanagement\Helper\Log;
 use stdClass;
 use function is_array;
 use function is_int;
@@ -61,24 +60,32 @@ class PaymentInformation implements ArgumentInterface
     private $priceCurrency;
 
     /**
+     * @var Log
+     */
+    private $log;
+
+    /**
      * @param Data $checkoutHelper
      * @param OrderRepositoryInterface $orderRepository
      * @param Api $api
      * @param Config $config
      * @param PriceCurrencyInterface $priceCurrency
+     * @param Log $log
      */
     public function __construct(
         Data $checkoutHelper,
         OrderRepositoryInterface $orderRepository,
         Api $api,
         Config $config,
-        PriceCurrencyInterface $priceCurrency
+        PriceCurrencyInterface $priceCurrency,
+        Log $log
     ) {
         $this->checkoutHelper = $checkoutHelper;
         $this->orderRepository = $orderRepository;
         $this->api = $api;
         $this->config = $config;
         $this->priceCurrency = $priceCurrency;
+        $this->log = $log;
     }
 
     /**
@@ -111,9 +118,6 @@ class PaymentInformation implements ArgumentInterface
      *
      * @param string $key
      * @return mixed|null|stdClass
-     * @throws ValidatorException
-     * @throws ResursException
-     * @noinspection BadExceptionsProcessingInspection
      */
     public function getPaymentInformation(
         string $key = ''
@@ -124,7 +128,12 @@ class PaymentInformation implements ArgumentInterface
             $this->order instanceof OrderInterface &&
             is_string($this->order->getIncrementId())
         ) {
-            $this->paymentInfo = $this->api->getPayment($this->order);
+            try {
+                $this->paymentInfo = (array) $this->api
+                    ->getPayment($this->order);
+            } catch (Exception $e) {
+                $this->log->exception($e);
+            }
         }
 
         if (empty($key)) {
