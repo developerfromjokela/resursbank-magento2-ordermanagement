@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
+use Exception;
 use Magento\Checkout\Helper\Data;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
