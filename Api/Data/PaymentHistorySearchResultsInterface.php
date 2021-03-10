@@ -9,16 +9,17 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Api\Data;
 
 use Magento\Framework\Api\SearchResultsInterface;
+use Magento\Framework\DataObject;
 
 interface PaymentHistorySearchResultsInterface extends SearchResultsInterface
 {
     /**
      * Set payment history list.
      *
-     * @param PaymentHistoryInterface[] $items
-     * @return PaymentHistorySearchResultsInterface
+     * @param array<PaymentHistoryInterface|DataObject> $items
+     * @return self
      */
     public function setItems(
         array $items
-    ): PaymentHistorySearchResultsInterface;
+    ): self;
 }
