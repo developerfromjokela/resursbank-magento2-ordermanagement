@@ -129,8 +129,10 @@ class PaymentInformation implements ArgumentInterface
             is_string($this->order->getIncrementId())
         ) {
             try {
-                $this->paymentInfo = (array) $this->api
-                    ->getPayment($this->order);
+                $paymentData = $this->api->getPayment($this->order);
+                $this->paymentInfo = $paymentData !== null ?
+                    (array)$paymentData :
+                    null;
             } catch (Exception $e) {
                 $this->log->exception($e);
             }
