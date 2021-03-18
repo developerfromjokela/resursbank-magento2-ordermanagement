@@ -18,15 +18,10 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Helper\Api;
-use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Core\Helper\PaymentMethods;
 use Magento\Sales\Model\OrderRepository;
-use Resursbank\Core\Model\Api\Credentials as CredentialsModel;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
-use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
-use ResursException;
-use stdClass;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -37,11 +32,6 @@ class ApiPayment extends AbstractHelper
      * @var Api
      */
     private $api;
-
-    /**
-     * @var Credentials
-     */
-    private $credentials;
 
     /**
      * @var AdminHelper
@@ -67,7 +57,6 @@ class ApiPayment extends AbstractHelper
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
-     * @param Credentials $credentials
      * @param Config $config
      * @param PaymentMethods $paymentMethods
      * @param OrderRepository $orderRepository
@@ -76,14 +65,12 @@ class ApiPayment extends AbstractHelper
         Context $context,
         AdminHelper $adminHelper,
         Api $api,
-        Credentials $credentials,
         Config $config,
         PaymentMethods $paymentMethods,
         OrderRepository $orderRepository
     ) {
         $this->adminHelper = $adminHelper;
         $this->api = $api;
-        $this->credentials = $credentials;
         $this->config = $config;
         $this->paymentMethods = $paymentMethods;
         $this->orderRepository = $orderRepository;
@@ -134,7 +121,9 @@ class ApiPayment extends AbstractHelper
         OrderInterface $order
     ): ResursBank {
         // Establish API connection.
-        $connection = $this->api->getConnection($this->getCredentials($order));
+        $connection = $this->api->getConnection(
+            $this->api->getCredentialsFromOrder($order)
+        );
 
         // Apply metadata to simplify debugging.
         $connection->setRealClientName('Magento2');
@@ -165,32 +154,6 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Retrieve payment from Resurs Bank corresponding to Magento order.
-     *
-     * @param OrderInterface $order
-     * @return array<mixed>
-     * @throws ValidatorException
-     * @throws ResursException
-     */
-    public function getPayment(
-        OrderInterface $order
-    ): array {
-        $result = [];
-        $payment = $this->getConnectionFromOrder($order)
-            ->getPayment($order->getIncrementId());
-
-        if ($payment instanceof stdClass) {
-            $result = (array) $payment;
-        }
-
-        if (empty($result)) {
-            throw new ValidatorException(__('Missing payment data.'));
-        }
-
-        return $result;
-    }
-
-    /**
      * Check if Aftershop methods are enabled based on order data.
      *
      * @param OrderInterface $order
@@ -200,29 +163,5 @@ class ApiPayment extends AbstractHelper
         OrderInterface $order
     ): bool {
         return $this->config->isAfterShopEnabled((string) $order->getStoreId());
-    }
-
-    /**
-     * Retrieve API credentials based on order data.
-     *
-     * @param OrderInterface $order
-     * @return CredentialsModel
-     * @throws ValidatorException
-     */
-    private function getCredentials(
-        OrderInterface $order
-    ): CredentialsModel {
-        $credentials = $this->credentials->resolveFromConfig(
-            (string) $order->getStoreId()
-        );
-
-        /** @phpstan-ignore-next-line */
-        $env = (bool) $order->getData('resursbank_is_test');
-
-        $credentials->setEnvironment(
-            $env ? RESURS_ENVIRONMENTS::TEST : RESURS_ENVIRONMENTS::PRODUCTION
-        );
-
-        return $credentials;
     }
 }

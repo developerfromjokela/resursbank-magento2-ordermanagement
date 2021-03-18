@@ -12,8 +12,8 @@ use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\ResponseInterface;
 use Resursbank\Core\Helper\Store as StoreHelper;
-use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -71,11 +71,11 @@ class Test extends Action
     }
 
     /**
-     * Register callback URLs.
+     * Test callback URLs.
      *
-     * @return void
+     * @return ResponseInterface
      */
-    public function execute(): void
+    public function execute(): ResponseInterface
     {
         try {
             // Trigger the test-callback.
@@ -89,7 +89,7 @@ class Test extends Action
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
-                __('Test callback was sent')
+                __('Test callback was sent')->getText()
             );
         } catch (Exception $e) {
             // Log error.
@@ -97,10 +97,10 @@ class Test extends Action
 
             // Add error message.
             $this->getMessageManager()->addErrorMessage(
-                __('Test callback could not be triggered')
+                __('Test callback could not be triggered')->getText()
             );
         }
 
-        $this->_redirect($this->_redirect->getRefererUrl());
+        return $this->_redirect($this->_redirect->getRefererUrl());
     }
 }

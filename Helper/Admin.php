@@ -15,6 +15,8 @@ use Magento\User\Model\User;
 
 /**
  * Generic methods to assist with admin related actions.
+ *
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class Admin extends AbstractHelper
 {

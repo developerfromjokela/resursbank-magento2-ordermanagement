@@ -11,8 +11,8 @@ namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 use Resursbank\Core\Helper\Store as StoreHelper;
-use Resursbank\Core\Helper\Url;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
@@ -57,9 +57,9 @@ class Registration extends Action
     /**
      * Register callback URLs
      *
-     * @return void
+     * @return ResponseInterface
      */
-    public function execute(): void
+    public function execute(): ResponseInterface
     {
         try {
             // Register callback URLs.
@@ -69,7 +69,7 @@ class Registration extends Action
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(
-                __('Callback URLs were successfully registered.')
+                __('Callback URLs were successfully registered.')->getText()
             );
         } catch (Exception $e) {
             // Log error.
@@ -77,10 +77,10 @@ class Registration extends Action
 
             // Add error message.
             $this->getMessageManager()->addErrorMessage(
-                __('Callback URLs failed to register.')
+                __('Callback URLs failed to register.')->getText()
             );
         }
 
-        $this->_redirect($this->_redirect->getRefererUrl());
+        return $this->_redirect($this->_redirect->getRefererUrl());
     }
 }
