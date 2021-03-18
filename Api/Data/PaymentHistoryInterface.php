@@ -131,13 +131,13 @@ interface PaymentHistoryInterface
         self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.',
         self::EVENT_CAPTURE_CALLED => 'Capture payment was called.',
         self::EVENT_CAPTURE_FAILED => 'Capture payment failed. Check the logs.',
-        self::EVENT_CAPTURE_API_CALLED => 'Capture payment API was called.',
+        self::EVENT_CAPTURE_API_CALLED => 'Payment was debited at Resurs.',
         self::EVENT_CANCEL_CALLED => 'Cancel payment was called.',
         self::EVENT_CANCEL_FAILED => 'Cancel payment failed. Check the logs.',
-        self::EVENT_CANCEL_API_CALLED => 'Cancel payment API was called.',
+        self::EVENT_CANCEL_API_CALLED => 'Payment was annulled at Resurs',
         self::EVENT_REFUND_CALLED => 'Refund payment was called.',
         self::EVENT_REFUND_FAILED => 'Refund payment failed. Check the logs.',
-        self::EVENT_REFUND_API_CALLED => 'Refund payment API was called.'
+        self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.'
     ];
 
     /**
