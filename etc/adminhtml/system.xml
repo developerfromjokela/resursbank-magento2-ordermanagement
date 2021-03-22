@@ -10,37 +10,41 @@
         <section id="payment">
             <group id="resursbank_section">
                 <group id="resursbank">
-                    <group id="resursbank_ordermanagement" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Resursbank Ordermanagement</label>
+                    <group id="ecom" translate="label" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>After-shop Settings</label>
                         <field id="aftershop" type="select" sortOrder="0" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Aftershop enabled</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                             <config_path>resursbank/ordermanagement/aftershop</config_path>
                         </field>
-                        <field id="debug" type="select" sortOrder="1" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
-                            <label>Debug enabled</label>
-                            <comment>Log entries will be stored in var/log/resursbank_ordermanagement.log.</comment>
-                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                            <config_path>resursbank/ordermanagement/debug</config_path>
-                        </field>
-                        <field id="callback_registration" translate="label" type="button" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    </group>
+
+                    <group id="callbacks" translate="label" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Callback Settings</label>
+                        <field id="callback_registration" translate="label" type="button" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Callback Registration</label>
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
                             <config_path>resursbank/ordermanagement/callback_registration</config_path>
                         </field>
-                        <field id="callback_test" translate="label" type="button" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="callback_test" translate="label" type="button" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Test Callbacks</label>
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
                             <config_path>resursbank/ordermanagement/callback_test</config_path>
                         </field>
-                        <field id="callback_test_received_at" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="callback_test_received_at" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Test received at</label>
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestReceivedAt</frontend_model>
                             <config_path>resursbank/ordermanagement/callback_test_received_at</config_path>
                         </field>
-                        <field id="url_list" translate="label" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <field id="url_list" translate="label" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing</frontend_model>
                             <config_path>resursbank/ordermanagement/url_list</config_path>
+                        </field>
+                        <field id="debug" type="select" sortOrder="4" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Debug enabled</label>
+                            <comment>Log entries will be stored in var/log/resursbank_ordermanagement.log.</comment>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                            <config_path>resursbank/ordermanagement/debug</config_path>
                         </field>
                     </group>
                 </group>
