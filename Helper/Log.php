@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\Context;
 use Resursbank\Core\Helper\AbstractLog;
+use Resursbank\Core\Helper\Config;
 
 class Log extends AbstractLog
 {
