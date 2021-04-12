@@ -12,7 +12,6 @@ use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
-use Resursbank\Core\Helper\Store as StoreHelper;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
@@ -29,27 +28,19 @@ class Registration extends Action
     private $log;
 
     /**
-     * @var StoreHelper
-     */
-    private $storeHelper;
-
-    /**
      * Registration constructor.
      *
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Log $log
-     * @param StoreHelper $storeHelper
      */
     public function __construct(
         Context $context,
         CallbackHelper $callbackHelper,
-        Log $log,
-        StoreHelper $storeHelper
+        Log $log
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->log = $log;
-        $this->storeHelper = $storeHelper;
 
         parent::__construct($context);
     }
@@ -63,9 +54,7 @@ class Registration extends Action
     {
         try {
             // Register callback URLs.
-            $this->callbackHelper->register(
-                $this->storeHelper->fromRequest()
-            );
+            $this->callbackHelper->register();
 
             // Add success message.
             $this->getMessageManager()->addSuccessMessage(

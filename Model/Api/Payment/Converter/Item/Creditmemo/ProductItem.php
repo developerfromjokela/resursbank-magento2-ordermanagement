@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Creditmemo
 
 use Magento\Sales\Model\Order\Creditmemo\Item as CreditmemoItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Model\Api\Payment\Converter\Item\AbstractItem;
@@ -31,16 +32,18 @@ class ProductItem extends AbstractItem
      * @param ItemFactory $itemFactory
      * @param Log $log
      * @param CreditmemoItem $product
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Config $config,
         ItemFactory $itemFactory,
         Log $log,
-        CreditmemoItem $product
+        CreditmemoItem $product,
+        StoreManagerInterface $storeManager
     ) {
         $this->product = $product;
 
-        parent::__construct($config, $itemFactory, $log);
+        parent::__construct($config, $itemFactory, $log, $storeManager);
     }
 
     /**

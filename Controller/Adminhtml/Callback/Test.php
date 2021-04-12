@@ -13,10 +13,11 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\ResponseInterface;
-use Resursbank\Core\Helper\Store as StoreHelper;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
+use Magento\Framework\App\RequestInterface;
 
 class Test extends Action
 {
@@ -36,21 +37,25 @@ class Test extends Action
     private $log;
 
     /**
-     * @var StoreHelper
-     */
-    private $storeHelper;
-
-    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
+
+    /**
+     * @var Scope
+     */
+    private $scope;
+
+    /**
+     * @var RequestInterface
+     */
+    private $request;
 
     /**
      * @param Context $context
      * @param CallbackHelper $callbackHelper
      * @param Config $config
      * @param Log $log
-     * @param StoreHelper $storeHelper
      * @param TypeListInterface $cacheTypeList
      */
     public function __construct(
@@ -58,16 +63,18 @@ class Test extends Action
         CallbackHelper $callbackHelper,
         Config $config,
         Log $log,
-        StoreHelper $storeHelper,
-        TypeListInterface $cacheTypeList
+        TypeListInterface $cacheTypeList,
+        Scope $scope,
+        RequestInterface $request
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
         $this->log = $log;
-        $this->storeHelper = $storeHelper;
         $this->cacheTypeList = $cacheTypeList;
+        $this->scope = $scope;
 
         parent::__construct($context);
+        $this->request = $request;
     }
 
     /**
@@ -77,13 +84,19 @@ class Test extends Action
      */
     public function execute(): ResponseInterface
     {
+        /** @noinspection BadExceptionsProcessingInspection */
         try {
             // Trigger the test-callback.
-            $this->callbackHelper->test(
-                $this->storeHelper->fromRequest()
-            );
+            $this->callbackHelper->test();
 
-            $this->config->setTestTriggered(time());
+            /**
+             * NOTE: typecasting should be safe since this is executed from the
+             * config where the store/website parameter will always be numeric.
+             */
+            $this->config->setCallbackTestTriggeredAt(
+                (int) $this->scope->getId(),
+                $this->scope->getType()
+            );
 
             $this->cacheTypeList->cleanType('config');
 

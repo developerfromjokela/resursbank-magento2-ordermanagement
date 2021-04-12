@@ -14,7 +14,7 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Config;
 
-class TestReceivedAt extends Field
+class TestTriggeredAt extends Field
 {
     /**
      * @var Scope
@@ -68,7 +68,7 @@ class TestReceivedAt extends Field
     protected function _getElementHtml(
         AbstractElement $element
     ): string {
-        return $this->config->getCallbackTestReceivedAt(
+        return $this->config->getCallbackTestTriggeredAt(
             $this->scope->getId(),
             $this->scope->getType()
         );

@@ -90,11 +90,14 @@ class PaymentInformation implements ArgumentInterface
 
     /**
      * @param OrderInterface $order
+     * @return OrderInterface
      */
     public function setOrder(
         OrderInterface $order
-    ): void {
+    ): OrderInterface {
         $this->order = $order;
+
+        return $this->order;
     }
 
     /**
@@ -352,11 +355,15 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * @param OrderInterface $order
      * @return bool
      */
-    public function isEnabled(): bool
-    {
-        return $this->config->isAfterShopEnabled();
+    public function isEnabled(
+        OrderInterface $order
+    ): bool {
+        return $this->config->isAfterShopEnabled(
+            (string) $order->getStoreId()
+        );
     }
 
     /**

@@ -26,7 +26,7 @@ class Test extends Button
     {
         return $this->create(
             $element,
-            'Test callbacks',
+            'Execute test',
             'resursbank_ordermanagement/callback/test'
         );
     }

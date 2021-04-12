@@ -19,8 +19,10 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
@@ -98,6 +100,11 @@ class Callback implements CallbackInterface
     private $cacheTypeList;
 
     /**
+     * @var Scope
+     */
+    private $scope;
+
+    /**
      * Callback constructor.
      *
      * @param Api $api
@@ -125,7 +132,8 @@ class Callback implements CallbackInterface
         OrderRepository $orderRepository,
         OrderSender $orderSender,
         PaymentHistoryHelper $phHelper,
-        TypeListInterface $cacheTypeList
+        TypeListInterface $cacheTypeList,
+        Scope $scope
     ) {
         $this->api = $api;
         $this->callbackHelper = $callbackHelper;
@@ -138,6 +146,7 @@ class Callback implements CallbackInterface
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
         $this->cacheTypeList = $cacheTypeList;
+        $this->scope = $scope;
     }
 
     /**
@@ -198,8 +207,15 @@ class Callback implements CallbackInterface
         try {
             $this->logIncoming('test', '', '');
 
-            // Mark time we received the test callback.
-            $this->config->setTestReceived(time());
+            /**
+             * NOTE: typecasting should be safe since this is only utilised in
+             * the configuration where website/store id is always numeric.
+             */
+            $this->config->setCallbackTestReceivedAt(
+                (int) $this->scope->getId(),
+                $this->scope->getType()
+            );
+
             // Clear the config cache so this value show up.
             $this->cacheTypeList->cleanType('config');
         } catch (Exception $e) {
@@ -325,7 +341,10 @@ class Callback implements CallbackInterface
         Order $order
     ): array {
         $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig()
+            $this->credentials->resolveFromConfig(
+                (string) $order->getStore()->getCode(),
+                ScopeInterface::SCOPE_STORES
+            )
         );
 
         $status = $connection->getOrderStatusByPayment(
@@ -401,10 +420,8 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        if ($this->callbackLog->shouldLog()) {
-            $this->callbackLog->info(
-                "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
-            );
-        }
+        $this->callbackLog->info(
+            "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
+        );
     }
 }

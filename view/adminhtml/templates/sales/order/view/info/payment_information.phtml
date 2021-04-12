@@ -17,13 +17,13 @@ use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\Payment
 /** @phpstan-ignore-next-line */
 $viewModel = $block->getViewModel();
 
-$viewModel->setOrder(
+$order = $viewModel->setOrder(
     $viewModel->getOrder(
         (int)$block->getRequest()->getParam('order_id') /** @phpstan-ignore-line */
     )
 );
 ?>
-<?php if ($viewModel->isEnabled()): ?>
+<?php if ($viewModel->isEnabled($order)): ?>
     <?php if (empty($viewModel->getPaymentInformation())): ?>
         <div class="field-group">
             <p class="error-message">

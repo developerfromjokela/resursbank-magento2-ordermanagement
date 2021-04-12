@@ -15,10 +15,10 @@
                 <can_refund>1</can_refund>
             </resursbank_default>
         </payment>
-        <resursbank>
-            <ordermanagement>
+        <payment>
+            <resursbank_ordermanagement>
                 <aftershop>1</aftershop>
-            </ordermanagement>
-        </resursbank>
+            </resursbank_ordermanagement>
+        </payment>
     </default>
 </config>
