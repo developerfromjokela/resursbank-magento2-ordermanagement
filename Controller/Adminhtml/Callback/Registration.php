@@ -9,13 +9,20 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 
 use Exception;
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\App\ResponseInterface;
+use Magento\Backend\Model\View\Result\Redirect;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Response\RedirectInterface;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Message\ManagerInterface;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 
-class Registration extends Action
+/**
+ * Register callbacks at Resurs Bank. Callbacks are executed when events occur
+ * on a payment.
+ */
+class Registration implements HttpGetActionInterface
 {
     /**
      * @var CallbackHelper
@@ -28,36 +35,54 @@ class Registration extends Action
     private $log;
 
     /**
-     * Registration constructor.
-     *
-     * @param Context $context
+     * @var ManagerInterface
+     */
+    private $message;
+
+    /**
+     * @var ResultFactory
+     */
+    private $resultFactory;
+
+    /**
+     * @var RedirectInterface
+     */
+    private $redirect;
+
+    /**
      * @param CallbackHelper $callbackHelper
      * @param Log $log
+     * @param ManagerInterface $message
+     * @param ResultFactory $resultFactory
+     * @param RedirectInterface $redirect
      */
     public function __construct(
-        Context $context,
         CallbackHelper $callbackHelper,
-        Log $log
+        Log $log,
+        ManagerInterface $message,
+        ResultFactory $resultFactory,
+        RedirectInterface $redirect
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->log = $log;
-
-        parent::__construct($context);
+        $this->message = $message;
+        $this->resultFactory = $resultFactory;
+        $this->redirect = $redirect;
     }
 
     /**
      * Register callback URLs
      *
-     * @return ResponseInterface
+     * @return ResultInterface
      */
-    public function execute(): ResponseInterface
+    public function execute(): ResultInterface
     {
         try {
             // Register callback URLs.
             $this->callbackHelper->register();
 
             // Add success message.
-            $this->getMessageManager()->addSuccessMessage(
+            $this->message->addSuccessMessage(
                 __('Callback URLs were successfully registered.')->getText()
             );
         } catch (Exception $e) {
@@ -65,11 +90,13 @@ class Registration extends Action
             $this->log->exception($e);
 
             // Add error message.
-            $this->getMessageManager()->addErrorMessage(
+            $this->message->addErrorMessage(
                 __('Callback URLs failed to register.')->getText()
             );
         }
 
-        return $this->_redirect($this->_redirect->getRefererUrl());
+        /** @var Redirect $result */
+        $result = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        return $result->setUrl($this->redirect->getRefererUrl());
     }
 }

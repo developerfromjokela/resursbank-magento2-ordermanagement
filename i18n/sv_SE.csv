@@ -10,9 +10,9 @@
 "Could not retrieve timestamp from database.","Kunde inte hämta datum från databasen."
 "Test callback could not be triggered","Kunde inte trigga test callback:en."
 "Test callback was sent","Test callback:en skickades"
-"Test last triggered at","Test startat senast"
-"Test last received at","Test mottogs senast"
-"Test callbacks","Testa callbacks"
+"Test last triggered at","Senaste test efterfrågades"
+"Test last received at","Senaste test mottogs"
+"Test Callbacks","Testa callbacks"
 "Execute test","Utför test"
 "Callback Settings","Callbacks",
 "After-shop Settings","Aftershop"

@@ -174,7 +174,15 @@ class Callback extends AbstractHelper
             )
         );
 
-        $connection->triggerCallback();
+        // NOTE: The three 's','a','d' values exist because the API expects five
+        // values.
+        $connection->triggerCallback([
+            $this->scope->getId(),
+            $this->scope->getType(),
+            's',
+            'a',
+            'd'
+        ]);
     }
 
     /**

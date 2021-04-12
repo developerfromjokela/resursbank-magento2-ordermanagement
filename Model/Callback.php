@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model;
 
+use function constant;
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
@@ -16,6 +17,7 @@ use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderRepository;
@@ -35,8 +37,6 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
-use \Magento\Sales\Api\Data\OrderPaymentInterface;
-use function constant;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -105,8 +105,6 @@ class Callback implements CallbackInterface
     private $scope;
 
     /**
-     * Callback constructor.
-     *
      * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
@@ -118,6 +116,7 @@ class Callback implements CallbackInterface
      * @param OrderSender $orderSender
      * @param PaymentHistoryHelper $phHelper
      * @param TypeListInterface $cacheTypeList
+     * @param Scope $scope
      * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -207,13 +206,9 @@ class Callback implements CallbackInterface
         try {
             $this->logIncoming('test', '', '');
 
-            /**
-             * NOTE: typecasting should be safe since this is only utilised in
-             * the configuration where website/store id is always numeric.
-             */
             $this->config->setCallbackTestReceivedAt(
-                (int) $this->scope->getId(),
-                $this->scope->getType()
+                (int) $param1,
+                $param2,
             );
 
             // Clear the config cache so this value show up.

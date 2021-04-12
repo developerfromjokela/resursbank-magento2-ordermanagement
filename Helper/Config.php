@@ -52,7 +52,7 @@ class Config extends AbstractConfig
      * @param string $scopeType
      */
     public function setCallbackTestTriggeredAt(
-        ?int $scopeId,
+        int $scopeId,
         string $scopeType
     ): void {
         /** @noinspection JsonEncodingApiUsageInspection */
@@ -90,7 +90,7 @@ class Config extends AbstractConfig
      * @return void
      */
     public function setCallbackTestReceivedAt(
-        ?int $scopeId,
+        int $scopeId,
         string $scopeType
     ): void {
         /** @noinspection JsonEncodingApiUsageInspection */

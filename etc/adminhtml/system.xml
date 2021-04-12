@@ -25,24 +25,21 @@
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
                             <config_path>payment/resursbank_ordermanagement/callback_registration</config_path>
                         </field>
-<!--                        <field id="callback_test" type="button" sortOrder="1" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">-->
-<!--                            <label>Test Callbacks</label>-->
-<!--                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>-->
-<!--                            <config_path>payment/resursbank_ordermanagement/callback_test</config_path>-->
-<!--                        </field>-->
-<!--                        <field id="callback_test_triggered_at" type="text" sortOrder="2" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">-->
-<!--                            <label>Test last triggered at</label>-->
-<!--                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestTriggeredAt</frontend_model>-->
-<!--                            <config_path>payment/resursbank_ordermanagement/callback_test_triggered_at</config_path>-->
-<!--                        </field>-->
-<!--                        <field id="callback_test_received_at" type="text" sortOrder="3" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">-->
-<!--                            <label>Test last received at</label>-->
-<!--                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestReceivedAt</frontend_model>-->
-<!--                            <config_path>payment/resursbank_ordermanagement/callback_test_received_at</config_path>-->
-<!--                            <depends>-->
-<!--                                <field id="payment/resursbank_api/environment"></field>-->
-<!--                            </depends>-->
-<!--                        </field>-->
+                        <field id="callback_test" type="button" sortOrder="1" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Test Callbacks</label>
+                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
+                            <config_path>payment/resursbank_ordermanagement/callback_test</config_path>
+                        </field>
+                        <field id="callback_test_triggered_at" type="text" sortOrder="2" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Test last triggered at</label>
+                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestTriggeredAt</frontend_model>
+                            <config_path>payment/resursbank_ordermanagement/callback_test_triggered_at</config_path>
+                        </field>
+                        <field id="callback_test_received_at" type="text" sortOrder="3" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Test last received at</label>
+                            <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestReceivedAt</frontend_model>
+                            <config_path>payment/resursbank_ordermanagement/callback_test_received_at</config_path>
+                        </field>
                         <field id="url_list" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                             <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing</frontend_model>
                             <config_path>payment/resursbank_ordermanagement/url_list</config_path>
