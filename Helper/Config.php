@@ -55,7 +55,6 @@ class Config extends AbstractConfig
         int $scopeId,
         string $scopeType
     ): void {
-        /** @noinspection JsonEncodingApiUsageInspection */
         $this->set(
             self::GROUP,
             'callback_test_triggered_at',
@@ -93,7 +92,6 @@ class Config extends AbstractConfig
         int $scopeId,
         string $scopeType
     ): void {
-        /** @noinspection JsonEncodingApiUsageInspection */
         $this->set(
             self::GROUP,
             'callback_test_received_at',

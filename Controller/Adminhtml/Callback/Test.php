@@ -98,8 +98,6 @@ class Test implements HttpGetActionInterface
     }
 
     /**
-     * Test callback URLs.
-     *
      * @return ResultInterface
      */
     public function execute(): ResultInterface
@@ -118,19 +116,20 @@ class Test implements HttpGetActionInterface
                 $this->scope->getType()
             );
 
+            /**
+             * Clear cache (to reflect the new "test callback triggered at" date
+             * when the config page reloads).
+             */
             $this->cacheTypeList->cleanType('config');
 
-            // Add success message.
             $this->message->addSuccessMessage(
-                __('Test callback was sent')->getText()
+                __('Test callback was sent.')->getText()
             );
         } catch (Exception $e) {
-            // Log error.
             $this->log->exception($e);
 
-            // Add error message.
             $this->message->addErrorMessage(
-                __('Test callback could not be triggered')->getText()
+                __('Test callback could not be triggered.')->getText()
             );
         }
 

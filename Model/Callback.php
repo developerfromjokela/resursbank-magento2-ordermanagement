@@ -24,7 +24,6 @@ use Magento\Sales\Model\OrderRepository;
 use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
-use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
@@ -100,11 +99,6 @@ class Callback implements CallbackInterface
     private $cacheTypeList;
 
     /**
-     * @var Scope
-     */
-    private $scope;
-
-    /**
      * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
@@ -116,7 +110,6 @@ class Callback implements CallbackInterface
      * @param OrderSender $orderSender
      * @param PaymentHistoryHelper $phHelper
      * @param TypeListInterface $cacheTypeList
-     * @param Scope $scope
      * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -131,8 +124,7 @@ class Callback implements CallbackInterface
         OrderRepository $orderRepository,
         OrderSender $orderSender,
         PaymentHistoryHelper $phHelper,
-        TypeListInterface $cacheTypeList,
-        Scope $scope
+        TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
         $this->callbackHelper = $callbackHelper;
@@ -145,7 +137,6 @@ class Callback implements CallbackInterface
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
         $this->cacheTypeList = $cacheTypeList;
-        $this->scope = $scope;
     }
 
     /**

@@ -71,25 +71,19 @@ class Registration implements HttpGetActionInterface
     }
 
     /**
-     * Register callback URLs
-     *
      * @return ResultInterface
      */
     public function execute(): ResultInterface
     {
         try {
-            // Register callback URLs.
+            // Register callbacks.
             $this->callbackHelper->register();
 
-            // Add success message.
             $this->message->addSuccessMessage(
                 __('Callback URLs were successfully registered.')->getText()
             );
         } catch (Exception $e) {
-            // Log error.
             $this->log->exception($e);
-
-            // Add error message.
             $this->message->addErrorMessage(
                 __('Callback URLs failed to register.')->getText()
             );

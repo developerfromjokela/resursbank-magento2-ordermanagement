@@ -48,8 +48,9 @@ class TestReceivedAt extends Field
      * @param AbstractElement $element
      * @return string
      */
-    public function render(AbstractElement $element): string
-    {
+    public function render(
+        AbstractElement $element
+    ): string {
         /** @noinspection PhpUndefinedMethodInspection */
         /** @phpstan-ignore-next-line */
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
@@ -58,12 +59,13 @@ class TestReceivedAt extends Field
     }
 
     /**
-     * Get the button and scripts contents
+     * Render date when test callback was last received from the API.
      *
      * @param AbstractElement $element
      * @return string
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+     * @noinspection PhpMissingParentCallCommonInspection
      */
     protected function _getElementHtml(
         AbstractElement $element

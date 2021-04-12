@@ -73,6 +73,8 @@ class Callback extends AbstractHelper
      * @param DeploymentConfig $deploymentConfig
      * @param RequestInterface $request
      * @param Log $log
+     * @param Scope $scope
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
@@ -208,13 +210,13 @@ class Callback extends AbstractHelper
         string $type
     ) : string {
         $suffix = $type === 'test' ?
-            'param1/a/param2/b/param3/scopeType/default/scopeId/0' :
+            'param1/a/param2/b/param3/c/param4/d/param5/e' :
             'paymentId/{paymentId}/digest/{digest}';
 
         /** @noinspection PhpUndefinedMethodInspection */
         return (
             $this->storeManager->getStore( /** @phpstan-ignore-line */
-                $this->scope->getId(ScopeInterface::SCOPE_STORES)
+                $this->scope->getId(ScopeInterface::SCOPE_STORE)
             )->getBaseUrl(
                 UrlInterface::URL_TYPE_LINK,
                 $this->request->isSecure()
