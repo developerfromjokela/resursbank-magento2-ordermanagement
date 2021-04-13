@@ -136,7 +136,6 @@ class Callback extends AbstractHelper
      * Fetch registered callbacks.
      *
      * @return array<stdClass>
-     * @throws Exception
      */
     public function fetch(): array
     {

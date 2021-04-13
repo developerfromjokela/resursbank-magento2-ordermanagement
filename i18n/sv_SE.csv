@@ -13,10 +13,10 @@
 "Test last triggered at","Senaste test efterfrågades"
 "Test last received at","Senaste test mottogs"
 "Test Callbacks","Testa callbacks"
-"Execute test","Utför test"
+"Perform test","Utför test"
 "Callback Settings","Callbacks",
 "After-shop Settings","Aftershop"
-"Update callbacks","Uppdatera"
+"Update","Uppdatera"
 "Failed to capture payment.","Debitering av betalning misslyckades."
 "Failed to cancel payment.","Annullering av betalning misslyckades."
 "Failed to refund payment.","Kreditering av betalning misslyckades."

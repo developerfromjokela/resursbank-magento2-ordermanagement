@@ -3,32 +3,37 @@
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
  */
-?>
-<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing;
+
 /**
- * @var $block \Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing
+ * @var Listing $block
+ * @var Escaper $escaper
  */
 ?>
 
 <?php $callbacks = $block->callbackHelper->fetch(); ?>
 
 <?php if (count($callbacks)): ?>
-    <h3><?php echo __('Registered Callbacks') ?></h3>
+    <h3><?= $escaper->escapeHtml(__('Registered Callbacks')) ?></h3>
     <div style="max-width: 290px; overflow-x: scroll;">
         <?php foreach ($callbacks as $callback): ?>
-            <p><b>[<?php echo $callback->eventType ?>]</b></p>
+            <p style="font-weight: bold;">[<?= $escaper->escapeHtml($callback->eventType) ?>]</p>
             <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0;">
-                <?php echo (string) $callback->uriTemplate ?>
+                <?= $escaper->escapeHtml($callback->uriTemplate) ?>
             </p>
         <?php endforeach; ?>
     </div>
 <?php else: ?>
     <p class="error-message">
-        <?php echo __(
-            'No registered callbacks found. Update callbacks, if ' .
-            'you don\'t get a list of &quot;Registered ' .
-            'Callbacks&quot;, please verify that the provided ' .
-            'username and password are accurate.'
-        ) ?>
+<?= $escaper->escapeHtml(__(
+    'No registered callbacks found. Update callbacks, if ' .
+    'you don\'t get a list of &quot;Registered ' .
+    'Callbacks&quot;, please verify that the provided ' .
+    'username and password are accurate.'
+)) ?>
     </p>
 <?php endif; ?>
