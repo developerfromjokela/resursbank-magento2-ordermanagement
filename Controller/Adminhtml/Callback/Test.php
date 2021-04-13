@@ -9,16 +9,23 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Controller\Adminhtml\Callback;
 
 use Exception;
-use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\View\Result\Redirect;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Cache\TypeListInterface;
-use Magento\Framework\App\ResponseInterface;
-use Resursbank\Core\Helper\Store as StoreHelper;
+use Magento\Framework\App\Response\RedirectInterface;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Message\ManagerInterface;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 
-class Test extends Action
+/**
+ * Force the "test" callback to be triggered at Resurs Bank, to check whether
+ * callbacks are properly accepted by the client.
+ */
+class Test implements HttpGetActionInterface
 {
     /**
      * @var CallbackHelper
@@ -36,71 +43,98 @@ class Test extends Action
     private $log;
 
     /**
-     * @var StoreHelper
-     */
-    private $storeHelper;
-
-    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
 
     /**
-     * @param Context $context
+     * @var Scope
+     */
+    private $scope;
+
+    /**
+     * @var ManagerInterface
+     */
+    private $message;
+
+    /**
+     * @var ResultFactory
+     */
+    private $resultFactory;
+
+    /**
+     * @var RedirectInterface
+     */
+    private $redirect;
+
+    /**
      * @param CallbackHelper $callbackHelper
      * @param Config $config
      * @param Log $log
-     * @param StoreHelper $storeHelper
      * @param TypeListInterface $cacheTypeList
+     * @param Scope $scope
+     * @param ManagerInterface $message
+     * @param ResultFactory $resultFactory
+     * @param RedirectInterface $redirect
      */
     public function __construct(
-        Context $context,
         CallbackHelper $callbackHelper,
         Config $config,
         Log $log,
-        StoreHelper $storeHelper,
-        TypeListInterface $cacheTypeList
+        TypeListInterface $cacheTypeList,
+        Scope $scope,
+        ManagerInterface $message,
+        ResultFactory $resultFactory,
+        RedirectInterface $redirect
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
         $this->log = $log;
-        $this->storeHelper = $storeHelper;
         $this->cacheTypeList = $cacheTypeList;
-
-        parent::__construct($context);
+        $this->scope = $scope;
+        $this->message = $message;
+        $this->redirect = $redirect;
+        $this->resultFactory = $resultFactory;
     }
 
     /**
-     * Test callback URLs.
-     *
-     * @return ResponseInterface
+     * @return ResultInterface
      */
-    public function execute(): ResponseInterface
+    public function execute(): ResultInterface
     {
+        /** @noinspection BadExceptionsProcessingInspection */
         try {
             // Trigger the test-callback.
-            $this->callbackHelper->test(
-                $this->storeHelper->fromRequest()
+            $this->callbackHelper->test();
+
+            /**
+             * NOTE: typecasting should be safe since this is executed from the
+             * config where the store/website parameter will always be numeric.
+             */
+            $this->config->setCallbackTestTriggeredAt(
+                (int) $this->scope->getId(),
+                $this->scope->getType()
             );
 
-            $this->config->setTestTriggered(time());
-
+            /**
+             * Clear cache (to reflect the new "test callback triggered at" date
+             * when the config page reloads).
+             */
             $this->cacheTypeList->cleanType('config');
 
-            // Add success message.
-            $this->getMessageManager()->addSuccessMessage(
-                __('Test callback was sent')->getText()
+            $this->message->addSuccessMessage(
+                __('Test callback was sent.')->getText()
             );
         } catch (Exception $e) {
-            // Log error.
             $this->log->exception($e);
 
-            // Add error message.
-            $this->getMessageManager()->addErrorMessage(
-                __('Test callback could not be triggered')->getText()
+            $this->message->addErrorMessage(
+                __('Test callback could not be triggered.')->getText()
             );
         }
 
-        return $this->_redirect($this->_redirect->getRefererUrl());
+        /** @var Redirect $result */
+        $result = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        return $result->setUrl($this->redirect->getRefererUrl());
     }
 }

@@ -26,7 +26,7 @@ class Registration extends Button
     {
         return $this->create(
             $element,
-            'Update callbacks',
+            'Update',
             'resursbank_ordermanagement/callback/registration'
         );
     }

@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\AbstractConfig;
 
@@ -35,8 +34,8 @@ class Config extends AbstractConfig
      * @return bool
      */
     public function isAfterShopEnabled(
-        ?string $scopeCode = null,
-        string $scopeType = ScopeInterface::SCOPE_STORE
+        ?string $scopeCode,
+        string $scopeType = ScopeInterface::SCOPE_STORES
     ): bool {
         return $this->isEnabled(
             self::GROUP,
@@ -47,64 +46,75 @@ class Config extends AbstractConfig
     }
 
     /**
+     * Update time when last test callback was triggered.
+     *
+     * @param int|null $scopeId
+     * @param string $scopeType
+     */
+    public function setCallbackTestTriggeredAt(
+        int $scopeId,
+        string $scopeType
+    ): void {
+        $this->set(
+            self::GROUP,
+            'callback_test_triggered_at',
+            date('Y-m-d H:i:s'),
+            $scopeId,
+            $scopeType
+        );
+    }
+
+    /**
      * @param string|null $scopeCode
      * @param string $scopeType
-     * @return null|object
+     * @return string
      */
-    public function getTestReceivedAt(
-        ?string $scopeCode = null,
-        string $scopeType = ScopeInterface::SCOPE_STORE
-    ): ?object {
-        $result = $this->get(
+    public function getCallbackTestTriggeredAt(
+        ?string $scopeCode,
+        string $scopeType = ScopeInterface::SCOPE_STORES
+    ): string {
+        return (string) $this->get(
+            self::GROUP,
+            'callback_test_triggered_at',
+            $scopeCode,
+            $scopeType
+        );
+    }
+
+    /**
+     * Update time when last test callback was received.
+     *
+     * @param int|null $scopeId
+     * @param string $scopeType
+     * @return void
+     */
+    public function setCallbackTestReceivedAt(
+        int $scopeId,
+        string $scopeType
+    ): void {
+        $this->set(
+            self::GROUP,
+            'callback_test_received_at',
+            date('Y-m-d H:i:s'),
+            $scopeId,
+            $scopeType
+        );
+    }
+
+    /**
+     * @param string|null $scopeCode
+     * @param string $scopeType
+     * @return string
+     */
+    public function getCallbackTestReceivedAt(
+        ?string $scopeCode,
+        string $scopeType = ScopeInterface::SCOPE_STORES
+    ): string {
+        return (string) $this->get(
             self::GROUP,
             'callback_test_received_at',
             $scopeCode,
             $scopeType
-        );
-
-        /** @noinspection JsonEncodingApiUsageInspection */
-        return $result ? json_decode($result) : null;
-    }
-
-    /**
-     * @param int $value
-     * @param int $scopeId
-     * @return void
-     */
-    public function setTestTriggered(
-        int $value,
-        int $scopeId = 0
-    ): void {
-        /** @noinspection JsonEncodingApiUsageInspection */
-        $this->set(
-            self::GROUP,
-            'callback_test_received_at',
-            json_encode(
-                [self::TRIGGER_KEY => $value, self::RECEIVED_KEY => null]
-            ),
-            $scopeId,
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT
-        );
-    }
-
-    /**
-     * @param int $value
-     * @param int $scopeId
-     * @return void
-     */
-    public function setTestReceived(
-        int $value,
-        int $scopeId = 0
-    ): void {
-        /** @noinspection JsonEncodingApiUsageInspection */
-        $this->set(
-            self::GROUP,
-            'callback_test_received_at',
-            json_encode(
-                [self::TRIGGER_KEY => null, self::RECEIVED_KEY => $value]
-            ),
-            $scopeId,
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
     }
 }

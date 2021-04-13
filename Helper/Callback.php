@@ -15,12 +15,15 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Core\Helper\Scope;
 use stdClass;
 
 /**
@@ -54,12 +57,24 @@ class Callback extends AbstractHelper
     private $log;
 
     /**
+     * @var Scope
+     */
+    private $scope;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * @param Context $context
      * @param Api $api
      * @param Credentials $credentials
      * @param DeploymentConfig $deploymentConfig
      * @param RequestInterface $request
      * @param Log $log
+     * @param Scope $scope
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
@@ -67,13 +82,17 @@ class Callback extends AbstractHelper
         Credentials $credentials,
         DeploymentConfig $deploymentConfig,
         RequestInterface $request,
-        Log $log
+        Log $log,
+        Scope $scope,
+        StoreManagerInterface $storeManager
     ) {
         $this->api = $api;
         $this->credentials = $credentials;
         $this->deploymentConfig = $deploymentConfig;
         $this->request = $request;
         $this->log = $log;
+        $this->scope = $scope;
+        $this->storeManager = $storeManager;
 
         parent::__construct($context);
     }
@@ -81,17 +100,19 @@ class Callback extends AbstractHelper
     /**
      * Register all callback methods.
      *
-     * @param StoreInterface $store
      * @return self
      * @throws ValidatorException
      * @throws Exception
      */
-    public function register(StoreInterface $store): self
+    public function register(): self
     {
         $salt = $this->salt();
 
         $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig($store->getCode())
+            $this->credentials->resolveFromConfig(
+                $this->scope->getId(),
+                $this->scope->getType()
+            )
         );
 
         // Callback types.
@@ -103,7 +124,7 @@ class Callback extends AbstractHelper
                     'Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES::' .
                     strtoupper($type)
                 ),
-                $this->urlCallbackTemplate($store, $type),
+                $this->urlCallbackTemplate($type),
                 ['digestSalt' => $salt]
             );
         }
@@ -115,14 +136,16 @@ class Callback extends AbstractHelper
      * Fetch registered callbacks.
      *
      * @return array<stdClass>
-     * @throws Exception
      */
     public function fetch(): array
     {
         $result = [];
 
         try {
-            $credentials = $this->credentials->resolveFromConfig();
+            $credentials = $this->credentials->resolveFromConfig(
+                $this->scope->getId(),
+                $this->scope->getType()
+            );
 
             if ($this->credentials->hasCredentials($credentials)) {
                 $result = $this->api
@@ -139,18 +162,28 @@ class Callback extends AbstractHelper
     /**
      * Trigger the test-callback.
      *
-     * @param StoreInterface $store
      * @return void
      * @throws ValidatorException
      * @throws Exception
      */
-    public function test(StoreInterface $store): void
+    public function test(): void
     {
         $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig($store->getCode())
+            $this->credentials->resolveFromConfig(
+                $this->scope->getId(),
+                $this->scope->getType()
+            )
         );
 
-        $connection->triggerCallback();
+        // NOTE: The three 's','a','d' values exist because the API expects five
+        // values.
+        $connection->triggerCallback([
+            $this->scope->getId(),
+            $this->scope->getType(),
+            's',
+            'a',
+            'd'
+        ]);
     }
 
     /**
@@ -168,21 +201,22 @@ class Callback extends AbstractHelper
     /**
      * Retrieve callback URL template.
      *
-     * @param StoreInterface $store
      * @param string $type
      * @return string
+     * @throws NoSuchEntityException
      */
     private function urlCallbackTemplate(
-        StoreInterface $store,
         string $type
     ) : string {
         $suffix = $type === 'test' ?
-            'param1/a/param2/b/param3/c/param4/d/param5/e/' :
+            'param1/a/param2/b/param3/c/param4/d/param5/e' :
             'paymentId/{paymentId}/digest/{digest}';
 
         /** @noinspection PhpUndefinedMethodInspection */
         return (
-            $store->getBaseUrl( /** @phpstan-ignore-line */
+            $this->storeManager->getStore( /** @phpstan-ignore-line */
+                $this->scope->getId(ScopeInterface::SCOPE_STORE)
+            )->getBaseUrl(
                 UrlInterface::URL_TYPE_LINK,
                 $this->request->isSecure()
             ) . "rest/V1/resursbank_ordermanagement/order/{$type}/{$suffix}"

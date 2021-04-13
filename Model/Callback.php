@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model;
 
+use function constant;
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
@@ -16,9 +17,11 @@ use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
@@ -33,8 +36,6 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
-use \Magento\Sales\Api\Data\OrderPaymentInterface;
-use function constant;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -98,8 +99,6 @@ class Callback implements CallbackInterface
     private $cacheTypeList;
 
     /**
-     * Callback constructor.
-     *
      * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
@@ -198,8 +197,11 @@ class Callback implements CallbackInterface
         try {
             $this->logIncoming('test', '', '');
 
-            // Mark time we received the test callback.
-            $this->config->setTestReceived(time());
+            $this->config->setCallbackTestReceivedAt(
+                (int) $param1,
+                $param2,
+            );
+
             // Clear the config cache so this value show up.
             $this->cacheTypeList->cleanType('config');
         } catch (Exception $e) {
@@ -325,7 +327,10 @@ class Callback implements CallbackInterface
         Order $order
     ): array {
         $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig()
+            $this->credentials->resolveFromConfig(
+                (string) $order->getStore()->getCode(),
+                ScopeInterface::SCOPE_STORES
+            )
         );
 
         $status = $connection->getOrderStatusByPayment(
@@ -401,10 +406,8 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        if ($this->callbackLog->shouldLog()) {
-            $this->callbackLog->info(
-                "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
-            );
-        }
+        $this->callbackLog->info(
+            "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
+        );
     }
 }
