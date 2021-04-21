@@ -71,4 +71,11 @@
             type="Resursbank\Ordermanagement\Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo"
         />
     </type>
+
+    <!-- Append module version info to API call user agent header. -->
+    <type name="Resursbank\Core\Helper\Api">
+        <plugin
+            name="resursbank_ordermanagement_api"
+            type="Resursbank\Ordermanagement\Plugin\Helper\Api" />
+    </type>
 </config>
