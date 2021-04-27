@@ -183,8 +183,10 @@ class Callback implements CallbackInterface
         try {
             $order = $this->execute('booked', $paymentId, $digest);
 
-            // Send order confirmation email.
-            $this->orderSender->send($order);
+            // Send order confirmation email if this is first BOOKED.
+            if (!$this->receivedCallback($order)) {
+                $this->orderSender->send($order);
+            }
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -295,15 +297,21 @@ class Callback implements CallbackInterface
     /**
      * Check to see if a payment has received BOOKED callback.
      *
-     * @param int $paymentId
+     * @param Order $order
      * @return bool
      * @throws LocalizedException
      */
-    public function receivedCallback(int $paymentId): bool
+    public function receivedCallback(Order $order): bool
     {
+        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+            throw new RuntimeException(
+                __('Missing payment data on order %1', $order->getId())
+            );
+        }
+
         $criteria = $this->searchBuilder->addFilter(
             PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-            $paymentId
+            $order->getPayment()->getEntityId()
         )->addFilter(
             PaymentHistoryInterface::ENTITY_EVENT,
             PaymentHistoryInterface::EVENT_CALLBACK_BOOKED
@@ -314,7 +322,7 @@ class Callback implements CallbackInterface
             ->getList($criteria)
             ->getItems();
 
-        return count($items) > 0;
+        return count($items) > 1;
     }
 
     /**
