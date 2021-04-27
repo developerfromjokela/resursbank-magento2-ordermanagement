@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model;
 
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistorySearchResultsInterface;
+use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use function constant;
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
@@ -94,6 +98,16 @@ class Callback implements CallbackInterface
     private $phHelper;
 
     /**
+     * @var PaymentHistoryRepositoryInterface
+     */
+    private $phRepository;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private $searchBuilder;
+
+    /**
      * @var TypeListInterface
      */
     private $cacheTypeList;
@@ -109,6 +123,8 @@ class Callback implements CallbackInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param PaymentHistoryHelper $phHelper
+     * @param PaymentHistoryRepositoryInterface $phRepository
+     * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
      * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -124,6 +140,8 @@ class Callback implements CallbackInterface
         OrderRepository $orderRepository,
         OrderSender $orderSender,
         PaymentHistoryHelper $phHelper,
+        PaymentHistoryRepositoryInterface $phRepository,
+        SearchCriteriaBuilder $searchBuilder,
         TypeListInterface $cacheTypeList
     ) {
         $this->api = $api;
@@ -133,9 +151,11 @@ class Callback implements CallbackInterface
         $this->log = $log;
         $this->callbackLog = $callbackLog;
         $this->orderInterface = $orderInterface;
-        $this->phHelper = $phHelper;
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
+        $this->phHelper = $phHelper;
+        $this->phRepository = $phRepository;
+        $this->searchBuilder = $searchBuilder;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -270,6 +290,31 @@ class Callback implements CallbackInterface
         );
 
         return $order;
+    }
+
+    /**
+     * Check to see if a payment has received BOOKED callback.
+     *
+     * @param int $paymentId
+     * @return bool
+     * @throws LocalizedException
+     */
+    public function receivedCallback(int $paymentId): bool
+    {
+        $criteria = $this->searchBuilder->addFilter(
+            PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+            $paymentId
+        )->addFilter(
+            PaymentHistoryInterface::ENTITY_EVENT,
+            PaymentHistoryInterface::EVENT_CALLBACK_BOOKED
+        )->create();
+
+        /** @var PaymentHistoryInterface[] $items */
+        $items = $this->phRepository
+            ->getList($criteria)
+            ->getItems();
+
+        return count($items) > 0;
     }
 
     /**
