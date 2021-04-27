@@ -10,7 +10,6 @@ namespace Resursbank\Ordermanagement\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
-use Resursbank\Ordermanagement\Api\Data\PaymentHistorySearchResultsInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use function constant;
 use Exception;
@@ -295,7 +294,7 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Check to see if a payment has received BOOKED callback.
+     * Check to see if an order has received BOOKED callback.
      *
      * @param Order $order
      * @return bool
