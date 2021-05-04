@@ -13,7 +13,8 @@ use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
-use Magento\Sales\Model\Order\InvoiceRepository;
+use Magento\Sales\Api\InvoiceRepositoryInterface;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
 
 /**
  * Injects custom HTML containing payment information on order/invoice view.
@@ -28,7 +29,7 @@ use Magento\Sales\Model\Order\InvoiceRepository;
 class PaymentInformation extends Template
 {
     /**
-     * @var InvoiceRepository
+     * @var InvoiceRepositoryInterface
      */
     private $invoiceRepo;
 
@@ -38,22 +39,30 @@ class PaymentInformation extends Template
     private $log;
 
     /**
+     * @var CreditmemoRepositoryInterface
+     */
+    private $creditmemoRepo;
+
+    /**
      * @param Context $context
      * @param ViewModel $viewModel
-     * @param InvoiceRepository $invoiceRepo
+     * @param InvoiceRepositoryInterface $invoiceRepo
+     * @param CreditmemoRepositoryInterface $creditmemoRepo
      * @param Log $log
      * @param mixed[] $data
      */
     public function __construct(
         Context $context,
         ViewModel $viewModel,
-        InvoiceRepository $invoiceRepo,
+        InvoiceRepositoryInterface $invoiceRepo,
+        CreditmemoRepositoryInterface $creditmemoRepo,
         Log $log,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
         $this->invoiceRepo = $invoiceRepo;
+        $this->creditmemoRepo = $creditmemoRepo;
         $this->log = $log;
 
         $this->setTemplate(
@@ -81,12 +90,17 @@ class PaymentInformation extends Template
             $request = $this->getRequest();
             $orderId = (int) $request->getParam('order_id');
             $invoiceId = (int) $request->getParam('invoice_id');
+            $creditmemoId = (int) $request->getParam('creditmemo_id');
 
             if ($orderId !== 0) {
                 $result = $orderId;
             } elseif ($invoiceId !== 0) {
                 $result = (int) $this->invoiceRepo
                     ->get($invoiceId)
+                    ->getOrderId();
+            } elseif ($creditmemoId !== 0) {
+                $result = (int) $this->creditmemoRepo
+                    ->get($creditmemoId)
                     ->getOrderId();
             }
         } catch (Exception $e) {
