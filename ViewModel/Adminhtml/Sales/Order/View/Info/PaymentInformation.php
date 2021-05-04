@@ -9,18 +9,21 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
+use function is_array;
+use function is_int;
+use function is_string;
 use Magento\Checkout\Helper\Data;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Resursbank\Core\Helper\Api;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
+use RuntimeException;
 use stdClass;
-use function is_array;
-use function is_int;
-use function is_string;
 
 class PaymentInformation implements ArgumentInterface
 {
@@ -65,11 +68,17 @@ class PaymentInformation implements ArgumentInterface
     private $log;
 
     /**
+     * @var PaymentMethods
+     */
+    private $paymentMethods;
+
+    /**
      * @param Data $checkoutHelper
      * @param OrderRepositoryInterface $orderRepository
      * @param Api $api
      * @param Config $config
      * @param PriceCurrencyInterface $priceCurrency
+     * @param PaymentMethods $paymentMethods
      * @param Log $log
      */
     public function __construct(
@@ -78,6 +87,7 @@ class PaymentInformation implements ArgumentInterface
         Api $api,
         Config $config,
         PriceCurrencyInterface $priceCurrency,
+        PaymentMethods $paymentMethods,
         Log $log
     ) {
         $this->checkoutHelper = $checkoutHelper;
@@ -85,6 +95,7 @@ class PaymentInformation implements ArgumentInterface
         $this->api = $api;
         $this->config = $config;
         $this->priceCurrency = $priceCurrency;
+        $this->paymentMethods = $paymentMethods;
         $this->log = $log;
     }
 
@@ -361,8 +372,14 @@ class PaymentInformation implements ArgumentInterface
     public function isEnabled(
         OrderInterface $order
     ): bool {
-        return $this->config->isAfterShopEnabled(
-            (string) $order->getStoreId()
+        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+            throw new RuntimeException(
+                'Missing payment data on order ' . $order->getId()
+            );
+        }
+
+        return $this->paymentMethods->isResursBankMethod(
+            $order->getPayment()->getMethod()
         );
     }
 
