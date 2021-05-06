@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
+use Magento\Store\Api\Data\StoreInterface;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -18,13 +19,16 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\PaymentMethods;
-use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 use RuntimeException;
 use stdClass;
 
+/**
+ * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+ */
 class PaymentInformation implements ArgumentInterface
 {
     /**
@@ -53,11 +57,6 @@ class PaymentInformation implements ArgumentInterface
     private $api;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @var PriceCurrencyInterface
      */
     private $priceCurrency;
@@ -73,30 +72,35 @@ class PaymentInformation implements ArgumentInterface
     private $paymentMethods;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * @param Data $checkoutHelper
      * @param OrderRepositoryInterface $orderRepository
      * @param Api $api
-     * @param Config $config
      * @param PriceCurrencyInterface $priceCurrency
      * @param PaymentMethods $paymentMethods
      * @param Log $log
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Data $checkoutHelper,
         OrderRepositoryInterface $orderRepository,
         Api $api,
-        Config $config,
         PriceCurrencyInterface $priceCurrency,
         PaymentMethods $paymentMethods,
-        Log $log
+        Log $log,
+        StoreManagerInterface $storeManager
     ) {
         $this->checkoutHelper = $checkoutHelper;
         $this->orderRepository = $orderRepository;
         $this->api = $api;
-        $this->config = $config;
         $this->priceCurrency = $priceCurrency;
         $this->paymentMethods = $paymentMethods;
         $this->log = $log;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -116,11 +120,11 @@ class PaymentInformation implements ArgumentInterface
      * @return OrderInterface|null
      */
     public function getOrder(
-        ?int $orderId
+        ?int $orderId = null
     ): ?OrderInterface {
         $result = $this->order;
 
-        if (is_int($orderId)) {
+        if (is_int($orderId) && $orderId > 0) {
             $result = $this->orderRepository->get($orderId);
         }
 
@@ -374,7 +378,7 @@ class PaymentInformation implements ArgumentInterface
     ): bool {
         if (!($order->getPayment() instanceof OrderPaymentInterface)) {
             throw new RuntimeException(
-                'Missing payment data on order ' . $order->getId()
+                'Missing payment data on order ' . $order->getIncrementId()
             );
         }
 
@@ -399,7 +403,7 @@ class PaymentInformation implements ArgumentInterface
             $price,
             false,
             PriceCurrencyInterface::DEFAULT_PRECISION,
-            $this->checkoutHelper->getQuote()->getStore()
+            $this->getStore()
         );
     }
 
@@ -413,5 +417,29 @@ class PaymentInformation implements ArgumentInterface
         string $price
     ): float {
         return $this->checkoutHelper->convertPrice((float) $price, false);
+    }
+
+    /**
+     * Get store associated with current order.
+     *
+     * @return StoreInterface|null
+     */
+    private function getStore(): ?StoreInterface
+    {
+        $result = null;
+
+        try {
+            $order = $this->getOrder();
+
+            if (($order instanceof OrderInterface) &&
+                $order->getStoreId() !== null
+            ) {
+                $result = $this->storeManager->getStore($order->getStoreId());
+            }
+        } catch (Exception $e) {
+            $this->log->exception($e);
+        }
+
+        return $result;
     }
 }
