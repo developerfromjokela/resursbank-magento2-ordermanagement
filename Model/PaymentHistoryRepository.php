@@ -107,7 +107,7 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     ): PaymentHistoryInterface {
         $history = $this->phFactory->create();
 
-        $history->getResource()->load($history, $identifier);
+        $this->resourceModel->load($history, $identifier);
 
         if (!$history->getId()) {
             throw new NoSuchEntityException(
