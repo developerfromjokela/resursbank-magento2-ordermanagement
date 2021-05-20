@@ -16,7 +16,12 @@ class Config extends AbstractConfig
     /**
      * @var string
      */
-    public const GROUP = 'ordermanagement';
+    public const GROUP_CALLBACKS = 'callbacks';
+
+    /**
+     * @var string
+     */
+    public const GROUP_AFTERSHOP = 'aftershop';
 
     /**
      * @var string
@@ -38,8 +43,8 @@ class Config extends AbstractConfig
         string $scopeType = ScopeInterface::SCOPE_STORES
     ): bool {
         return $this->isEnabled(
-            self::GROUP,
-            'aftershop',
+            self::GROUP_AFTERSHOP,
+            'enabled',
             $scopeCode,
             $scopeType
         );
@@ -56,8 +61,8 @@ class Config extends AbstractConfig
         string $scopeType
     ): void {
         $this->set(
-            self::GROUP,
-            'callback_test_triggered_at',
+            self::GROUP_CALLBACKS,
+            'test_triggered_at',
             date('Y-m-d H:i:s'),
             $scopeId,
             $scopeType
@@ -74,8 +79,8 @@ class Config extends AbstractConfig
         string $scopeType = ScopeInterface::SCOPE_STORES
     ): string {
         return (string) $this->get(
-            self::GROUP,
-            'callback_test_triggered_at',
+            self::GROUP_CALLBACKS,
+            'test_triggered_at',
             $scopeCode,
             $scopeType
         );
@@ -93,8 +98,8 @@ class Config extends AbstractConfig
         string $scopeType
     ): void {
         $this->set(
-            self::GROUP,
-            'callback_test_received_at',
+            self::GROUP_CALLBACKS,
+            'test_received_at',
             date('Y-m-d H:i:s'),
             $scopeId,
             $scopeType
@@ -111,8 +116,8 @@ class Config extends AbstractConfig
         string $scopeType = ScopeInterface::SCOPE_STORES
     ): string {
         return (string) $this->get(
-            self::GROUP,
-            'callback_test_received_at',
+            self::GROUP_CALLBACKS,
+            'test_received_at',
             $scopeCode,
             $scopeType
         );
