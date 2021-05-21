@@ -9,10 +9,9 @@
     <system>
         <section id="payment">
             <group id="resursbank_section">
-                <group id="aftershop" sortOrder="3" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>After-shop Settings</label>
-                    <field id="enabled" type="select" sortOrder="0" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Enabled</label>
+                <group id="api">
+                    <field id="ordermanagement" type="select" sortOrder="4" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Order Management</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>resursbank/aftershop/enabled</config_path>
                     </field>

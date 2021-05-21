@@ -15,7 +15,6 @@
 "Test Callbacks","Testa callbacks"
 "Perform test","Utför test"
 "Callback Settings","Callbacks",
-"After-shop Settings","Aftershop"
 "Update","Uppdatera"
 "Failed to capture payment.","Debitering av betalning misslyckades."
 "Failed to cancel payment.","Annullering av betalning misslyckades."
@@ -35,3 +34,4 @@
 "Telephone","Telefon"
 "Email","E-post"
 "Missing payment data.","Data saknas för betalningen."
+"Order Management","Orderhantering"
