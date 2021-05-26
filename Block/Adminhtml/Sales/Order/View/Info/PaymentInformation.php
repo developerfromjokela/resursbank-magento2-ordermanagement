@@ -86,6 +86,7 @@ class PaymentInformation extends Template
     {
         $result = 0;
 
+        /** @noinspection BadExceptionsProcessingInspection */
         try {
             $request = $this->getRequest();
             $orderId = (int) $request->getParam('order_id');

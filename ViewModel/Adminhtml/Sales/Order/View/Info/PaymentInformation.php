@@ -28,6 +28,7 @@ use stdClass;
 
 /**
  * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class PaymentInformation implements ArgumentInterface
 {
@@ -399,11 +400,13 @@ class PaymentInformation implements ArgumentInterface
     public function formatPrice(
         float $price
     ): string {
+        $store = $this->getStore();
+
         return $this->priceCurrency->format(
             $price,
             false,
             PriceCurrencyInterface::DEFAULT_PRECISION,
-            $this->getStore()
+            ($store !== null ? $store->getCode() : null)
         );
     }
 

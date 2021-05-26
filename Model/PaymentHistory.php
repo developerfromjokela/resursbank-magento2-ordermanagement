@@ -17,14 +17,16 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      * @noinspection MagicMethodsValidityInspection
+     * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function _construct(): void
+    protected function _construct(): void
     {
         $this->_init(ResourceModel::class);
     }
 
     /**
      * @inheritDoc
+     * @noinspection PhpMissingParentCallCommonInspection
      */
     public function getId(int $default = null): ?int
     {
