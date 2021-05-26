@@ -118,6 +118,9 @@ class Callback extends AbstractHelper
         // Callback types.
         $types = ['unfreeze', 'booked', 'update', 'test'];
 
+        // Unregister annulment, automatic_fraud_control and finalization.
+        $connection->unregisterEventCallback(14, true);
+
         foreach ($types as $type) {
             $connection->setRegisterCallback(
                 constant(
