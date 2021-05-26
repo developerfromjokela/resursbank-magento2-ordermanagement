@@ -70,8 +70,8 @@ class Config extends AbstractConfig
     }
 
     /**
-     * NOTE: When entering the config page there is not scope provided, so it
-     * can be NULL to interfere DEFAULT.
+     * NOTE: scope code may be null (when entering the config there is no scope
+     * provided, thus no code / type to collect from the request data).
      *
      * @param null|string $scopeCode
      * @param string $scopeType
@@ -110,8 +110,8 @@ class Config extends AbstractConfig
     }
 
     /**
-     * NOTE: When entering the config page there is not scope provided, so it
-     * can be NULL to interfere DEFAULT.
+     * NOTE: scope code may be null (when entering the config there is no scope
+     * provided, thus no code / type to collect from the request data).
      *
      * @param null|string $scopeCode
      * @param string $scopeType
