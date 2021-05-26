@@ -40,8 +40,9 @@ class Listing extends Field
      * @param AbstractElement $element
      * @return string
      */
-    public function render(AbstractElement $element): string
-    {
+    public function render(
+        AbstractElement $element
+    ): string {
         /** @noinspection PhpUndefinedMethodInspection */
         /** @phpstan-ignore-next-line */
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
@@ -56,9 +57,11 @@ class Listing extends Field
      * @return string
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+     * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function _getElementHtml(AbstractElement $element): string
-    {
+    protected function _getElementHtml(
+        AbstractElement $element
+    ): string {
         return $this->_toHtml();
     }
 }

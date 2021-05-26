@@ -55,19 +55,19 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array<mixed> $subject
+     * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws PaymentException
      * @throws AlreadyExistsException
      */
     public function execute(
-        array $subject
+        array $commandSubject
     ): ?ResultInterface {
         // Shortcut for improved readability.
         $history = &$this->paymentHistory;
 
         // Resolve data from command subject.
-        $data = SubjectReader::readPayment($subject);
+        $data = SubjectReader::readPayment($commandSubject);
         $paymentId = $data->getOrder()->getOrderIncrementId();
 
         /** @noinspection BadExceptionsProcessingInspection */

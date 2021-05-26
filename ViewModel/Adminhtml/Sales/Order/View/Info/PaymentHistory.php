@@ -183,7 +183,7 @@ class PaymentHistory implements ArgumentInterface
      * Check to see if payment history should be visible.
      *
      * @param Order $order
-     * @return boolean
+     * @return bool
      */
     public function visible(
         Order $order

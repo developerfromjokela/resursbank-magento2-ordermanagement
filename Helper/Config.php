@@ -34,12 +34,12 @@ class Config extends AbstractConfig
     public const RECEIVED_KEY = 'receivedAt';
 
     /**
-     * @param string|null $scopeCode
+     * @param string $scopeCode
      * @param string $scopeType
      * @return bool
      */
     public function isAfterShopEnabled(
-        ?string $scopeCode,
+        string $scopeCode,
         string $scopeType = ScopeInterface::SCOPE_STORES
     ): bool {
         return $this->isEnabled(
@@ -53,7 +53,7 @@ class Config extends AbstractConfig
     /**
      * Update time when last test callback was triggered.
      *
-     * @param int|null $scopeId
+     * @param int $scopeId
      * @param string $scopeType
      */
     public function setCallbackTestTriggeredAt(
@@ -70,7 +70,10 @@ class Config extends AbstractConfig
     }
 
     /**
-     * @param string|null $scopeCode
+     * NOTE: When entering the config page there is not scope provided, so it
+     * can be NULL to interfere DEFAULT.
+     *
+     * @param null|string $scopeCode
      * @param string $scopeType
      * @return string
      */
@@ -89,7 +92,7 @@ class Config extends AbstractConfig
     /**
      * Update time when last test callback was received.
      *
-     * @param int|null $scopeId
+     * @param int $scopeId
      * @param string $scopeType
      * @return void
      */
@@ -107,7 +110,10 @@ class Config extends AbstractConfig
     }
 
     /**
-     * @param string|null $scopeCode
+     * NOTE: When entering the config page there is not scope provided, so it
+     * can be NULL to interfere DEFAULT.
+     *
+     * @param null|string $scopeCode
      * @param string $scopeType
      * @return string
      */

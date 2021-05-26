@@ -56,6 +56,7 @@ class PaymentHistory extends AbstractHelper
      * @param string|null $extra
      * @return void
      * @throws AlreadyExistsException
+     * @noinspection PhpTooManyParametersInspection
      */
     public function createEntry(
         int $paymentId,
