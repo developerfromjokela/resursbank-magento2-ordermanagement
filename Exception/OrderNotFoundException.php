@@ -8,8 +8,8 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Exception;
 
-use Exception;
+use Magento\Framework\Exception\LocalizedException;
 
-class OrderNotFoundException extends Exception
+class OrderNotFoundException extends LocalizedException
 {
 }

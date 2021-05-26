@@ -259,7 +259,7 @@ class Callback implements CallbackInterface
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                'Failed to locate order ' . $paymentId
+                __('Failed to locate order ' . $paymentId)
             );
         }
 
@@ -343,7 +343,7 @@ class Callback implements CallbackInterface
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(
-                "Invalid digest - PaymentId: {$paymentId}. Digest: {$digest}"
+                __("Invalid digest - PaymentId: {$paymentId}. Digest: {$digest}")
             );
         }
     }
@@ -435,12 +435,12 @@ class Callback implements CallbackInterface
                 $orderState = Order::STATE_CLOSED;
                 break;
             default:
-                throw new ResolveOrderStatusFailedException(
+                throw new ResolveOrderStatusFailedException(__(
                     sprintf(
                         'Failed to resolve order status (%s) from Resurs Bank.',
                         $status
                     )
-                );
+                ));
         }
 
         return [$orderStatus, $orderState];
