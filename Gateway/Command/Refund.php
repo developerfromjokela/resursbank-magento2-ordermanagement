@@ -89,7 +89,9 @@ class Refund implements CommandInterface
             $payment = $data->getPayment();
 
             if (!($payment instanceof Payment)) {
-                throw new PaymentDataException(__('Unexpected Payment class ' . get_class($payment)));
+                throw new PaymentDataException(
+                    __('Unexpected Payment class %1', get_class($payment))
+                );
             }
 
             $memo = $payment->getCreditmemo();
@@ -110,10 +112,16 @@ class Refund implements CommandInterface
                 $connection->canCredit($paymentId)
             ) {
                 // Log API method being called.
-                $history->entryFromCmd($data, History::EVENT_REFUND_API_CALLED);
+                $history->entryFromCmd(
+                    $data,
+                    History::EVENT_REFUND_API_CALLED
+                );
 
                 // Add items to API payload.
-                $this->addOrderLines($connection, $this->creditmemoConverter->convert($memo));
+                $this->addOrderLines(
+                    $connection,
+                    $this->creditmemoConverter->convert($memo)
+                );
 
                 // Refund payment.
                 $connection->creditPayment($paymentId, null, false, true);
@@ -131,7 +139,8 @@ class Refund implements CommandInterface
     }
 
     /**
-     * Use the addOrderLine method in ECom to add payload data while avoiding methods overriding supplied data.
+     * Use the addOrderLine method in ECom to add payload data while avoiding
+     * methods that override supplied data.
      *
      * @param ResursBank $connection
      * @param array $data
