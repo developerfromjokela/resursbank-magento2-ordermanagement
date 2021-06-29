@@ -95,6 +95,7 @@ class CreditmemoConverter extends AbstractConverter
      * @param Creditmemo $entity
      * @return PaymentItem[]
      * @throws Exception
+     * @noinspection DuplicatedCode
      */
     protected function getProductData(
         Creditmemo $entity
@@ -106,7 +107,6 @@ class CreditmemoConverter extends AbstractConverter
                 if ($product->getQty() > 0 &&
                     !$this->hasConfigurableParent($product)
                 ) {
-                    /** @noinspection PhpUndefinedMethodInspection */
                     $item = $this->productItemFactory->create([
                         'product' => $product
                     ]);

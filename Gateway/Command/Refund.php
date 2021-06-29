@@ -15,11 +15,15 @@ use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\Order\Creditmemo;
+use Magento\Sales\Model\Order\Payment;
+use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
+use Resursbank\RBEcomPHP\ResursBank;
+use function get_class;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -82,8 +86,13 @@ class Refund implements CommandInterface
 
         /** @noinspection BadExceptionsProcessingInspection */
         try {
-            /** @phpstan-ignore-next-line */
-            $memo = $data->getPayment()->getCreditmemo();
+            $payment = $data->getPayment();
+
+            if (!($payment instanceof Payment)) {
+                throw new PaymentDataException(__('Unexpected Payment class ' . get_class($payment)));
+            }
+
+            $memo = $payment->getCreditmemo();
 
             // Establish API connection.
             $connection = $this->apiPayment->getConnectionCommandSubject($data);
@@ -91,7 +100,6 @@ class Refund implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_REFUND_CALLED);
 
-            /** @noinspection NotOptimalIfConditionsInspection */
             /**
              * NOTE: canCredit will execute API calls which are more expensive
              * than the database transactions to obtain the creditmemo. So the
@@ -104,13 +112,11 @@ class Refund implements CommandInterface
                 // Log API method being called.
                 $history->entryFromCmd($data, History::EVENT_REFUND_API_CALLED);
 
+                // Add items to API payload.
+                $this->addOrderLines($connection, $this->creditmemoConverter->convert($memo));
+
                 // Refund payment.
-                $connection->creditPayment(
-                    $paymentId,
-                    $this->creditmemoConverter->convertItemsToArrays(
-                        $this->creditmemoConverter->convert($memo)
-                    )
-                );
+                $connection->creditPayment($paymentId, null, false, true);
             }
         } catch (Exception $e) {
             // Log error.
@@ -122,5 +128,29 @@ class Refund implements CommandInterface
         }
 
         return null;
+    }
+
+    /**
+     * Use the addOrderLine method in ECom to add payload data while avoiding methods overriding supplied data.
+     *
+     * @param ResursBank $connection
+     * @param array $data
+     * @throws Exception
+     */
+    private function addOrderLines(
+        ResursBank $connection,
+        array $data
+    ): void {
+        foreach ($data as $item) {
+            $connection->addOrderLine(
+                $item->getArtNo(),
+                $item->getDescription(),
+                $item->getUnitAmountWithoutVat(),
+                $item->getVatPct(),
+                $item->getUnitMeasure(),
+                $item->getType(),
+                $item->getQuantity()
+            );
+        }
     }
 }

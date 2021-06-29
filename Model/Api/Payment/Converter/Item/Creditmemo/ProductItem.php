@@ -8,9 +8,11 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Creditmemo;
 
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Creditmemo\Item as CreditmemoItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Model\Api\Payment\Converter\Item\AbstractItem;
@@ -72,25 +74,58 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     * @throws PaymentDataException
      */
     public function getUnitAmountWithoutVat(): float
     {
-        return $this->sanitizeUnitAmountWithoutVat(
-            (float)$this->product->getPrice()
-        );
+        $result = 0.0;
+
+        $product = $this->getOrderItem();
+        $parent = $product->getParentItem();
+
+        if ($product->getProductType() === 'bundle') {
+            $result = $this->hasFixedPrice() ?
+                (float) $product->getPrice() :
+                0.0;
+        } elseif ($parent instanceof OrderItemInterface) {
+            if ($parent->getProductType() === 'bundle' &&
+                $this->hasDynamicPrice()
+            ) {
+                $result = (float) $product->getPrice();
+            }
+        } else {
+            $result = (float) $product->getPrice();
+        }
+
+        return $this->sanitizeUnitAmountWithoutVat($result);
     }
 
     /**
      * @inheritDoc
+     * @throws PaymentDataException
      */
     public function getVatPct(): int
     {
-        $order = $this->product->getOrderItem();
-        $pct = $order instanceof OrderItem ?
-            (float)$order->getTaxPercent() :
-            0.0; /** @phpstan-ignore-line */
+        $result = 0.0;
+        $product = $this->getOrderItem();
+        $parent = $product->getParentItem();
 
-        return (int)round($pct);
+        if ($product->getProductType() === 'bundle' &&
+            $this->hasFixedPrice()
+        ) {
+            $result = (float)(
+                    $product->getTaxAmount() /
+                    $product->getPrice()
+                ) * 100;
+        } elseif ($product->getProductType() === 'configurable') {
+            $result = (float) $product->getTaxPercent();
+        } elseif (!($parent instanceof OrderItemInterface) ||
+            $parent->getProductType() !== 'configurable'
+        ) {
+            $result = (float) $product->getTaxPercent();
+        }
+
+        return (int) round($result);
     }
 
     /**
@@ -99,5 +134,47 @@ class ProductItem extends AbstractItem
     public function getType(): string
     {
         return Item::TYPE_PRODUCT;
+    }
+
+    /**
+     * Checks if the the product has dynamic pricing by its parent's product
+     * options. If a parent can't be found the product itself will be checked.
+     *
+     * @return bool
+     * @throws PaymentDataException
+     */
+    private function hasDynamicPrice(): bool
+    {
+        return $this->getOrderItem()->isChildrenCalculated();
+    }
+
+    /**
+     * Checks if the the product has fixed pricing by its parent's product
+     * options. If a parent can't be found the product itself will be checked.
+     *
+     * @return bool
+     * @throws PaymentDataException
+     */
+    private function hasFixedPrice(): bool
+    {
+        return !$this->getOrderItem()->isChildrenCalculated();
+    }
+
+    /**
+     * @return OrderItem
+     * @throws PaymentDataException
+     */
+    private function getOrderItem(): OrderItem
+    {
+        /** @var OrderItem|null $product */
+        $product = $this->product->getOrderItem();
+
+        if ($product === null) {
+            throw new PaymentDataException(
+                __('Failed to resolve order item from creditmemo item %s', $this->product->getId())
+            );
+        }
+
+        return $product;
     }
 }
