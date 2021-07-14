@@ -27,6 +27,7 @@ use Magento\Sales\Model\OrderRepository;
 use Magento\Store\Model\ScopeInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
@@ -102,6 +103,11 @@ class Callback implements CallbackInterface
     private $phRepository;
 
     /**
+     * @var Scope
+     */
+    private $scope;
+
+    /**
      * @var SearchCriteriaBuilder
      */
     private $searchBuilder;
@@ -123,6 +129,7 @@ class Callback implements CallbackInterface
      * @param OrderSender $orderSender
      * @param PaymentHistoryHelper $phHelper
      * @param PaymentHistoryRepositoryInterface $phRepository
+     * @param Scope $scope
      * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
      * @noinspection PhpUndefinedClassInspection
@@ -140,6 +147,7 @@ class Callback implements CallbackInterface
         OrderSender $orderSender,
         PaymentHistoryHelper $phHelper,
         PaymentHistoryRepositoryInterface $phRepository,
+        Scope $scope,
         SearchCriteriaBuilder $searchBuilder,
         TypeListInterface $cacheTypeList
     ) {
@@ -155,6 +163,7 @@ class Callback implements CallbackInterface
         $this->phHelper = $phHelper;
         $this->phRepository = $phRepository;
         $this->searchBuilder = $searchBuilder;
+        $this->scope = $scope;
         $this->cacheTypeList = $cacheTypeList;
     }
 
@@ -219,8 +228,8 @@ class Callback implements CallbackInterface
             $this->logIncoming('test', '', '');
 
             $this->config->setCallbackTestReceivedAt(
-                (int) $param1,
-                $param2,
+                (int) $this->scope->getId(),
+                $this->scope->getType()
             );
 
             // Clear the config cache so this value show up.
