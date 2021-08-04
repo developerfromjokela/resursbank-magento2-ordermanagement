@@ -105,11 +105,10 @@ class Capture implements CommandInterface
             // Set transaction id.
             $payment->setTransactionId($data->getOrder()->getOrderIncrementId());
 
-            // Close transaction.
+            // Close transaction when order is paid in full.
             if ((float) $payment->getAmountAuthorized() ===
                 ((float) $payment->getAmountPaid() + $amount)
             ) {
-                // Close transaction when order is paid in full.
                 $payment->setIsTransactionClosed(true);
             }
         } catch (Exception $e) {
