@@ -144,8 +144,10 @@ class CreditmemoConverter extends AbstractConverter
     ): bool {
         $orderItem = $product->getOrderItem();
 
-        return $orderItem instanceof OrderItemInterface &&
+        return (
+            $orderItem instanceof OrderItemInterface &&
             $orderItem->getParentItem() instanceof OrderItemInterface &&
-            $orderItem->getParentItem()->getProductType() === 'configurable';
+            $orderItem->getParentItem()->getProductType() === 'configurable'
+        );
     }
 }

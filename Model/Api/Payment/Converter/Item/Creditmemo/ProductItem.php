@@ -137,7 +137,7 @@ class ProductItem extends AbstractItem
     }
 
     /**
-     * Checks if the the product has dynamic pricing by its parent's product
+     * Checks if the product has dynamic pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
      * @return bool
