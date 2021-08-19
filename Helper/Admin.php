@@ -19,7 +19,7 @@ use Magento\User\Model\User;
  *
  * This class implements ArgumentInterface (that's normally reserved for
  * ViewModels) because we found no other way of removing the suppressed warning
- * PHPMD.CookieAndSessionMisuse. The interface fools the analytic tools into
+ * for PHPMD.CookieAndSessionMisuse. The interface fools the analytic tools into
  * thinking this class is part of the presentation layer, and thus eligible to
  * handle the session.
  */
