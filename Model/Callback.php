@@ -50,72 +50,72 @@ class Callback implements CallbackInterface
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var CallbackHelper
      */
-    private $callbackHelper;
+    private CallbackHelper $callbackHelper;
 
     /**
      * @var Credentials
      */
-    private $credentials;
+    private Credentials $credentials;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var CallbackLog
      */
-    private $callbackLog;
+    private CallbackLog $callbackLog;
 
     /**
      * @var OrderInterface
      */
-    private $orderInterface;
+    private OrderInterface $orderInterface;
 
     /**
      * @var OrderRepository
      */
-    private $orderRepository;
+    private OrderRepository $orderRepository;
 
     /**
      * @var ConfigHelper
      */
-    private $config;
+    private ConfigHelper $config;
 
     /**
      * @var OrderSender
      */
-    private $orderSender;
+    private OrderSender $orderSender;
 
     /**
      * @var PaymentHistoryHelper
      */
-    private $phHelper;
+    private PaymentHistoryHelper $phHelper;
 
     /**
      * @var PaymentHistoryRepositoryInterface
      */
-    private $phRepository;
+    private PaymentHistoryRepositoryInterface $phRepository;
 
     /**
      * @var Scope
      */
-    private $scope;
+    private Scope $scope;
 
     /**
      * @var SearchCriteriaBuilder
      */
-    private $searchBuilder;
+    private SearchCriteriaBuilder $searchBuilder;
 
     /**
      * @var TypeListInterface
      */
-    private $cacheTypeList;
+    private TypeListInterface $cacheTypeList;
 
     /**
      * @param Api $api
@@ -132,7 +132,6 @@ class Callback implements CallbackInterface
      * @param Scope $scope
      * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
-     * @noinspection PhpUndefinedClassInspection
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(

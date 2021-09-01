@@ -31,17 +31,17 @@ class Capture implements CommandInterface
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var ApiPayment
      */
-    private $apiPayment;
+    private ApiPayment $apiPayment;
 
     /**
      * @var PaymentHistory
      */
-    private $paymentHistory;
+    private PaymentHistory $paymentHistory;
 
     /**
      * @param Log $log
@@ -59,7 +59,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $commandSubject
+     * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
      * @throws PaymentDataException
@@ -92,9 +92,16 @@ class Capture implements CommandInterface
                 // Perform partial debit.
                 if ($this->isPartial($commandSubject, $data)) {
                     // Flag ECom to drop specLine data (remove payment lines).
+                    /**
+                     * @noinspection PhpUndefinedMethodInspection
+                     * @phpstan-ignore-next-line
+                     */
                     $connection->setFinalizeWithoutSpec();
 
                     // Add payment line for entire amount to debit.
+                    // Ecom wrongly specifies some arguments as int when they
+                    // should be floats.
+                    /** @phpstan-ignore-next-line */
                     $connection->addOrderLine('', '', $amount);
                 }
 
@@ -145,7 +152,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $data
+     * @param array<mixed> $data
      * @return float
      * @throws PaymentDataException
      */
@@ -160,7 +167,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $subjectData
+     * @param array<mixed> $subjectData
      * @param PaymentDataObjectInterface $data
      * @return bool
      * @throws PaymentDataException

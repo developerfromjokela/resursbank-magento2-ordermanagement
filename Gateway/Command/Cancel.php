@@ -31,27 +31,27 @@ class Cancel implements CommandInterface
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var ApiPayment
      */
-    private $apiPayment;
+    private ApiPayment $apiPayment;
 
     /**
      * @var PaymentHistory
      */
-    private $paymentHistory;
+    private PaymentHistory $paymentHistory;
 
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var OrderRepository
      */
-    private $orderRepo;
+    private OrderRepository $orderRepo;
 
     /**
      * @param Log $log

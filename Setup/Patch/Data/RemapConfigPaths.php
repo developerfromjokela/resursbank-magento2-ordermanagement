@@ -17,7 +17,7 @@ class RemapConfigPaths extends Core
 {
     /**
      * @inheridoc
-     * @noinspection PhpMissingParentCallCommonInspection
+     * @return array<string, string>
      */
     protected function getKeys(): array
     {

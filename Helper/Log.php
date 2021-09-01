@@ -15,10 +15,10 @@ class Log extends AbstractLog
     /**
      * @inheritDoc
      */
-    protected $loggerName = 'Resursbank Ordermanagement Log';
+    protected string $loggerName = 'Resursbank Ordermanagement Log';
 
     /**
      * @inheritDoc
      */
-    protected $file = 'resursbank_ordermanagement';
+    protected string $file = 'resursbank_ordermanagement';
 }

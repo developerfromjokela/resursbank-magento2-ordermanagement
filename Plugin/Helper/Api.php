@@ -19,7 +19,7 @@ class Api
     /**
      * @var Version
      */
-    private $version;
+    private Version $version;
 
     /**
      * @param Version $version

@@ -22,12 +22,12 @@ class PaymentHistory extends AbstractHelper
      * @noinspection PhpUndefinedClassInspection
      * @var PaymentHistoryFactory
      */
-    private $phFactory;
+    private PaymentHistoryFactory $phFactory;
 
     /**
      * @var PaymentHistoryRepositoryInterface
      */
-    private $phRepository;
+    private PaymentHistoryRepositoryInterface $phRepository;
 
     /**
      * @param Context $context

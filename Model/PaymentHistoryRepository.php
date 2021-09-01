@@ -23,27 +23,27 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     /**
      * @var ResourceModel
      */
-    private $resourceModel;
+    private ResourceModel $resourceModel;
 
     /**
      * @var PaymentHistoryFactory
      */
-    private $phFactory;
+    private PaymentHistoryFactory $phFactory;
 
     /**
      * @var FilterProcessor
      */
-    private $filterProcessor;
+    private FilterProcessor $filterProcessor;
 
     /**
      * @var PaymentHistorySearchResultsInterfaceFactory
      */
-    private $srFactory;
+    private PaymentHistorySearchResultsInterfaceFactory $srFactory;
 
     /**
      * @var CollectionFactory
      */
-    private $collectionFactory;
+    private CollectionFactory $collectionFactory;
 
     /**
      * @param ResourceModel $resourceModel

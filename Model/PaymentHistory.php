@@ -17,7 +17,6 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      * @noinspection MagicMethodsValidityInspection
-     * @noinspection PhpMissingParentCallCommonInspection
      */
     protected function _construct(): void
     {
@@ -26,7 +25,6 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
 
     /**
      * @inheritDoc
-     * @noinspection PhpMissingParentCallCommonInspection
      */
     public function getId(int $default = null): ?int
     {

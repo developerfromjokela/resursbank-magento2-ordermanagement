@@ -31,17 +31,17 @@ class PaymentInformation extends Template
     /**
      * @var InvoiceRepositoryInterface
      */
-    private $invoiceRepo;
+    private InvoiceRepositoryInterface $invoiceRepo;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var CreditmemoRepositoryInterface
      */
-    private $creditmemoRepo;
+    private CreditmemoRepositoryInterface $creditmemoRepo;
 
     /**
      * @param Context $context
@@ -86,7 +86,6 @@ class PaymentInformation extends Template
     {
         $result = 0;
 
-        /** @noinspection BadExceptionsProcessingInspection */
         try {
             $request = $this->getRequest();
             $orderId = (int) $request->getParam('order_id');

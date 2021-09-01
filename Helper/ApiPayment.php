@@ -31,27 +31,27 @@ class ApiPayment extends AbstractHelper
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var AdminHelper
      */
-    private $adminHelper;
+    private AdminHelper $adminHelper;
 
     /**
      * @var Config
      */
-    private $config;
+    private Config $config;
 
     /**
      * @var PaymentMethods
      */
-    private $paymentMethods;
+    private PaymentMethods $paymentMethods;
 
     /**
      * @var OrderRepository
      */
-    private $orderRepository;
+    private OrderRepository $orderRepository;
 
     /**
      * @param Context $context
@@ -110,7 +110,7 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
-     * Retrieve API connection with meta data based on order data.
+     * Retrieve API connection with metadata based on order data.
      *
      * @param OrderInterface $order
      * @return ResursBank

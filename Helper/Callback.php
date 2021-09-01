@@ -34,37 +34,37 @@ class Callback extends AbstractHelper
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var Credentials
      */
-    private $credentials;
+    private Credentials $credentials;
 
     /**
      * @var DeploymentConfig
      */
-    private $deploymentConfig;
+    private DeploymentConfig $deploymentConfig;
 
     /**
      * @var RequestInterface
      */
-    private $request;
+    private RequestInterface $request;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var Scope
      */
-    private $scope;
+    private Scope $scope;
 
     /**
      * @var StoreManagerInterface
      */
-    private $storeManager;
+    private StoreManagerInterface $storeManager;
 
     /**
      * @param Context $context
@@ -215,7 +215,6 @@ class Callback extends AbstractHelper
             'param1/a/param2/b/param3/c/param4/d/param5/e' :
             'paymentId/{paymentId}/digest/{digest}';
 
-        /** @noinspection PhpUndefinedMethodInspection */
         return (
             $this->storeManager->getStore( /** @phpstan-ignore-line */
                 $this->scope->getId(ScopeInterface::SCOPE_STORE)

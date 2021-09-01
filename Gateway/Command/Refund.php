@@ -17,6 +17,7 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
+use Resursbank\Core\Model\Api\Payment\Item;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -33,22 +34,22 @@ class Refund implements CommandInterface
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var ApiPayment
      */
-    private $apiPayment;
+    private ApiPayment $apiPayment;
 
     /**
      * @var PaymentHistory
      */
-    private $paymentHistory;
+    private PaymentHistory $paymentHistory;
 
     /**
      * @var CreditmemoConverter
      */
-    private $creditmemoConverter;
+    private CreditmemoConverter $creditmemoConverter;
 
     /**
      * @param Log $log
@@ -124,7 +125,7 @@ class Refund implements CommandInterface
                 );
 
                 // Refund payment.
-                $connection->creditPayment($paymentId, null, false, true);
+                $connection->creditPayment($paymentId, [], false, true);
             }
         } catch (Exception $e) {
             // Log error.
@@ -143,7 +144,7 @@ class Refund implements CommandInterface
      * methods that override supplied data.
      *
      * @param ResursBank $connection
-     * @param array $data
+     * @param array<Item> $data
      * @throws Exception
      */
     private function addOrderLines(
@@ -151,6 +152,9 @@ class Refund implements CommandInterface
         array $data
     ): void {
         foreach ($data as $item) {
+            // Ecom wrongly specifies some arguments as int when they should
+            // be floats.
+            /** @phpstan-ignore-next-line */
             $connection->addOrderLine(
                 $item->getArtNo(),
                 $item->getDescription(),
