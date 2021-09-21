@@ -81,7 +81,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert the data is set when creating an entity with the data
+     * Assert the data is set when creating an entity with the data.
      */
     public function testCreationOfModelWithData(): void
     {
@@ -97,7 +97,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetIdReturnsCorrectValue(): void
     {
@@ -113,7 +113,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetPaymentIdReturnsCorrectValue(): void
     {
@@ -122,7 +122,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getPaymentId returns int
+     * Assert that getPaymentId returns int.
      */
     public function testGetPaymentIdReturnsInt(): void
     {
@@ -133,7 +133,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetPaymentIdReturnsDefaultValue(): void
     {
@@ -141,7 +141,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetPaymentIdDoesNotReturnsDefaultValue(): void
     {
@@ -151,7 +151,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetEventReturnsCorrectValue(): void
     {
@@ -166,7 +166,7 @@ class PaymentHistoryTest extends TestCase
 
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetEventReturnsDefaultValue(): void
     {
@@ -178,7 +178,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetEventDoesNotReturnsDefaultValue(): void
     {
@@ -193,7 +193,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetCreatedAtReturnsCorrectValue(): void
     {
@@ -202,7 +202,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetCreatedAtReturnsDefaultValue(): void
     {
@@ -210,7 +210,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetCreatedAtDoesNotReturnsDefaultValue(): void
     {
@@ -220,7 +220,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetStateFromReturnsCorrectValue(): void
     {
@@ -229,7 +229,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetStateFromReturnsDefaultValue(): void
     {
@@ -237,7 +237,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetStateFromDoesNotReturnsDefaultValue(): void
     {
@@ -247,7 +247,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetStateToReturnsCorrectValue(): void
     {
@@ -256,7 +256,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetStatusFromReturnsCorrectValue(): void
     {
@@ -266,7 +266,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetStateToReturnsDefaultValue(): void
     {
@@ -274,7 +274,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetStateToDoesNotReturnsDefaultValue(): void
     {
@@ -284,7 +284,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetStatusToReturnsCorrectValue(): void
     {
@@ -293,7 +293,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetStatusToReturnsDefaultValue(): void
     {
@@ -301,7 +301,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetStatusToDoesNotReturnsDefaultValue(): void
     {
@@ -311,7 +311,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetUserReturnsCorrectValue(): void
     {
@@ -323,7 +323,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetUserReturnsDefaultValue(): void
     {
@@ -334,7 +334,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetUserDoesNotReturnsDefaultValue(): void
     {
@@ -349,7 +349,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that getter returns the value using the setter
+     * Assert that getter returns the value using the setter.
      */
     public function testGetExtraReturnsCorrectValue(): void
     {
@@ -358,7 +358,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set
+     * Assert that default is returned when a value is not set.
      */
     public function testGetExtraReturnsDefaultValue(): void
     {
@@ -366,7 +366,7 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is NOT returned when a value is set
+     * Assert that default is NOT returned when a value is set.
      */
     public function testGetExtraDoesNotReturnsDefaultValue(): void
     {
