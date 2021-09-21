@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+use Magento\Framework\Exception\LocalizedException;
 use function constant;
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
@@ -20,6 +21,7 @@ use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
@@ -207,21 +209,28 @@ class Callback extends AbstractHelper
      * @param string $type
      * @return string
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     private function urlCallbackTemplate(
         string $type
     ) : string {
+        $store = $this->storeManager->getStore(
+            $this->scope->getId(ScopeInterface::SCOPE_STORE)
+        );
+        
+        if (!($store instanceof Store)) {
+            throw new LocalizedException(__('$store not an instance of Store'));
+        }
+
         $suffix = $type === 'test' ?
             'param1/a/param2/b/param3/c/param4/d/param5/e' :
             'paymentId/{paymentId}/digest/{digest}';
 
         return (
-            $this->storeManager->getStore( /** @phpstan-ignore-line */
-                $this->scope->getId(ScopeInterface::SCOPE_STORE)
-            )->getBaseUrl(
+            $store->getBaseUrl(
                 UrlInterface::URL_TYPE_LINK,
                 $this->request->isSecure()
-            ) . "rest/V1/resursbank_ordermanagement/order/{$type}/{$suffix}"
+            ) . "rest/V1/resursbank_ordermanagement/order/$type/$suffix"
         );
     }
 }

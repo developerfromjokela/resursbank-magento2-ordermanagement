@@ -39,7 +39,7 @@ use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
-use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+use Resursbank\Ecommerce\Types\OrderStatus;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -251,6 +251,7 @@ class Callback implements CallbackInterface
      * @throws RuntimeException
      * @throws ValidatorException
      * @throws AlreadyExistsException
+     * @throws LocalizedException
      */
     private function execute(
         string $type,
@@ -261,8 +262,13 @@ class Callback implements CallbackInterface
 
         $this->logIncoming($type, $paymentId, $digest);
 
+        if (!($this->orderInterface instanceof Order)) {
+            throw new LocalizedException(
+                __('orderInterface not an instance of Order')
+            );
+        }
+
         /** @var Order $order */
-        /** @phpstan-ignore-next-line */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
@@ -351,7 +357,7 @@ class Callback implements CallbackInterface
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(
-                __("Invalid digest - PaymentId: {$paymentId}. Digest: {$digest}")
+                __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
             );
         }
     }
@@ -422,23 +428,23 @@ class Callback implements CallbackInterface
         int $status
     ): array {
         switch ($status) {
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+            case OrderStatus::PENDING:
                 $orderStatus = ResursbankStatuses::PAYMENT_REVIEW;
                 $orderState = Order::STATE_PAYMENT_REVIEW;
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
+            case OrderStatus::PROCESSING:
                 $orderStatus = ResursbankStatuses::CONFIRMED;
                 $orderState = Order::STATE_PENDING_PAYMENT;
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED:
+            case OrderStatus::COMPLETED:
                 $orderStatus = ResursbankStatuses::FINALIZED;
                 $orderState = Order::STATE_PROCESSING;
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED:
+            case OrderStatus::ANNULLED:
                 $orderStatus = ResursbankStatuses::CANCELLED;
                 $orderState = Order::STATE_CANCELED;
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED:
+            case OrderStatus::CREDITED:
                 $orderStatus = Order::STATE_CLOSED;
                 $orderState = Order::STATE_CLOSED;
                 break;
@@ -467,7 +473,7 @@ class Callback implements CallbackInterface
         string $digest
     ): void {
         $this->callbackLog->info(
-            "[{$type}] - PaymentId: {$paymentId}. Digest: {$digest}"
+            "[$type] - PaymentId: $paymentId. Digest: $digest"
         );
     }
 }

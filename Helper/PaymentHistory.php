@@ -19,7 +19,6 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 class PaymentHistory extends AbstractHelper
 {
     /**
-     * @noinspection PhpUndefinedClassInspection
      * @var PaymentHistoryFactory
      */
     private PaymentHistoryFactory $phFactory;

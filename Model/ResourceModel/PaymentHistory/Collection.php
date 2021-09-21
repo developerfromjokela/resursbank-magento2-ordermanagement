@@ -18,6 +18,7 @@ class Collection extends AbstractCollection
      * Initialize collection model.
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      * @noinspection MagicMethodsValidityInspection
+     * @noinspection PhpMissingParentCallCommonInspection
      */
     protected function _construct(): void
     {

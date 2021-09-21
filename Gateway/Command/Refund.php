@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
@@ -73,7 +74,7 @@ class Refund implements CommandInterface
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws PaymentException
-     * @throws AlreadyExistsException
+     * @throws AlreadyExistsException|LocalizedException
      */
     public function execute(
         array $commandSubject

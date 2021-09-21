@@ -40,12 +40,12 @@ class PaymentInformation implements ArgumentInterface
     /**
      * @var null|array<mixed>
      */
-    private ?array $paymentInfo;
+    private ?array $paymentInfo = null;
 
     /**
      * @var null|OrderInterface
      */
-    private ?OrderInterface $order;
+    private ?OrderInterface $order = null;
 
     /**
      * @var OrderRepositoryInterface

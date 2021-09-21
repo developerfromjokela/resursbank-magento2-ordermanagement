@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
@@ -80,7 +81,7 @@ class Cancel implements CommandInterface
      * @throws AlreadyExistsException
      * @throws PaymentException
      * @throws InputException
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|LocalizedException
      */
     public function execute(
         array $commandSubject
@@ -93,7 +94,6 @@ class Cancel implements CommandInterface
         $order = $this->orderRepo->get($data->getOrder()->getId());
         $paymentId = $data->getOrder()->getOrderIncrementId();
 
-        /** @noinspection BadExceptionsProcessingInspection */
         try {
             if ($this->api->paymentExists($order)) {
                 // Establish API connection.

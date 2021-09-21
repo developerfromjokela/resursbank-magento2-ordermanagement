@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
@@ -64,6 +65,7 @@ class Capture implements CommandInterface
      * @throws AlreadyExistsException
      * @throws PaymentDataException
      * @throws PaymentException
+     * @throws LocalizedException
      */
     public function execute(
         array $commandSubject
@@ -92,16 +94,11 @@ class Capture implements CommandInterface
                 // Perform partial debit.
                 if ($this->isPartial($commandSubject, $data)) {
                     // Flag ECom to drop specLine data (remove payment lines).
-                    /**
-                     * @noinspection PhpUndefinedMethodInspection
-                     * @phpstan-ignore-next-line
-                     */
                     $connection->setFinalizeWithoutSpec();
 
                     // Add payment line for entire amount to debit.
                     // Ecom wrongly specifies some arguments as int when they
                     // should be floats.
-                    /** @phpstan-ignore-next-line */
                     $connection->addOrderLine('', '', $amount);
                 }
 

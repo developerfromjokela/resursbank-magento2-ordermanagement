@@ -12,39 +12,41 @@ use Magento\Sales\Model\Order;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentHistory;
 
 /** @var Template $block */
-/** @var Error $viewModel */
 /** @var Escaper $escaper */
-/** @noinspection PhpUndefinedMethodInspection */
-/** @phpstan-ignore-next-line */
-$viewModel = $block->getViewModel();
-
-/** @var Order $order */
-$order = $block->getOrder();
-
 /** @var PaymentHistory $viewModel */
-/** @noinspection PhpUndefinedMethodInspection */
-$viewModel = $block->getViewModel();
+/** @var Order $order */
+
+if (isset($block)) {
+    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+    $viewModel = $block->getViewModel();
+
+    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+    $order = $block->getOrder();
+}
 ?>
 
-<?php if ($viewModel->visible($order)): ?>
-    <div id="resursbank-ordermanagement-order-view-payment-history"
-         data-bind="scope: 'payment-history'">
-        <!-- ko template: getTemplate() --><!-- /ko -->
-    </div>
+<?php // Didn't combine if-blocks because PHPStan will complain unnecessarily. ?>
+<?php if (isset($escaper, $viewModel, $order)): ?>
+    <?php if ($viewModel->visible($order)): ?>
+        <div id="resursbank-ordermanagement-order-view-payment-history"
+             data-bind="scope: 'payment-history'">
+            <!-- ko template: getTemplate() --><!-- /ko -->
+        </div>
 
-    <script type="text/x-magento-init">
-        {
-            "*": {
-                "Magento_Ui/js/core/app": {
-                    "components": {
-                        "payment-history": {
-                            "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
-                            "events": <?= /* @noEscape */ $viewModel->getTableDataFromOrder($order) ?>,
-                            "heading": "<?= $escaper->escapeHtml($viewModel->getHeading($order)) ?>"
+        <script type="text/x-magento-init">
+            {
+                "*": {
+                    "Magento_Ui/js/core/app": {
+                        "components": {
+                            "payment-history": {
+                                "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
+                                "events": <?= /* @noEscape */ $viewModel->getTableDataFromOrder($order) ?>,
+                                "heading": "<?= $escaper->escapeHtml($viewModel->getHeading($order)) ?>"
+                            }
                         }
                     }
                 }
             }
-        }
-    </script>
+        </script>
+    <?php endif; ?>
 <?php endif; ?>
