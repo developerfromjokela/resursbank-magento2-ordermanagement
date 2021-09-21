@@ -13,12 +13,8 @@ use Magento\Framework\App\Helper\Context;
 use PHPUnit\Framework\TestCase;
 use Resursbank\Ordermanagement\Helper\Admin;
 
-/**
- * Test cases designed for Resursbank\Ordermanagement\Helper\Admin
- */
 class AdminTest extends TestCase
 {
-
     /**
      * @var Admin
      */

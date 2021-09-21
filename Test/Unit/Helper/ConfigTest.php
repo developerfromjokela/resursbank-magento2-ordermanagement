@@ -15,11 +15,12 @@ use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Resursbank\Ordermanagement\Helper\Config;
-use function PHPUnit\Framework\assertTrue;
 
+/**
+ * @SuppressWarnings(PHPMD.LongVariable)
+ */
 class ConfigTest extends TestCase
 {
-
     /**
      * @var Config
      */
@@ -44,94 +45,102 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * Assert that isAfterShopEnabled return the correct value
+     * Assert that isAfterShopEnabled return the correct value.
      */
-    public function testIsAfterShopEnabled()
+    public function testIsAfterShopEnabled(): void
     {
         $this->scopeConfigInterfaceMock->method('isSetFlag')->with('resursbank/aftershop/enabled')->willReturn(true);
 
-        self::assertTrue($this->config->isAfterShopEnabled(""));
+        self::assertTrue($this->config->isAfterShopEnabled(''));
     }
 
     /**
-     * Assert that isAfterShopEnabled returns true on store specific store if enabled
+     * Assert that isAfterShopEnabled returns true on store specific store if enabled.
      */
-    public function testIsAfterShopEnabledReturnsTrueForSpecificStore()
+    public function testIsAfterShopEnabledReturnsTrueForSpecificStore(): void
     {
-        $this->scopeConfigInterfaceMock->method('isSetFlag')->with('resursbank/aftershop/enabled',ScopeInterface::SCOPE_STORES,  "en")->willReturn(true);
+        $this->scopeConfigInterfaceMock->method('isSetFlag')
+            ->with('resursbank/aftershop/enabled', ScopeInterface::SCOPE_STORES, 'en')
+            ->willReturn(true);
 
-        self::assertTrue($this->config->isAfterShopEnabled("en"));
+        self::assertTrue($this->config->isAfterShopEnabled('en'));
     }
 
     /**
-     * Assert that isAfterShopEnabled returns false if disabled on specific store
+     * Assert that isAfterShopEnabled returns false if disabled on specific store.
      */
-    public function testIsAfterShopEnabledReturnsFalseForSpecificStore()
+    public function testIsAfterShopEnabledReturnsFalseForSpecificStore(): void
     {
-        $this->scopeConfigInterfaceMock->method('isSetFlag')->with('resursbank/aftershop/enabled',ScopeInterface::SCOPE_STORES,  "se")->willReturn(false);
+        $this->scopeConfigInterfaceMock->method('isSetFlag')
+            ->with('resursbank/aftershop/enabled', ScopeInterface::SCOPE_STORES, 'se')
+            ->willReturn(false);
 
-        self::assertFalse($this->config->isAfterShopEnabled("se"));
+        self::assertFalse($this->config->isAfterShopEnabled('se'));
     }
 
     /**
-     * Assert that isAfterShopEnabled returns true for specific store if disabled on other
+     * Assert that isAfterShopEnabled returns true for specific store if disabled on others.
      */
-    public function testIsAfterShopEnabledReturnsFalseForSpecificStoreIfEnableOnOther()
+    public function testIsAfterShopEnabledReturnsFalseForSpecificStoreIfEnableOnOther(): void
     {
         $this->scopeConfigInterfaceMock->method('isSetFlag')->withConsecutive(
-            ['resursbank/aftershop/enabled',ScopeInterface::SCOPE_STORES,  "en"],
-            ['resursbank/aftershop/enabled',ScopeInterface::SCOPE_STORES,  "se"],
+            ['resursbank/aftershop/enabled', ScopeInterface::SCOPE_STORES, 'en'],
+            ['resursbank/aftershop/enabled', ScopeInterface::SCOPE_STORES, 'se'],
         )->willReturnOnConsecutiveCalls(true, false);
 
-        self::assertTrue($this->config->isAfterShopEnabled("en"));
-        self::assertFalse($this->config->isAfterShopEnabled("se"));
+        self::assertTrue($this->config->isAfterShopEnabled('en'));
+        self::assertFalse($this->config->isAfterShopEnabled('se'));
     }
 
     /**
-     * Assert that isAfterShopEnabled return the correct value
+     * Assert that isAfterShopEnabled return the correct value.
      */
-    public function testGetCallbackTestTriggeredAt()
+    public function testGetCallbackTestTriggeredAt(): void
     {
-        $this->scopeConfigInterfaceMock->method('getValue')->with('resursbank/callbacks/test_triggered_at')->willReturn("2021-01-01 00:00:00");
+        $this->scopeConfigInterfaceMock->method('getValue')
+            ->with('resursbank/callbacks/test_triggered_at')
+            ->willReturn('2021-01-01 00:00:00');
 
-        self::assertEquals("2021-01-01 00:00:00", $this->config->getCallbackTestTriggeredAt(""));
+        self::assertEquals('2021-01-01 00:00:00', $this->config->getCallbackTestTriggeredAt(''));
     }
 
     /**
-     * Assert that isAfterShopEnabled returns true for specific store if disabled on other
+     * Assert that isAfterShopEnabled returns true for specific store if disabled on others.
      */
-    public function testGetCallbackTestTriggeredAtReturnsCorrectValueForSpecificStores()
-    {
-        $this->scopeConfigInterfaceMock->method('getValue')->withConsecutive(
-            ['resursbank/callbacks/test_triggered_at',ScopeInterface::SCOPE_STORES,  "en"],
-            ['resursbank/callbacks/test_triggered_at',ScopeInterface::SCOPE_STORES,  "se"],
-        )->willReturnOnConsecutiveCalls("2021-01-01 00:00:00", "2021-01-01 23:59:59");
-
-        self::assertEquals("2021-01-01 00:00:00", $this->config->getCallbackTestTriggeredAt("en"));
-        self::assertEquals("2021-01-01 23:59:59", $this->config->getCallbackTestTriggeredAt("se"));
-    }
-
-    /**
-     * Assert that isAfterShopEnabled return the correct value
-     */
-    public function testGetCallbackTestReceivedAt()
-    {
-        $this->scopeConfigInterfaceMock->method('getValue')->with('resursbank/callbacks/test_received_at')->willReturn("2021-01-01 00:00:00");
-
-        self::assertEquals("2021-01-01 00:00:00", $this->config->getCallbackTestReceivedAt(""));
-    }
-
-    /**
-     * Assert that isAfterShopEnabled returns true for specific store if disabled on other
-     */
-    public function testGetCallbackTestReceivedAtReturnsCorrectValueForSpecificStores()
+    public function testGetCallbackTestTriggeredAtReturnsCorrectValueForSpecificStores(): void
     {
         $this->scopeConfigInterfaceMock->method('getValue')->withConsecutive(
-            ['resursbank/callbacks/test_received_at',ScopeInterface::SCOPE_STORES,  "en"],
-            ['resursbank/callbacks/test_received_at',ScopeInterface::SCOPE_STORES,  "se"],
-        )->willReturnOnConsecutiveCalls("2021-01-01 00:00:00", "2021-01-01 23:59:59");
+            ['resursbank/callbacks/test_triggered_at', ScopeInterface::SCOPE_STORES, 'en'],
+            ['resursbank/callbacks/test_triggered_at', ScopeInterface::SCOPE_STORES, 'se'],
+        )->willReturnOnConsecutiveCalls('2021-01-01 00:00:00', '2021-01-01 23:59:59');
 
-        self::assertEquals("2021-01-01 00:00:00", $this->config->getCallbackTestReceivedAt("en"));
-        self::assertEquals("2021-01-01 23:59:59", $this->config->getCallbackTestReceivedAt("se"));
+        self::assertEquals('2021-01-01 00:00:00', $this->config->getCallbackTestTriggeredAt('en'));
+        self::assertEquals('2021-01-01 23:59:59', $this->config->getCallbackTestTriggeredAt('se'));
+    }
+
+    /**
+     * Assert that isAfterShopEnabled return the correct value.
+     */
+    public function testGetCallbackTestReceivedAt(): void
+    {
+        $this->scopeConfigInterfaceMock->method('getValue')
+            ->with('resursbank/callbacks/test_received_at')
+            ->willReturn('2021-01-01 00:00:00');
+
+        self::assertEquals('2021-01-01 00:00:00', $this->config->getCallbackTestReceivedAt(''));
+    }
+
+    /**
+     * Assert that isAfterShopEnabled returns true for specific store if disabled on others.
+     */
+    public function testGetCallbackTestReceivedAtReturnsCorrectValueForSpecificStores(): void
+    {
+        $this->scopeConfigInterfaceMock->method('getValue')->withConsecutive(
+            ['resursbank/callbacks/test_received_at', ScopeInterface::SCOPE_STORES, 'en'],
+            ['resursbank/callbacks/test_received_at', ScopeInterface::SCOPE_STORES, 'se'],
+        )->willReturnOnConsecutiveCalls('2021-01-01 00:00:00', '2021-01-01 23:59:59');
+
+        self::assertEquals('2021-01-01 00:00:00', $this->config->getCallbackTestReceivedAt('en'));
+        self::assertEquals('2021-01-01 23:59:59', $this->config->getCallbackTestReceivedAt('se'));
     }
 }

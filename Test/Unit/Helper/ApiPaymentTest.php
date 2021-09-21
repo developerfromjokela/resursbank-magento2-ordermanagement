@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Test\Unit\Helper;
 
-use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Helper\Context;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
@@ -21,11 +20,10 @@ use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Config;
 
 /**
- * Test cases designed for Resursbank\Ordermanagement\Helper\ApiPayment
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class ApiPaymentTest extends TestCase
 {
-
     /**
      * @var ApiPayment
      */
@@ -56,50 +54,50 @@ class ApiPaymentTest extends TestCase
     }
 
     /**
-     * Asserts that validateOrder returns true with correct data
+     * Asserts that validateOrder returns true with correct data.
      */
-    public function testValidateOrderReturnsTrueOnValidOrder()
+    public function testValidateOrderReturnsTrueOnValidOrder(): void
     {
         $orderPaymentInterfaceMock = $this->createMock(OrderPaymentInterface::class);
         $orderPaymentInterfaceMock->method('getMethod')->willReturn('resursbank_default');
 
         $orderMock = $this->createMock(Order::class);
-        $orderMock->expects(self::any())->method("getGrandTotal")->willReturn(100.00);
-        $orderMock->expects(self::any())->method("getPayment")->willReturn($orderPaymentInterfaceMock);
+        $orderMock->method('getGrandTotal')->willReturn(100.00);
+        $orderMock->method('getPayment')->willReturn($orderPaymentInterfaceMock);
 
-        $orderPaymentInterfaceMock->expects(self::any())->method("getMethod")->willReturn($orderPaymentInterfaceMock);
+        $orderPaymentInterfaceMock->method('getMethod')->willReturn($orderPaymentInterfaceMock);
         self::assertTrue($this->apiPayment->validateOrder($orderMock));
     }
 
     /**
-     * Asserts that validateOrder returns false if grand total is zero
+     * Asserts that validateOrder returns false if grand total is zero.
      */
-    public function testValidateOrderReturnsFalseOnZeroTotal()
+    public function testValidateOrderReturnsFalseOnZeroTotal(): void
     {
         $orderPaymentInterfaceMock = $this->createMock(OrderPaymentInterface::class);
         $orderPaymentInterfaceMock->method('getMethod')->willReturn('resursbank_default');
 
         $orderMock = $this->createMock(Order::class);
-        $orderMock->expects(self::any())->method("getGrandTotal")->willReturn(0);
-        $orderMock->expects(self::any())->method("getPayment")->willReturn($orderPaymentInterfaceMock);
+        $orderMock->method('getGrandTotal')->willReturn(0);
+        $orderMock->method('getPayment')->willReturn($orderPaymentInterfaceMock);
 
-        $orderPaymentInterfaceMock->expects(self::any())->method("getMethod")->willReturn($orderPaymentInterfaceMock);
+        $orderPaymentInterfaceMock->method('getMethod')->willReturn($orderPaymentInterfaceMock);
         self::assertFalse($this->apiPayment->validateOrder($orderMock));
     }
 
     /**
-     * Asserts that validateOrder returns false if payment method is not resurs
+     * Asserts that validateOrder returns false if payment method is not resurs.
      */
-    public function testValidateOrderReturnsFalseIfNonResursPayment()
+    public function testValidateOrderReturnsFalseIfNonResursPayment(): void
     {
         $orderPaymentInterfaceMock = $this->createMock(OrderPaymentInterface::class);
         $orderPaymentInterfaceMock->method('getMethod')->willReturn('checkmo');
 
         $orderMock = $this->createMock(Order::class);
-        $orderMock->expects(self::any())->method("getGrandTotal")->willReturn(0);
-        $orderMock->expects(self::any())->method("getPayment")->willReturn($orderPaymentInterfaceMock);
+        $orderMock->method('getGrandTotal')->willReturn(0);
+        $orderMock->method('getPayment')->willReturn($orderPaymentInterfaceMock);
 
-        $orderPaymentInterfaceMock->expects(self::any())->method("getMethod")->willReturn($orderPaymentInterfaceMock);
+        $orderPaymentInterfaceMock->method('getMethod')->willReturn($orderPaymentInterfaceMock);
         self::assertFalse($this->apiPayment->validateOrder($orderMock));
     }
 }
