@@ -15,10 +15,10 @@ class CallbackLog extends AbstractLog
     /**
      * @inheritDoc
      */
-    protected $loggerName = 'Resursbank Callbacks';
+    protected string $loggerName = 'Resursbank Callbacks';
 
     /**
      * @inheritDoc
      */
-    protected $file = 'resursbank_ordermanagement_callbacks';
+    protected string $file = 'resursbank_ordermanagement_callbacks';
 }

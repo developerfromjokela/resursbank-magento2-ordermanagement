@@ -20,7 +20,7 @@ class StopConfirmationEmail
     /**
      * @var OrderHelper
      */
-    private $orderHelper;
+    private OrderHelper $orderHelper;
 
     /**
      * @param OrderHelper $orderHelper
@@ -35,7 +35,6 @@ class StopConfirmationEmail
      * @param Order $subject
      * @param Order $result
      * @return Order
-     * @noinspection PhpUnusedParameterInspection
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterBeforeSave(

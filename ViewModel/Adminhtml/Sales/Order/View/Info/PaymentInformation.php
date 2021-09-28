@@ -35,47 +35,47 @@ class PaymentInformation implements ArgumentInterface
     /**
      * @var Data
      */
-    private $checkoutHelper;
+    private Data $checkoutHelper;
 
     /**
      * @var null|array<mixed>
      */
-    private $paymentInfo;
+    private ?array $paymentInfo = null;
 
     /**
      * @var null|OrderInterface
      */
-    private $order;
+    private ?OrderInterface $order = null;
 
     /**
      * @var OrderRepositoryInterface
      */
-    private $orderRepository;
+    private OrderRepositoryInterface $orderRepository;
 
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var PriceCurrencyInterface
      */
-    private $priceCurrency;
+    private PriceCurrencyInterface $priceCurrency;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var PaymentMethods
      */
-    private $paymentMethods;
+    private PaymentMethods $paymentMethods;
 
     /**
      * @var StoreManagerInterface
      */
-    private $storeManager;
+    private StoreManagerInterface $storeManager;
 
     /**
      * @param Data $checkoutHelper

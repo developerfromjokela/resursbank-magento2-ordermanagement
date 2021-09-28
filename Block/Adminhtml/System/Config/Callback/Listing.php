@@ -18,7 +18,7 @@ class Listing extends Field
     /**
      * @var CallbackHelper
      */
-    public $callbackHelper;
+    public CallbackHelper $callbackHelper;
 
     /**
      * @param Context $context

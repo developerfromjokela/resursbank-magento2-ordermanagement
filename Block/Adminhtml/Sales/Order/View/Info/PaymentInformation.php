@@ -9,12 +9,12 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
-use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
-use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
+use Resursbank\Core\Block\Adminhtml\Template;
+use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 
 /**
  * Injects custom HTML containing payment information on order/invoice view.
@@ -31,17 +31,17 @@ class PaymentInformation extends Template
     /**
      * @var InvoiceRepositoryInterface
      */
-    private $invoiceRepo;
+    private InvoiceRepositoryInterface $invoiceRepo;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var CreditmemoRepositoryInterface
      */
-    private $creditmemoRepo;
+    private CreditmemoRepositoryInterface $creditmemoRepo;
 
     /**
      * @param Context $context
@@ -86,7 +86,6 @@ class PaymentInformation extends Template
     {
         $result = 0;
 
-        /** @noinspection BadExceptionsProcessingInspection */
         try {
             $request = $this->getRequest();
             $orderId = (int) $request->getParam('order_id');

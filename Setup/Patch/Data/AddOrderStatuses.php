@@ -17,12 +17,12 @@ class AddOrderStatuses implements DataPatchInterface
     /**
      * @var ModuleDataSetupInterface
      */
-    private $moduleDataSetup;
+    private ModuleDataSetupInterface $moduleDataSetup;
 
     /**
      * @var ResursbankStatuses
      */
-    private $resursbankStatuses;
+    private ResursbankStatuses $resursbankStatuses;
 
     /**
      * @param ModuleDataSetupInterface $moduleDataSetup

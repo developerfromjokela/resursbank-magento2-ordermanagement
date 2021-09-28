@@ -29,7 +29,7 @@ class CreditmemoConverter extends AbstractConverter
     /**
      * @var ProductItemFactory
      */
-    private $productItemFactory;
+    private ProductItemFactory $productItemFactory;
 
     /**
      * @param Log $log
@@ -120,7 +120,7 @@ class CreditmemoConverter extends AbstractConverter
     }
 
     /**
-     * Whether or not to include product data in payment payload.
+     * Whether to include product data in payment payload.
      *
      * @param Creditmemo $entity
      * @return bool

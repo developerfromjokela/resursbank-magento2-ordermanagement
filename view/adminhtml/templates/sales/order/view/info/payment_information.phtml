@@ -13,184 +13,166 @@ use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\Payment
 /** @var PaymentInformation $block */
 /** @var ViewModel $viewModel */
 /** @var Escaper $escaper */
-/** @noinspection PhpUndefinedMethodInspection */
-/** @phpstan-ignore-next-line */
-$viewModel = $block->getViewModel();
 
-$order = $viewModel->setOrder(
-    $viewModel->getOrder(
-        $block->getOrderIdFromRequest() /** @phpstan-ignore-line */
-    )
-);
+if (isset($block)) {
+    $viewModel = $block->getViewModel();
+}
+
+if (isset($viewModel, $block)) {
+    $order = $viewModel->setOrder(
+        $viewModel->getOrder(
+            $block->getOrderIdFromRequest()
+        )
+    );
+}
 ?>
-<?php if ($viewModel->isEnabled($order)): ?>
-    <?php if (empty($viewModel->getPaymentInformation())): ?>
-        <div class="field-group">
-            <p class="error-message">
-                <?php /** @phpstan-ignore-next-line */ ?>
-                <?= $escaper->escapeHtml(__('Payment information could not be retrieved from Resurs Bank.'))  ?>
-            </p>
-        </div>
-    <?php else: ?>
-        <section class="admin__page-section resursbank-ordermanagement-payment-information">
-            <div class="admin__page-section-title">
-                <span class="title">
-                    <?php /** @phpstan-ignore-next-line */ ?>
-                    <?= $escaper->escapeHtml(__('Payment')) ?>
-                </span>
-                <div class="resursbank-logo">
-                    <div class="img"></div>
-                </div>
+
+<?php // Didn't combine if-blocks because PHPStan will complain unnecessarily. ?>
+<?php if (isset($block, $viewModel, $order, $escaper)): ?>
+    <?php if ($viewModel->isEnabled($order)): ?>
+        <?php if (empty($viewModel->getPaymentInformation())): ?>
+            <div class="field-group">
+                <p class="error-message">
+                    <?= $escaper->escapeHtml(__('Payment information could not be retrieved from Resurs Bank.'))  ?>
+                </p>
             </div>
-            <div class="admin__page-section-content">
-
-                <?php // Payment information.?>
-                <div class="admin__page-section-item">
-                    <div class="admin__page-section-item-content">
-                        <table class="admin__table-secondary">
-                            <tbody>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('ID')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml($viewModel->getPaymentId()) ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Amount')) ?>
-                                    </th>
-                                    <td>
-                                        <span class="price">
-                                            <?php /** @phpstan-ignore-next-line */ ?>
-                                            <?= $escaper->escapeHtml($viewModel->getPaymentTotal()) ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Limit')) ?>
-                                    </th>
-                                    <td>
-                                        <span class="price">
-                                            <?php /** @phpstan-ignore-next-line */ ?>
-                                            <?= $escaper->escapeHtml($viewModel->getPaymentLimit()) ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Status')) ?>
-
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__($viewModel->getPaymentStatus())) ?>
-
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Frozen')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__(($viewModel->isFrozen() ? 'Yes' : 'No'))) ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Fraud')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__(($viewModel->isFraud() ? 'Yes' : 'No'))) ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Payment Method')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__($viewModel->getPaymentMethodName())) ?>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+        <?php else: ?>
+            <section class="admin__page-section resursbank-ordermanagement-payment-information">
+                <div class="admin__page-section-title">
+                    <span class="title">
+                        <?= $escaper->escapeHtml(__('Payment')) ?>
+                    </span>
+                    <div class="resursbank-logo">
+                        <div class="img"></div>
                     </div>
                 </div>
-
-                <?php // Customer information.?>
-                <div class="admin__page-section-item">
-                    <div class="admin__page-section-item-title">
-                        <span class="title">
-                            <?php /** @phpstan-ignore-next-line */ ?>
-                            <?= $escaper->escapeHtml(__('Customer')) ?>
-                        </span>
+                <div class="admin__page-section-content">
+    
+                    <?php // Payment information.?>
+                    <div class="admin__page-section-item">
+                        <div class="admin__page-section-item-content">
+                            <table class="admin__table-secondary">
+                                <tbody>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('ID')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml($viewModel->getPaymentId()) ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Amount')) ?>
+                                        </th>
+                                        <td>
+                                            <span class="price">
+                                                <?= $escaper->escapeHtml($viewModel->getPaymentTotal()) ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Limit')) ?>
+                                        </th>
+                                        <td>
+                                            <span class="price">
+                                                <?= $escaper->escapeHtml($viewModel->getPaymentLimit()) ?>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Status')) ?>
+    
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml(__($viewModel->getPaymentStatus())) ?>
+    
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Frozen')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml(__(($viewModel->isFrozen() ? 'Yes' : 'No'))) ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Fraud')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml(__(($viewModel->isFraud() ? 'Yes' : 'No'))) ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Payment Method')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml(__($viewModel->getPaymentMethodName())) ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="admin__page-section-item-content">
-                        <table class="admin__table-secondary">
-                            <tbody>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Name')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml($viewModel->getCustomerName()) ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Address')) ?>
-
-                                    </th>
-                                    <td>
-                                        <?php foreach ($viewModel->getCustomerAddress() as $value): ?>
-                                            <?php /** @phpstan-ignore-next-line */ ?>
-                                            <?= $escaper->escapeHtml($value) ?>
-                                            <br />
-                                        <?php endforeach; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Telephone')) ?>
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml($viewModel->getCustomerTelephone()) ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml(__('Email')) ?>
-
-                                    </th>
-                                    <td>
-                                        <?php /** @phpstan-ignore-next-line */ ?>
-                                        <?= $escaper->escapeHtml($viewModel->getCustomerEmail()) ?>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+    
+                    <?php // Customer information.?>
+                    <div class="admin__page-section-item">
+                        <div class="admin__page-section-item-title">
+                            <span class="title">
+                                <?= $escaper->escapeHtml(__('Customer')) ?>
+                            </span>
+                        </div>
+                        <div class="admin__page-section-item-content">
+                            <table class="admin__table-secondary">
+                                <tbody>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Name')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml($viewModel->getCustomerName()) ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Address')) ?>
+    
+                                        </th>
+                                        <td>
+                                            <?php foreach ($viewModel->getCustomerAddress() as $value): ?>
+                                                <?= $escaper->escapeHtml($value) ?>
+                                                <br />
+                                            <?php endforeach; ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Telephone')) ?>
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml($viewModel->getCustomerTelephone()) ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <?= $escaper->escapeHtml(__('Email')) ?>
+    
+                                        </th>
+                                        <td>
+                                            <?= $escaper->escapeHtml($viewModel->getCustomerEmail()) ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        <?php endif; ?>
     <?php endif; ?>
 <?php endif; ?>

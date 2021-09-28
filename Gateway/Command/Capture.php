@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
@@ -31,17 +32,17 @@ class Capture implements CommandInterface
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var ApiPayment
      */
-    private $apiPayment;
+    private ApiPayment $apiPayment;
 
     /**
      * @var PaymentHistory
      */
-    private $paymentHistory;
+    private PaymentHistory $paymentHistory;
 
     /**
      * @param Log $log
@@ -59,11 +60,12 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $commandSubject
+     * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
      * @throws PaymentDataException
      * @throws PaymentException
+     * @throws LocalizedException
      */
     public function execute(
         array $commandSubject
@@ -95,6 +97,8 @@ class Capture implements CommandInterface
                     $connection->setFinalizeWithoutSpec();
 
                     // Add payment line for entire amount to debit.
+                    // Ecom wrongly specifies some arguments as int when they
+                    // should be floats.
                     $connection->addOrderLine('', '', $amount);
                 }
 
@@ -145,7 +149,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $data
+     * @param array<mixed> $data
      * @return float
      * @throws PaymentDataException
      */
@@ -160,7 +164,7 @@ class Capture implements CommandInterface
     }
 
     /**
-     * @param array $subjectData
+     * @param array<mixed> $subjectData
      * @param PaymentDataObjectInterface $data
      * @return bool
      * @throws PaymentDataException

@@ -27,7 +27,7 @@ class ProductItem extends AbstractItem
     /**
      * @var CreditmemoItem
      */
-    protected $product;
+    protected CreditmemoItem $product;
 
     /**
      * @param Config $config
@@ -149,7 +149,7 @@ class ProductItem extends AbstractItem
     }
 
     /**
-     * Checks if the the product has fixed pricing by its parent's product
+     * Checks if the product has fixed pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
      * @return bool
@@ -171,8 +171,10 @@ class ProductItem extends AbstractItem
 
         if ($product === null) {
             throw new PaymentDataException(
-                __('Failed to resolve order item from creditmemo item %1',
-                $this->product->getId())
+                __(
+                    'Failed to resolve order item from creditmemo item %1',
+                    $this->product->getId()
+                )
             );
         }
 

@@ -25,22 +25,22 @@ class PaymentHistory implements ArgumentInterface
     /**
      * @var PaymentHistoryRepositoryInterface
      */
-    private $repository;
+    private PaymentHistoryRepositoryInterface $repository;
 
     /**
      * @var PaymentMethods
      */
-    private $paymentMethods;
+    private PaymentMethods $paymentMethods;
 
     /**
      * @var SearchCriteriaBuilder
      */
-    private $searchBuilder;
+    private SearchCriteriaBuilder $searchBuilder;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @param PaymentMethods $paymentMethods

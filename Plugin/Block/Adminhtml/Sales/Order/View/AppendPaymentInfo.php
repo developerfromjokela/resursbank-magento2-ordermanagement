@@ -25,19 +25,19 @@ class AppendPaymentInfo
     /**
      * @var PaymentBlock
      */
-    private $paymentBlock;
+    private PaymentBlock $paymentBlock;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * Payment API helper.
      *
      * @var ApiPayment
      */
-    private $apiPayment;
+    private ApiPayment $apiPayment;
 
     /**
      * @param PaymentBlock $paymentBlock

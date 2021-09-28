@@ -27,27 +27,27 @@ class Registration implements HttpGetActionInterface
     /**
      * @var CallbackHelper
      */
-    private $callbackHelper;
+    private CallbackHelper $callbackHelper;
 
     /**
      * @var Log
      */
-    private $log;
+    private Log $log;
 
     /**
      * @var ManagerInterface
      */
-    private $message;
+    private ManagerInterface $message;
 
     /**
      * @var ResultFactory
      */
-    private $resultFactory;
+    private ResultFactory $resultFactory;
 
     /**
      * @var RedirectInterface
      */
-    private $redirect;
+    private RedirectInterface $redirect;
 
     /**
      * @param CallbackHelper $callbackHelper

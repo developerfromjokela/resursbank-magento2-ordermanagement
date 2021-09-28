@@ -19,12 +19,12 @@ class TestTriggeredAt extends Field
     /**
      * @var Scope
      */
-    public $scope;
+    public Scope $scope;
 
     /**
      * @var Config
      */
-    private $config;
+    private Config $config;
 
     /**
      * @param Context $context
