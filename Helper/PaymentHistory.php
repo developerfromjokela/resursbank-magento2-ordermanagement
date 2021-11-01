@@ -45,44 +45,6 @@ class PaymentHistory extends AbstractHelper
     }
 
     /**
-     * @param int $paymentId
-     * @param string $event
-     * @param string $user
-     * @param string|null $stateFrom
-     * @param string|null $stateTo
-     * @param string|null $statusFrom
-     * @param string|null $statusTo
-     * @param string|null $extra
-     * @return void
-     * @throws AlreadyExistsException
-     * @noinspection PhpTooManyParametersInspection
-     */
-    public function createEntry(
-        int $paymentId,
-        string $event,
-        string $user = PaymentHistoryInterface::USER_RESURS_BANK,
-        ?string $stateFrom = null,
-        ?string $stateTo = null,
-        ?string $statusFrom = null,
-        ?string $statusTo = null,
-        ?string $extra = null
-    ): void {
-        /* @noinspection PhpUndefinedMethodInspection */
-        $entry = $this->phFactory->create();
-
-        $entry
-            ->setPaymentId($paymentId)
-            ->setEvent($event)
-            ->setUser($user)
-            ->setExtra($extra)
-            ->setStateFrom($stateFrom)
-            ->setStateTo($stateTo)
-            ->setStatusFrom($statusFrom)
-            ->setStatusTo($statusTo);
-        $this->phRepository->save($entry);
-    }
-
-    /**
      * Create payment history entry from command subject data.
      *
      * @param PaymentDataObjectInterface $data
@@ -93,11 +55,14 @@ class PaymentHistory extends AbstractHelper
         PaymentDataObjectInterface $data,
         string $event
     ): void {
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->createEntry(
-            (int) $data->getPayment()->getId(), /** @phpstan-ignore-line */
-            $event,
-            PaymentHistoryInterface::USER_CLIENT
-        );
+        /* @noinspection PhpUndefinedMethodInspection */
+        $entry = $this->phFactory->create();
+
+        $entry
+            ->setPaymentId((int) $data->getPayment()->getId()) /** @phpstan-ignore-line */
+            ->setEvent($event)
+            ->setUser(PaymentHistoryInterface::USER_CLIENT);
+
+        $this->phRepository->save($entry);
     }
 }

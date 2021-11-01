@@ -37,8 +37,8 @@ use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
+use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Resursbank\Ecommerce\Types\OrderStatus;
 
 /**
@@ -93,11 +93,6 @@ class Callback implements CallbackInterface
     private OrderSender $orderSender;
 
     /**
-     * @var PaymentHistoryHelper
-     */
-    private PaymentHistoryHelper $phHelper;
-
-    /**
      * @var PaymentHistoryRepositoryInterface
      */
     private PaymentHistoryRepositoryInterface $phRepository;
@@ -118,6 +113,11 @@ class Callback implements CallbackInterface
     private TypeListInterface $cacheTypeList;
 
     /**
+     * @var PaymentHistoryFactory
+     */
+    private PaymentHistoryFactory $phFactory;
+
+    /**
      * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
@@ -127,11 +127,11 @@ class Callback implements CallbackInterface
      * @param OrderInterface $orderInterface
      * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
-     * @param PaymentHistoryHelper $phHelper
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param Scope $scope
      * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
+     * @param PaymentHistoryFactory $phFactory
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -144,11 +144,11 @@ class Callback implements CallbackInterface
         OrderInterface $orderInterface,
         OrderRepository $orderRepository,
         OrderSender $orderSender,
-        PaymentHistoryHelper $phHelper,
         PaymentHistoryRepositoryInterface $phRepository,
         Scope $scope,
         SearchCriteriaBuilder $searchBuilder,
-        TypeListInterface $cacheTypeList
+        TypeListInterface $cacheTypeList,
+        PaymentHistoryFactory $phFactory
     ) {
         $this->api = $api;
         $this->callbackHelper = $callbackHelper;
@@ -159,11 +159,11 @@ class Callback implements CallbackInterface
         $this->orderInterface = $orderInterface;
         $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
-        $this->phHelper = $phHelper;
         $this->phRepository = $phRepository;
         $this->searchBuilder = $searchBuilder;
         $this->scope = $scope;
         $this->cacheTypeList = $cacheTypeList;
+        $this->phFactory = $phFactory;
     }
 
     /**
@@ -283,10 +283,12 @@ class Callback implements CallbackInterface
             );
         }
 
-        $oldStatus = $order->getStatus();
-        $oldState = $order->getState();
+        $newStatus = $this->getOrderStatusFromResurs($order);
+        $newState = $this->getOrderStateFromResurs($order);
 
-        [$newStatus, $newState] = $this->syncStatusFromResurs($order);
+        if ($newState === Order::STATE_CANCELED) {
+            $order->cancel();
+        }
 
         $historyEvent = constant(sprintf(
             '%s::%s',
@@ -294,15 +296,23 @@ class Callback implements CallbackInterface
             'EVENT_CALLBACK_' . strtoupper($type)
         ));
 
-        $this->phHelper->createEntry(
-            (int) $order->getPayment()->getEntityId(),
-            $historyEvent,
-            PaymentHistoryInterface::USER_RESURS_BANK,
-            $oldState,
-            $newState,
-            $oldStatus,
-            $newStatus
-        );
+        /* @noinspection PhpUndefinedMethodInspection */
+        $entry = $this->phFactory->create();
+
+        $entry
+            ->setPaymentId((int) $order->getPayment()->getEntityId())
+            ->setEvent($historyEvent)
+            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
+            ->setStateFrom($order->getState())
+            ->setStateTo($newState)
+            ->setStatusFrom($order->getStatus())
+            ->setStatusTo($newStatus);
+
+        $order->setStatus($newStatus);
+        $order->setState($newState);
+
+        $this->orderRepository->save($order);
+        $this->phRepository->save($entry);
 
         return $order;
     }
@@ -382,16 +392,14 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Resolve the status and state for the order by asking Resurs Bank.
-     *
      * @param Order $order
-     * @return array<string>
+     * @return string
+     * @throws ResolveOrderStatusFailedException
      * @throws ValidatorException
      * @throws Exception
      */
-    private function syncStatusFromResurs(
-        Order $order
-    ): array {
+    public function getOrderStateFromResurs(OrderInterface $order): string
+    {
         $connection = $this->api->getConnection(
             $this->credentials->resolveFromConfig(
                 (string) $order->getStore()->getCode(),
@@ -403,50 +411,69 @@ class Callback implements CallbackInterface
             $order->getIncrementId()
         );
 
-        [$newStatus, $newState] = $this->mapStateStatusFromResurs($status);
-
-        if ($newState === Order::STATE_CANCELED) {
-            $order->cancel();
-        }
-
-        $order->setStatus($newStatus);
-        $order->setState($newState);
-
-        $this->orderRepository->save($order);
-
-        return [$newStatus, $newState];
-    }
-
-    /**
-     * Get the new order status and state based on constants from eCom.
-     *
-     * @param int $status
-     * @return array<string>
-     * @throws Exception
-     */
-    private function mapStateStatusFromResurs(
-        int $status
-    ): array {
         switch ($status) {
             case OrderStatus::PENDING:
-                $orderStatus = ResursbankStatuses::PAYMENT_REVIEW;
                 $orderState = Order::STATE_PAYMENT_REVIEW;
                 break;
             case OrderStatus::PROCESSING:
-                $orderStatus = ResursbankStatuses::CONFIRMED;
                 $orderState = Order::STATE_PENDING_PAYMENT;
                 break;
             case OrderStatus::COMPLETED:
-                $orderStatus = ResursbankStatuses::FINALIZED;
                 $orderState = Order::STATE_PROCESSING;
                 break;
             case OrderStatus::ANNULLED:
-                $orderStatus = ResursbankStatuses::CANCELLED;
                 $orderState = Order::STATE_CANCELED;
                 break;
             case OrderStatus::CREDITED:
-                $orderStatus = Order::STATE_CLOSED;
                 $orderState = Order::STATE_CLOSED;
+                break;
+            default:
+                throw new ResolveOrderStatusFailedException(__(
+                    sprintf(
+                        'Failed to resolve order state (%s) from Resurs Bank.',
+                        $status
+                    )
+                ));
+        }
+
+        return $orderState;
+    }
+
+    /**
+     * @param Order $order
+     * @return string
+     * @throws ResolveOrderStatusFailedException
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function getOrderStatusFromResurs(OrderInterface $order): string
+    {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig(
+                (string) $order->getStore()->getCode(),
+                ScopeInterface::SCOPE_STORES
+            )
+        );
+
+        $status = $connection->getOrderStatusByPayment(
+            $order->getIncrementId()
+        );
+
+        switch ($status) {
+            case OrderStatus::PENDING:
+                $orderStatus = ResursbankStatuses::PAYMENT_REVIEW;
+                break;
+            case OrderStatus::PROCESSING:
+                $orderStatus = ResursbankStatuses::CONFIRMED;
+                break;
+            case OrderStatus::COMPLETED:
+                $orderStatus = ResursbankStatuses::FINALIZED;
+                break;
+            case OrderStatus::ANNULLED:
+                $orderStatus = ResursbankStatuses::CANCELLED;
+                break;
+            case OrderStatus::CREDITED:
+                $orderStatus = Order::STATE_CLOSED;
                 break;
             default:
                 throw new ResolveOrderStatusFailedException(__(
@@ -457,7 +484,7 @@ class Callback implements CallbackInterface
                 ));
         }
 
-        return [$orderStatus, $orderState];
+        return $orderStatus;
     }
 
     /**
