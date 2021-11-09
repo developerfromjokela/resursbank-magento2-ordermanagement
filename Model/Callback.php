@@ -392,99 +392,153 @@ class Callback implements CallbackInterface
     }
 
     /**
+     * Fetch a Resurs Bank order status based on the status of a Magento order.
+     * The status will be represented as an integer.
+     *
+     * @param OrderInterface $order
+     * @return int
+     * @throws ValidatorException
+     * @throws Exception
+     */
+    public function getResursOrderStatus(OrderInterface $order): int {
+        $connection = $this->api->getConnection(
+            $this->credentials->resolveFromConfig(
+                (string) $order->getStore()->getCode(),
+                ScopeInterface::SCOPE_STORES
+            )
+        );
+
+        return $connection->getOrderStatusByPayment(
+            $order->getIncrementId()
+        );
+    }
+
+    /**
+     * Fetch and convert a Resurs Bank order status to a Magento equivalent
+     * order state.
+     *
      * @param Order $order
      * @return string
      * @throws ResolveOrderStatusFailedException
-     * @throws ValidatorException
      * @throws Exception
      */
     public function getOrderStateFromResurs(OrderInterface $order): string
     {
-        $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig(
-                (string) $order->getStore()->getCode(),
-                ScopeInterface::SCOPE_STORES
-            )
-        );
-
-        $status = $connection->getOrderStatusByPayment(
-            $order->getIncrementId()
-        );
-
-        switch ($status) {
-            case OrderStatus::PENDING:
-                $orderState = Order::STATE_PAYMENT_REVIEW;
-                break;
-            case OrderStatus::PROCESSING:
-                $orderState = Order::STATE_PENDING_PAYMENT;
-                break;
-            case OrderStatus::COMPLETED:
-                $orderState = Order::STATE_PROCESSING;
-                break;
-            case OrderStatus::ANNULLED:
-                $orderState = Order::STATE_CANCELED;
-                break;
-            case OrderStatus::CREDITED:
-                $orderState = Order::STATE_CLOSED;
-                break;
-            default:
-                throw new ResolveOrderStatusFailedException(__(
-                    sprintf(
-                        'Failed to resolve order state (%s) from Resurs Bank.',
-                        $status
-                    )
-                ));
+        try {
+            $result = $this->statusToResursState(
+                $this->getResursOrderStatus($order)
+            );
+        } catch (Exception $e) {
+            throw new ResolveOrderStatusFailedException(__(
+                sprintf(
+                    'Failed to resolve order status from Resurs Bank for ' .
+                    'order (%s).',
+                    $order->getIncrementId()
+                )
+            ));
         }
 
-        return $orderState;
+        return $result;
     }
 
     /**
+     * Fetch and convert a Resurs Bank order status to a Magento equivalent
+     * order status.
+     *
      * @param Order $order
      * @return string
      * @throws ResolveOrderStatusFailedException
-     * @throws ValidatorException
      * @throws Exception
      */
     public function getOrderStatusFromResurs(OrderInterface $order): string
     {
-        $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig(
-                (string) $order->getStore()->getCode(),
-                ScopeInterface::SCOPE_STORES
-            )
-        );
+        try {
+            $result = $this->statusToResursStatus(
+                $this->getResursOrderStatus($order)
+            );
+        } catch (Exception $e) {
+            throw new ResolveOrderStatusFailedException(__(
+                sprintf(
+                    'Failed to resolve order status from Resurs Bank for ' .
+                    'order (%s).',
+                    $order->getIncrementId()
+                )
+            ));
+        }
 
-        $status = $connection->getOrderStatusByPayment(
-            $order->getIncrementId()
-        );
+        return $result;
+    }
 
-        switch ($status) {
+    /**
+     * Converts a Resurs Bank order status to a Magento equivalent order state.
+     *
+     * @param int $orderStatus
+     * @return string
+     * @throws ResolveOrderStatusFailedException
+     */
+    public function statusToResursState(int $orderStatus): string {
+        switch ($orderStatus) {
             case OrderStatus::PENDING:
-                $orderStatus = ResursbankStatuses::PAYMENT_REVIEW;
+                $result = Order::STATE_PAYMENT_REVIEW;
                 break;
             case OrderStatus::PROCESSING:
-                $orderStatus = ResursbankStatuses::CONFIRMED;
+                $result = Order::STATE_PENDING_PAYMENT;
                 break;
             case OrderStatus::COMPLETED:
-                $orderStatus = ResursbankStatuses::FINALIZED;
+                $result = Order::STATE_PROCESSING;
                 break;
             case OrderStatus::ANNULLED:
-                $orderStatus = ResursbankStatuses::CANCELLED;
+                $result = Order::STATE_CANCELED;
                 break;
             case OrderStatus::CREDITED:
-                $orderStatus = Order::STATE_CLOSED;
+                $result = Order::STATE_CLOSED;
                 break;
             default:
                 throw new ResolveOrderStatusFailedException(__(
                     sprintf(
-                        'Failed to resolve order status (%s) from Resurs Bank.',
-                        $status
+                        'Order state (%s) could not be converted.',
+                        $orderStatus
                     )
                 ));
         }
 
-        return $orderStatus;
+        return $result;
+    }
+
+    /**
+     * Converts a Resurs Bank order status to a Magento equivalent order status.
+     *
+     * @param int $orderStatus
+     * @return string
+     * @throws ResolveOrderStatusFailedException
+     */
+    public function statusToResursStatus(int $orderStatus): string {
+        switch ($orderStatus) {
+            case OrderStatus::PENDING:
+                $result = ResursbankStatuses::PAYMENT_REVIEW;
+                break;
+            case OrderStatus::PROCESSING:
+                $result = ResursbankStatuses::CONFIRMED;
+                break;
+            case OrderStatus::COMPLETED:
+                $result = ResursbankStatuses::FINALIZED;
+                break;
+            case OrderStatus::ANNULLED:
+                $result = ResursbankStatuses::CANCELLED;
+                break;
+            case OrderStatus::CREDITED:
+                $result = Order::STATE_CLOSED;
+                break;
+            default:
+                throw new ResolveOrderStatusFailedException(__(
+                    sprintf(
+                        'Order status (%s) could not be converted.',
+                        $orderStatus
+                    )
+                ));
+        }
+
+        return $result;
     }
 
     /**

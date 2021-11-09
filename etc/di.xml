@@ -78,19 +78,4 @@
             name="resursbank_ordermanagement_api"
             type="Resursbank\Ordermanagement\Plugin\Helper\Api" />
     </type>
-
-    <!-- Events occruing after successful order placement. -->
-    <type name="Magento\Checkout\Controller\Onepage\Success">
-        <!--
-        Update order status on the order confirmation page.
-
-        NOTE: The order of execution is important. There are several other
-        events which occur at order placement. See the Core module for most of
-        them.
-        -->
-        <plugin
-            name="resursbank_ordermanagement_update_order_status"
-            type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
-            sortOrder="21"/>
-    </type>
 </config>

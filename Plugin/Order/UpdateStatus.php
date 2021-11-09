@@ -9,7 +9,9 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Plugin\Order;
 
 use Exception;
+use Magento\Checkout\Controller\Onepage\Success;
 use Magento\Checkout\Model\Session\SuccessValidator;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
@@ -102,10 +104,14 @@ class UpdateStatus implements ArgumentInterface
     }
 
     /**
-     * @return void
+     * @param Success $subject
+     * @param ResultInterface $result
+     * @return ResultInterface
      */
-    public function beforeExecute(): void
-    {
+    public function afterExecute(
+        Success $subject,
+        ResultInterface $result
+    ): ResultInterface {
         try {
             $quoteId = $this->request->getQuoteId();
             $order = $this->order->getOrderByQuoteId($quoteId);
@@ -139,5 +145,7 @@ class UpdateStatus implements ArgumentInterface
         } catch (Exception $e) {
             $this->log->exception($e);
         }
+
+        return $result;
     }
 }
