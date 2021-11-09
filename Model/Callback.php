@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Model;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
+use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use function constant;
 use Exception;
 use Magento\Framework\App\Cache\TypeListInterface;
@@ -23,23 +24,15 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\OrderRepository;
-use Magento\Store\Model\ScopeInterface;
-use Resursbank\Core\Helper\Api;
-use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
-use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
-use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
-use Resursbank\Ecommerce\Types\OrderStatus;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -48,19 +41,9 @@ use Resursbank\Ecommerce\Types\OrderStatus;
 class Callback implements CallbackInterface
 {
     /**
-     * @var Api
-     */
-    private Api $api;
-
-    /**
      * @var CallbackHelper
      */
     private CallbackHelper $callbackHelper;
-
-    /**
-     * @var Credentials
-     */
-    private Credentials $credentials;
 
     /**
      * @var Log
@@ -76,11 +59,6 @@ class Callback implements CallbackInterface
      * @var OrderInterface
      */
     private OrderInterface $orderInterface;
-
-    /**
-     * @var OrderRepository
-     */
-    private OrderRepository $orderRepository;
 
     /**
      * @var ConfigHelper
@@ -113,57 +91,48 @@ class Callback implements CallbackInterface
     private TypeListInterface $cacheTypeList;
 
     /**
-     * @var PaymentHistoryFactory
+     * @var PaymentHistory
      */
-    private PaymentHistoryFactory $phFactory;
+    private PaymentHistory $phHelper;
 
     /**
-     * @param Api $api
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
-     * @param Credentials $credentials
      * @param Log $log
      * @param CallbackLog $callbackLog
      * @param OrderInterface $orderInterface
-     * @param OrderRepository $orderRepository
      * @param OrderSender $orderSender
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param Scope $scope
      * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
-     * @param PaymentHistoryFactory $phFactory
+     * @param PaymentHistory $phHelper
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        Api $api,
         CallbackHelper $callbackHelper,
         ConfigHelper $config,
-        Credentials $credentials,
         Log $log,
         CallbackLog $callbackLog,
         OrderInterface $orderInterface,
-        OrderRepository $orderRepository,
         OrderSender $orderSender,
         PaymentHistoryRepositoryInterface $phRepository,
         Scope $scope,
         SearchCriteriaBuilder $searchBuilder,
         TypeListInterface $cacheTypeList,
-        PaymentHistoryFactory $phFactory
+        PaymentHistory $phHelper
     ) {
-        $this->api = $api;
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
-        $this->credentials = $credentials;
         $this->log = $log;
         $this->callbackLog = $callbackLog;
         $this->orderInterface = $orderInterface;
-        $this->orderRepository = $orderRepository;
         $this->orderSender = $orderSender;
         $this->phRepository = $phRepository;
         $this->searchBuilder = $searchBuilder;
         $this->scope = $scope;
         $this->cacheTypeList = $cacheTypeList;
-        $this->phFactory = $phFactory;
+        $this->phHelper = $phHelper;
     }
 
     /**
@@ -277,42 +246,20 @@ class Callback implements CallbackInterface
             );
         }
 
-        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
-            throw new RuntimeException(
-                __('Missing payment data on order %1', $order->getId())
-            );
-        }
-
-        $newStatus = $this->getOrderStatusFromResurs($order);
-        $newState = $this->getOrderStateFromResurs($order);
+        $newState = $this->phHelper->getOrderStateFromResurs($order);
 
         if ($newState === Order::STATE_CANCELED) {
             $order->cancel();
         }
 
-        $historyEvent = constant(sprintf(
-            '%s::%s',
-            PaymentHistoryInterface::class,
-            'EVENT_CALLBACK_' . strtoupper($type)
-        ));
-
-        /* @noinspection PhpUndefinedMethodInspection */
-        $entry = $this->phFactory->create();
-
-        $entry
-            ->setPaymentId((int) $order->getPayment()->getEntityId())
-            ->setEvent($historyEvent)
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
-            ->setStateFrom($order->getState())
-            ->setStateTo($newState)
-            ->setStatusFrom($order->getStatus())
-            ->setStatusTo($newStatus);
-
-        $order->setStatus($newStatus);
-        $order->setState($newState);
-
-        $this->orderRepository->save($order);
-        $this->phRepository->save($entry);
+        $this->phHelper->syncOrderStatus(
+            $order,
+            constant(sprintf(
+                '%s::%s',
+                PaymentHistoryInterface::class,
+                'EVENT_CALLBACK_' . strtoupper($type)
+            ))
+        );
 
         return $order;
     }
@@ -389,156 +336,6 @@ class Callback implements CallbackInterface
                 WebapiException::HTTP_NOT_ACCEPTABLE
             );
         }
-    }
-
-    /**
-     * Fetch a Resurs Bank order status based on the status of a Magento order.
-     * The status will be represented as an integer.
-     *
-     * @param OrderInterface $order
-     * @return int
-     * @throws ValidatorException
-     * @throws Exception
-     */
-    public function getResursOrderStatus(OrderInterface $order): int {
-        $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig(
-                (string) $order->getStore()->getCode(),
-                ScopeInterface::SCOPE_STORES
-            )
-        );
-
-        return $connection->getOrderStatusByPayment(
-            $order->getIncrementId()
-        );
-    }
-
-    /**
-     * Fetch and convert a Resurs Bank order status to a Magento equivalent
-     * order state.
-     *
-     * @param Order $order
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     * @throws Exception
-     */
-    public function getOrderStateFromResurs(OrderInterface $order): string
-    {
-        try {
-            $result = $this->statusToResursState(
-                $this->getResursOrderStatus($order)
-            );
-        } catch (Exception $e) {
-            throw new ResolveOrderStatusFailedException(__(
-                sprintf(
-                    'Failed to resolve order status from Resurs Bank for ' .
-                    'order (%s).',
-                    $order->getIncrementId()
-                )
-            ));
-        }
-
-        return $result;
-    }
-
-    /**
-     * Fetch and convert a Resurs Bank order status to a Magento equivalent
-     * order status.
-     *
-     * @param Order $order
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     * @throws Exception
-     */
-    public function getOrderStatusFromResurs(OrderInterface $order): string
-    {
-        try {
-            $result = $this->statusToResursStatus(
-                $this->getResursOrderStatus($order)
-            );
-        } catch (Exception $e) {
-            throw new ResolveOrderStatusFailedException(__(
-                sprintf(
-                    'Failed to resolve order status from Resurs Bank for ' .
-                    'order (%s).',
-                    $order->getIncrementId()
-                )
-            ));
-        }
-
-        return $result;
-    }
-
-    /**
-     * Converts a Resurs Bank order status to a Magento equivalent order state.
-     *
-     * @param int $orderStatus
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     */
-    public function statusToResursState(int $orderStatus): string {
-        switch ($orderStatus) {
-            case OrderStatus::PENDING:
-                $result = Order::STATE_PAYMENT_REVIEW;
-                break;
-            case OrderStatus::PROCESSING:
-                $result = Order::STATE_PENDING_PAYMENT;
-                break;
-            case OrderStatus::COMPLETED:
-                $result = Order::STATE_PROCESSING;
-                break;
-            case OrderStatus::ANNULLED:
-                $result = Order::STATE_CANCELED;
-                break;
-            case OrderStatus::CREDITED:
-                $result = Order::STATE_CLOSED;
-                break;
-            default:
-                throw new ResolveOrderStatusFailedException(__(
-                    sprintf(
-                        'Order state (%s) could not be converted.',
-                        $orderStatus
-                    )
-                ));
-        }
-
-        return $result;
-    }
-
-    /**
-     * Converts a Resurs Bank order status to a Magento equivalent order status.
-     *
-     * @param int $orderStatus
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     */
-    public function statusToResursStatus(int $orderStatus): string {
-        switch ($orderStatus) {
-            case OrderStatus::PENDING:
-                $result = ResursbankStatuses::PAYMENT_REVIEW;
-                break;
-            case OrderStatus::PROCESSING:
-                $result = ResursbankStatuses::CONFIRMED;
-                break;
-            case OrderStatus::COMPLETED:
-                $result = ResursbankStatuses::FINALIZED;
-                break;
-            case OrderStatus::ANNULLED:
-                $result = ResursbankStatuses::CANCELLED;
-                break;
-            case OrderStatus::CREDITED:
-                $result = Order::STATE_CLOSED;
-                break;
-            default:
-                throw new ResolveOrderStatusFailedException(__(
-                    sprintf(
-                        'Order status (%s) could not be converted.',
-                        $orderStatus
-                    )
-                ));
-        }
-
-        return $result;
     }
 
     /**
