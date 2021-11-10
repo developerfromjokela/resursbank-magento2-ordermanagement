@@ -221,6 +221,7 @@ class Callback implements CallbackInterface
      * @throws ValidatorException
      * @throws AlreadyExistsException
      * @throws LocalizedException
+     * @throws Exception
      */
     private function execute(
         string $type,
@@ -246,7 +247,8 @@ class Callback implements CallbackInterface
             );
         }
 
-        $newState = $this->phHelper->getOrderStateFromResurs($order);
+        $orderStatus = $this->phHelper->getPaymentStatus($order);
+        $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
             $order->cancel();

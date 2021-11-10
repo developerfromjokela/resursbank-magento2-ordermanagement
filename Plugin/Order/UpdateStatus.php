@@ -17,7 +17,6 @@ use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\Request;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
-
 class UpdateStatus implements ArgumentInterface
 {
     /**

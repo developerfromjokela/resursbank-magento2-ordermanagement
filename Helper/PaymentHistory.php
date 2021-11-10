@@ -13,7 +13,6 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
@@ -74,6 +73,7 @@ class PaymentHistory extends AbstractHelper
      * @throws AlreadyExistsException
      * @throws ResolveOrderStatusFailedException
      * @throws LocalizedException
+     * @throws Exception
      */
     public function syncOrderStatus(
         OrderInterface $order,
@@ -90,18 +90,21 @@ class PaymentHistory extends AbstractHelper
             ));
         }
 
-        $newOrderStatus = $this->getOrderStatusFromResurs($order);
+        $paymentStatus = $this->getPaymentStatus($order);
+        $orderStatus = $this->paymentStatusToOrderStatus($paymentStatus);
+        $orderState = $this->paymentStatusToOrderState($paymentStatus);
 
         $entry
             ->setPaymentId((int) $payment->getEntityId())
             ->setEvent($event)
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
             ->setStateFrom($order->getState())
-            ->setStateTo($this->getOrderStateFromResurs($order))
+            ->setStateTo($orderState)
             ->setStatusFrom($order->getStatus())
-            ->setStatusTo($this->getOrderStatusFromResurs($order));
+            ->setStatusTo($orderStatus);
 
-        $order->setStatus($newOrderStatus);
+        $order->setStatus($orderStatus);
+        $order->setState($orderState);
 
         $this->orderRepo->save($order);
         $this->phRepository->save($entry);
@@ -130,67 +133,22 @@ class PaymentHistory extends AbstractHelper
     }
 
     /**
-     * Fetch a Resurs Bank order status based on the status of a Magento order.
-     * The status will be represented as an integer.
+     * Fetch a Resurs Bank payment status based on the status of a Magento
+     * order. The status will be represented as an integer.
      *
      * @param OrderInterface $order
      * @return int
-     * @throws ValidatorException
      * @throws Exception
      */
-    public function getResursOrderStatus(OrderInterface $order): int
-    {
-        $connection = $this->api->getConnection(
-            $this->api->getCredentialsFromOrder($order)
-        );
-
-        return $connection->getOrderStatusByPayment(
-            $order->getIncrementId()
-        );
-    }
-
-    /**
-     * Fetch and convert a Resurs Bank order status to a Magento equivalent
-     * order state.
-     *
-     * @param Order $order
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     * @throws Exception
-     */
-    public function getOrderStateFromResurs(OrderInterface $order): string
+    public function getPaymentStatus(OrderInterface $order): int
     {
         try {
-            $result = $this->paymentStatusToOrderState(
-                $this->getResursOrderStatus($order)
+            $connection = $this->api->getConnection(
+                $this->api->getCredentialsFromOrder($order)
             );
-        } catch (Exception $e) {
-            throw new ResolveOrderStatusFailedException(__(
-                sprintf(
-                    'Failed to resolve order status from Resurs Bank for ' .
-                    'order (%s).',
-                    $order->getIncrementId()
-                )
-            ));
-        }
 
-        return $result;
-    }
-
-    /**
-     * Fetch and convert a Resurs Bank order status to a Magento equivalent
-     * order status.
-     *
-     * @param Order $order
-     * @return string
-     * @throws ResolveOrderStatusFailedException
-     * @throws Exception
-     */
-    public function getOrderStatusFromResurs(OrderInterface $order): string
-    {
-        try {
-            $result = $this->paymentStatusToOrderStatus(
-                $this->getResursOrderStatus($order)
+            $result = $connection->getOrderStatusByPayment(
+                $order->getIncrementId()
             );
         } catch (Exception $e) {
             throw new ResolveOrderStatusFailedException(__(
