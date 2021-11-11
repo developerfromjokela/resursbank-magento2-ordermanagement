@@ -22,4 +22,12 @@
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
             sortOrder="21"/>
     </type>
+
+    <!-- Create payment at Resurs Bank during authorization. -->
+    <type name="Resursbank\Core\Gateway\Command\Authorize">
+        <plugin
+            name="resursbank_ordermanagement_gateway_command_authorize"
+            type="Resursbank\Ordermanagement\Plugin\Gateway\Command\Authorize"
+            sortOrder="10" />
+    </type>
 </config>
