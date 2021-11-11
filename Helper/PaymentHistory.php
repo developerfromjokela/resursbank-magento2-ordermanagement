@@ -133,8 +133,7 @@ class PaymentHistory extends AbstractHelper
     }
 
     /**
-     * Fetch a Resurs Bank payment status based on the status of a Magento
-     * order. The status will be represented as an integer.
+     * Fetch Resurs Bank payment status.
      *
      * @param OrderInterface $order
      * @return int
@@ -142,25 +141,11 @@ class PaymentHistory extends AbstractHelper
      */
     public function getPaymentStatus(OrderInterface $order): int
     {
-        try {
-            $connection = $this->api->getConnection(
-                $this->api->getCredentialsFromOrder($order)
-            );
+        $connection = $this->api->getConnection(
+            $this->api->getCredentialsFromOrder($order)
+        );
 
-            $result = $connection->getOrderStatusByPayment(
-                $order->getIncrementId()
-            );
-        } catch (Exception $e) {
-            throw new ResolveOrderStatusFailedException(__(
-                sprintf(
-                    'Failed to resolve order status from Resurs Bank for ' .
-                    'order (%s).',
-                    $order->getIncrementId()
-                )
-            ));
-        }
-
-        return $result;
+        return $connection->getOrderStatusByPayment($order->getIncrementId());
     }
 
     /**
