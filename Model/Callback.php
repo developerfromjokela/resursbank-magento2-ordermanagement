@@ -22,6 +22,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
@@ -101,6 +102,11 @@ class Callback implements CallbackInterface
     private PaymentHistory $phHelper;
 
     /**
+     * @var OrderHelper
+     */
+    private OrderHelper $orderHelper;
+
+    /**
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
      * @param Log $log
@@ -113,6 +119,7 @@ class Callback implements CallbackInterface
      * @param TypeListInterface $cacheTypeList
      * @param PaymentHistory $phHelper
      * @param PaymentHistoryFactory $phFactory
+     * @param OrderHelper $orderHelper
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -127,7 +134,8 @@ class Callback implements CallbackInterface
         SearchCriteriaBuilder $searchBuilder,
         TypeListInterface $cacheTypeList,
         PaymentHistory $phHelper,
-        PaymentHistoryFactory $phFactory
+        PaymentHistoryFactory $phFactory,
+        OrderHelper $orderHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
@@ -141,6 +149,7 @@ class Callback implements CallbackInterface
         $this->cacheTypeList = $cacheTypeList;
         $this->phHelper = $phHelper;
         $this->phFactory = $phFactory;
+        $this->orderHelper = $orderHelper;
     }
 
     /**
@@ -236,6 +245,8 @@ class Callback implements CallbackInterface
         string $orderIncId,
         string $digest
     ): Order {
+        // Required for PHPStan to validate that loadByIncrementId() exists as
+        // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
                 __('orderInterface not an instance of Order')
@@ -273,7 +284,7 @@ class Callback implements CallbackInterface
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
-            $order->cancel();
+            $this->orderHelper->cancelOrder($order);
         }
 
         $this->phHelper->syncOrderStatus(
