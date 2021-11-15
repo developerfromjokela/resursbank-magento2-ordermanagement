@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Events occruing after successful order placement. -->
+    <type name="Magento\Checkout\Controller\Onepage\Success">
+        <!--
+        Update order status on the order confirmation page.
+
+        NOTE: The order of execution is important. There are several other
+        events which occur at order placement. See the Core module for most of
+        them.
+        -->
+        <plugin
+            name="resursbank_ordermanagement_update_order_status"
+            type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
+            sortOrder="21"/>
+    </type>
+</config>
