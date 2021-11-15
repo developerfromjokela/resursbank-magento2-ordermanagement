@@ -78,4 +78,12 @@
             name="resursbank_ordermanagement_api"
             type="Resursbank\Ordermanagement\Plugin\Helper\Api" />
     </type>
+
+    <!-- Create payment at Resurs Bank during authorization. -->
+<!--    <type name="Resursbank\Core\Gateway\Command\Authorize">-->
+<!--        <plugin-->
+<!--            name="resursbank_ordermanagement_gateway_command_authorize"-->
+<!--            type="Resursbank\Ordermanagement\Plugin\Gateway\Command\Authorize"-->
+<!--            sortOrder="10" />-->
+<!--    </type>-->
 </config>

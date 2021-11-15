@@ -107,11 +107,18 @@ class Authorize
 
                 if ($payment instanceof Payment) {
                     $order = $payment->getOrder();
+                    $payment2 = $order->getPayment();
+                    $payment2EnId = $payment2->getEntityId();
 
                     /* @noinspection PhpUndefinedMethodInspection */
                     $entry = $this->phFactory->create();
+                    $paymentId = $payment->getId();
+                    $paymentEnId = $payment->getEntityId();
+                    $paymentQuId = $payment->getQuotePaymentId();
+                    $asd = 123;
 
                     $entry
+                        ->setPaymentId((int) $payment2EnId)
                         ->setEvent('update')
                         ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
                         ->setStatusFrom($order->getStatus())
