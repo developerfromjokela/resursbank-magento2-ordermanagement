@@ -4,6 +4,8 @@
  * See LICENSE for license details.
  */
 
+declare(strict_types=1);
+
 namespace Resursbank\Ordermanagement\Observer;
 
 use Exception;
@@ -44,6 +46,12 @@ class RedirectToGateway implements ObserverInterface
      */
     private PaymentMethods $paymentMethods;
 
+    /**
+     * @param PaymentHistoryRepositoryInterface $phRepository
+     * @param PaymentHistoryFactory $phFactory
+     * @param Log $log
+     * @param PaymentMethods $paymentMethods
+     */
     public function __construct(
         PaymentHistoryRepositoryInterface $phRepository,
         PaymentHistoryFactory $phFactory,
@@ -56,6 +64,10 @@ class RedirectToGateway implements ObserverInterface
         $this->paymentMethods = $paymentMethods;
     }
 
+    /**
+     * @param Observer $observer
+     * @return void
+     */
     public function execute(Observer $observer): void
     {
         try {
