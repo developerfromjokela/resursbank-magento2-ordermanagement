@@ -14,7 +14,6 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
-use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -28,11 +27,6 @@ class PaymentHistory implements ArgumentInterface
     private PaymentHistoryRepositoryInterface $repository;
 
     /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
      * @var SearchCriteriaBuilder
      */
     private SearchCriteriaBuilder $searchBuilder;
@@ -43,18 +37,15 @@ class PaymentHistory implements ArgumentInterface
     private Log $log;
 
     /**
-     * @param PaymentMethods $paymentMethods
      * @param PaymentHistoryRepositoryInterface $repository
      * @param SearchCriteriaBuilder $searchBuilder
      * @param Log $log
      */
     public function __construct(
-        PaymentMethods $paymentMethods,
         PaymentHistoryRepositoryInterface $repository,
         SearchCriteriaBuilder $searchBuilder,
         Log $log
     ) {
-        $this->paymentMethods = $paymentMethods;
         $this->repository = $repository;
         $this->searchBuilder = $searchBuilder;
         $this->log = $log;
@@ -192,8 +183,6 @@ class PaymentHistory implements ArgumentInterface
             return false;
         }
 
-        $code = $order->getPayment()->getMethod();
-
-        return $this->paymentMethods->isResursBankMethod($code);
+        return !empty($this->getEvents($order));
     }
 }
