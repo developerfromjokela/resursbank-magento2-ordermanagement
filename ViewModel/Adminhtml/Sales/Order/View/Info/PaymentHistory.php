@@ -37,6 +37,11 @@ class PaymentHistory implements ArgumentInterface
     private Log $log;
 
     /**
+     * @var PaymentHistoryInterface[]|null
+     */
+    private ?array $paymentHistoryItems = null;
+
+    /**
      * @param PaymentHistoryRepositoryInterface $repository
      * @param SearchCriteriaBuilder $searchBuilder
      * @param Log $log
@@ -63,21 +68,27 @@ class PaymentHistory implements ArgumentInterface
         $items = [];
 
         try {
-            if (!($order->getPayment() instanceof OrderPaymentInterface)) {
-                throw new RuntimeException(
-                    'Missing payment data on order ' . $order->getId()
-                );
+            if ($this->paymentHistoryItems === null) {
+                if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+                    throw new RuntimeException(
+                        'Missing payment data on order ' . $order->getId()
+                    );
+                }
+
+                $criteria = $this->searchBuilder->addFilter(
+                    PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+                    $order->getPayment()->getEntityId()
+                )->create();
+
+                /** @var PaymentHistoryInterface[] $items */
+                $items = $this->repository
+                    ->getList($criteria)
+                    ->getItems();
+
+                $this->paymentHistoryItems = $items;
+            } else {
+                $items = $this->paymentHistoryItems;
             }
-
-            $criteria = $this->searchBuilder->addFilter(
-                PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-                $order->getPayment()->getEntityId()
-            )->create();
-
-            /** @var PaymentHistoryInterface[] $items */
-            $items = $this->repository
-                ->getList($criteria)
-                ->getItems();
         } catch (Exception $e) {
             $this->log->error(
                 'Could not retrieve list of payment history events for ' .
