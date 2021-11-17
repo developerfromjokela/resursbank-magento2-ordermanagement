@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Plugin\Order;
 
+use function constant;
+use function sprintf;
 use Exception;
 use Magento\Checkout\Controller\Onepage\Success;
 use Magento\Framework\Controller\ResultInterface;
@@ -15,6 +17,7 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\Request;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 class UpdateStatus implements ArgumentInterface
@@ -62,6 +65,7 @@ class UpdateStatus implements ArgumentInterface
      * @param ResultInterface $result
      * @return ResultInterface
      * @noinspection PhpUnusedParameterInspection
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterExecute(
         Success $subject,
@@ -73,7 +77,12 @@ class UpdateStatus implements ArgumentInterface
             $quoteId = $this->request->getQuoteId();
 
             $this->phHelper->syncOrderStatus(
-                $this->order->getOrderByQuoteId($quoteId)
+                $this->order->getOrderByQuoteId($quoteId),
+                constant(sprintf(
+                    '%s::%s',
+                    PaymentHistoryInterface::class,
+                    'EVENT_REACHED_ORDER_SUCCESS'
+                ))
             );
         } catch (Exception $e) {
             $this->log->exception($e);

@@ -123,6 +123,11 @@ interface PaymentHistoryInterface
     public const EVENT_REFUND_API_CALLED = 'refund_api_called';
 
     /**
+     * @var string
+     */
+    public const EVENT_REACHED_ORDER_SUCCESS = 'reached_order_success';
+
+    /**
      * @array
      */
     public const EVENT_LABELS = [
@@ -137,7 +142,8 @@ interface PaymentHistoryInterface
         self::EVENT_CANCEL_API_CALLED => 'Payment was annulled at Resurs',
         self::EVENT_REFUND_CALLED => 'Refund payment was called.',
         self::EVENT_REFUND_FAILED => 'Refund payment failed. Check the logs.',
-        self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.'
+        self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.',
+        self::EVENT_REACHED_ORDER_SUCCESS => 'Client reached order success page.'
     ];
 
     /**
