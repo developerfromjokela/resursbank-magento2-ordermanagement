@@ -8,12 +8,10 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model;
 
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\LocalizedException;
-use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
-use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use function constant;
 use Exception;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\FileSystemException;
@@ -24,6 +22,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Api\CallbackInterface;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
@@ -33,6 +32,8 @@ use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Log;
+use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
+use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -40,6 +41,11 @@ use Resursbank\Ordermanagement\Helper\Log;
  */
 class Callback implements CallbackInterface
 {
+    /**
+     * @var PaymentHistoryFactory
+     */
+    private PaymentHistoryFactory $phFactory;
+
     /**
      * @var CallbackHelper
      */
@@ -96,6 +102,11 @@ class Callback implements CallbackInterface
     private PaymentHistory $phHelper;
 
     /**
+     * @var OrderHelper
+     */
+    private OrderHelper $orderHelper;
+
+    /**
      * @param CallbackHelper $callbackHelper
      * @param ConfigHelper $config
      * @param Log $log
@@ -107,6 +118,8 @@ class Callback implements CallbackInterface
      * @param SearchCriteriaBuilder $searchBuilder
      * @param TypeListInterface $cacheTypeList
      * @param PaymentHistory $phHelper
+     * @param PaymentHistoryFactory $phFactory
+     * @param OrderHelper $orderHelper
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -120,7 +133,9 @@ class Callback implements CallbackInterface
         Scope $scope,
         SearchCriteriaBuilder $searchBuilder,
         TypeListInterface $cacheTypeList,
-        PaymentHistory $phHelper
+        PaymentHistory $phHelper,
+        PaymentHistoryFactory $phFactory,
+        OrderHelper $orderHelper
     ) {
         $this->callbackHelper = $callbackHelper;
         $this->config = $config;
@@ -133,17 +148,19 @@ class Callback implements CallbackInterface
         $this->scope = $scope;
         $this->cacheTypeList = $cacheTypeList;
         $this->phHelper = $phHelper;
+        $this->phFactory = $phFactory;
+        $this->orderHelper = $orderHelper;
     }
 
     /**
      * @inheritDoc
      */
     public function unfreeze(
-        string $paymentId,
+        string $orderIncId,
         string $digest
     ): void {
         try {
-            $this->execute('unfreeze', $paymentId, $digest);
+            $this->execute('unfreeze', $orderIncId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -153,11 +170,11 @@ class Callback implements CallbackInterface
      * @inheritDoc
      */
     public function booked(
-        string $paymentId,
+        string $orderIncId,
         string $digest
     ): void {
         try {
-            $order = $this->execute('booked', $paymentId, $digest);
+            $order = $this->execute('booked', $orderIncId, $digest);
 
             // Send order confirmation email if this is first BOOKED.
             if (!$this->receivedCallback($order)) {
@@ -172,11 +189,11 @@ class Callback implements CallbackInterface
      * @inheritDoc
      */
     public function update(
-        string $paymentId,
+        string $orderIncId,
         string $digest
     ): void {
         try {
-            $this->execute('update', $paymentId, $digest);
+            $this->execute('update', $orderIncId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -211,7 +228,7 @@ class Callback implements CallbackInterface
      * General callback instructions.
      *
      * @param string $type
-     * @param string $paymentId
+     * @param string $orderIncId
      * @param string $digest
      * @return Order
      * @throws CallbackValidationException
@@ -225,13 +242,11 @@ class Callback implements CallbackInterface
      */
     private function execute(
         string $type,
-        string $paymentId,
+        string $orderIncId,
         string $digest
     ): Order {
-        $this->validate($paymentId, $digest);
-
-        $this->logIncoming($type, $paymentId, $digest);
-
+        // Required for PHPStan to validate that loadByIncrementId() exists as
+        // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
                 __('orderInterface not an instance of Order')
@@ -239,19 +254,37 @@ class Callback implements CallbackInterface
         }
 
         /** @var Order $order */
-        $order = $this->orderInterface->loadByIncrementId($paymentId);
+        $order = $this->orderInterface->loadByIncrementId($orderIncId);
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                __('Failed to locate order ' . $paymentId)
+                __('Failed to locate order ' . $orderIncId)
             );
         }
+
+        $payment = $order->getPayment();
+
+        /* @noinspection PhpUndefinedMethodInspection */
+        $entry = $this->phFactory->create();
+        $entry
+            ->setPaymentId((int) $payment->getEntityId())
+            ->setEvent(constant(sprintf(
+                '%s::%s',
+                PaymentHistoryInterface::class,
+                'EVENT_CALLBACK_' . strtoupper($type)
+            )))
+            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+
+        $this->phRepository->save($entry);
+
+        $this->validate($orderIncId, $digest);
+        $this->logIncoming($type, $orderIncId, $digest);
 
         $orderStatus = $this->phHelper->getPaymentStatus($order);
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
-            $order->cancel();
+            $this->orderHelper->cancelOrder($order);
         }
 
         $this->phHelper->syncOrderStatus(
@@ -259,7 +292,7 @@ class Callback implements CallbackInterface
             constant(sprintf(
                 '%s::%s',
                 PaymentHistoryInterface::class,
-                'EVENT_CALLBACK_' . strtoupper($type)
+                'EVENT_CALLBACK_' . strtoupper($type) . '_COMPLETED'
             ))
         );
 

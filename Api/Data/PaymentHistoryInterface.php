@@ -70,12 +70,27 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const EVENT_CALLBACK_UNFREEZE_COMPLETED = 'callback_unfreeze_completed';
+
+    /**
+     * @var string
+     */
     public const EVENT_CALLBACK_BOOKED = 'callback_booked';
 
     /**
      * @var string
      */
+    public const EVENT_CALLBACK_BOOKED_COMPLETED = 'callback_booked_completed';
+
+    /**
+     * @var string
+     */
     public const EVENT_CALLBACK_UPDATE = 'callback_update';
+
+    /**
+     * @var string
+     */
+    public const EVENT_CALLBACK_UPDATE_COMPLETED = 'callback_update_completed';
 
     /**
      * @var string
@@ -128,12 +143,25 @@ interface PaymentHistoryInterface
     public const EVENT_REACHED_ORDER_SUCCESS = 'reached_order_success';
 
     /**
+     * @var string
+     */
+    public const EVENT_ORDER_CANCELED = 'order_canceled';
+
+    /**
+     * @var string
+     */
+    public const EVENT_GATEWAY_REDIRECTED_TO = 'gateway_redirected_to';
+
+    /**
      * @array
      */
     public const EVENT_LABELS = [
         self::EVENT_CALLBACK_BOOKED => 'Callback "Booked" received.',
+        self::EVENT_CALLBACK_BOOKED_COMPLETED => 'Callback "Booked" completed.',
         self::EVENT_CALLBACK_UNFREEZE => 'Callback "Unfreeze" received.',
+        self::EVENT_CALLBACK_UNFREEZE_COMPLETED => 'Callback "Unfreeze" completed.',
         self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.',
+        self::EVENT_CALLBACK_UPDATE_COMPLETED => 'Callback "Update" completed.',
         self::EVENT_CAPTURE_CALLED => 'Capture payment was called.',
         self::EVENT_CAPTURE_FAILED => 'Capture payment failed. Check the logs.',
         self::EVENT_CAPTURE_API_CALLED => 'Payment was debited at Resurs.',
@@ -143,7 +171,9 @@ interface PaymentHistoryInterface
         self::EVENT_REFUND_CALLED => 'Refund payment was called.',
         self::EVENT_REFUND_FAILED => 'Refund payment failed. Check the logs.',
         self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.',
-        self::EVENT_REACHED_ORDER_SUCCESS => 'Client reached order success page.'
+        self::EVENT_REACHED_ORDER_SUCCESS => 'Client reached order success page.',
+        self::EVENT_ORDER_CANCELED => 'Order canceled.',
+        self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.'
     ];
 
     /**
