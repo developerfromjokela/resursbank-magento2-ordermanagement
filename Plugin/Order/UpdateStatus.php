@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Plugin\Order;
 
-use function constant;
-use function sprintf;
 use Exception;
 use Magento\Checkout\Controller\Onepage\Success;
 use Magento\Framework\Controller\ResultInterface;
@@ -78,11 +76,7 @@ class UpdateStatus implements ArgumentInterface
 
             $this->phHelper->syncOrderStatus(
                 $this->order->getOrderByQuoteId($quoteId),
-                constant(sprintf(
-                    '%s::%s',
-                    PaymentHistoryInterface::class,
-                    'EVENT_REACHED_ORDER_SUCCESS'
-                ))
+                PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
             );
         } catch (Exception $e) {
             $this->log->exception($e);
