@@ -14,7 +14,6 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
-use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -28,11 +27,6 @@ class PaymentHistory implements ArgumentInterface
     private PaymentHistoryRepositoryInterface $repository;
 
     /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
      * @var SearchCriteriaBuilder
      */
     private SearchCriteriaBuilder $searchBuilder;
@@ -43,18 +37,20 @@ class PaymentHistory implements ArgumentInterface
     private Log $log;
 
     /**
-     * @param PaymentMethods $paymentMethods
+     * @var PaymentHistoryInterface[]|null
+     */
+    private ?array $paymentHistoryItems = null;
+
+    /**
      * @param PaymentHistoryRepositoryInterface $repository
      * @param SearchCriteriaBuilder $searchBuilder
      * @param Log $log
      */
     public function __construct(
-        PaymentMethods $paymentMethods,
         PaymentHistoryRepositoryInterface $repository,
         SearchCriteriaBuilder $searchBuilder,
         Log $log
     ) {
-        $this->paymentMethods = $paymentMethods;
         $this->repository = $repository;
         $this->searchBuilder = $searchBuilder;
         $this->log = $log;
@@ -72,21 +68,27 @@ class PaymentHistory implements ArgumentInterface
         $items = [];
 
         try {
-            if (!($order->getPayment() instanceof OrderPaymentInterface)) {
-                throw new RuntimeException(
-                    'Missing payment data on order ' . $order->getId()
-                );
+            if ($this->paymentHistoryItems === null) {
+                if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+                    throw new RuntimeException(
+                        'Missing payment data on order ' . $order->getId()
+                    );
+                }
+
+                $criteria = $this->searchBuilder->addFilter(
+                    PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+                    $order->getPayment()->getEntityId()
+                )->create();
+
+                /** @var PaymentHistoryInterface[] $items */
+                $items = $this->repository
+                    ->getList($criteria)
+                    ->getItems();
+
+                $this->paymentHistoryItems = $items;
+            } else {
+                $items = $this->paymentHistoryItems;
             }
-
-            $criteria = $this->searchBuilder->addFilter(
-                PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-                $order->getPayment()->getEntityId()
-            )->create();
-
-            /** @var PaymentHistoryInterface[] $items */
-            $items = $this->repository
-                ->getList($criteria)
-                ->getItems();
         } catch (Exception $e) {
             $this->log->error(
                 'Could not retrieve list of payment history events for ' .
@@ -192,8 +194,6 @@ class PaymentHistory implements ArgumentInterface
             return false;
         }
 
-        $code = $order->getPayment()->getMethod();
-
-        return $this->paymentMethods->isResursBankMethod($code);
+        return !empty($this->getEvents($order));
     }
 }
