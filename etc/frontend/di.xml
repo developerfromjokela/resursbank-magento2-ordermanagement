@@ -22,4 +22,19 @@
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
             sortOrder="21"/>
     </type>
+
+    <!-- Events occruing after failed order placement. -->
+    <type name="Magento\Checkout\Controller\Onepage\Failure">
+        <!--
+        Update order status on the order failure page.
+
+        NOTE: The order of execution is important. There are several other
+        events which occur at order placement. See the Core module for most of
+        them.
+        -->
+        <plugin
+            name="resursbank_ordermanagement_update_order_status_failure"
+            type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatusFailure"
+            sortOrder="21"/>
+    </type>
 </config>
