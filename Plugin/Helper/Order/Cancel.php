@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Plugin\Helper\Order;
 
 use Exception;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Exception\InvalidDataException;
@@ -46,7 +45,6 @@ class Cancel
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         PaymentHistoryRepositoryInterface $phRepository,
@@ -83,11 +81,7 @@ class Cancel
             $entry = $this->phFactory->create();
             $entry
                 ->setPaymentId((int) $payment->getEntityId())
-                ->setEvent(constant(sprintf(
-                    '%s::%s',
-                    PaymentHistoryInterface::class,
-                    'EVENT_ORDER_CANCELED'
-                )))
+                ->setEvent(PaymentHistoryInterface::EVENT_ORDER_CANCELED)
                 ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
 
             $this->phRepository->save($entry);
