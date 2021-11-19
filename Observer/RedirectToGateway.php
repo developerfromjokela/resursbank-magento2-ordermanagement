@@ -74,7 +74,7 @@ class RedirectToGateway implements ObserverInterface
             $payment = $this->getPayment($observer);
 
             if ($this->paymentMethods->isResursBankMethod($payment->getMethod())) {
-                $this->saveHistoryEntry($payment->getEntityId());
+                $this->saveHistoryEntry((int) $payment->getEntityId());
             }
         } catch (Exception $e) {
             $this->log->exception($e);
@@ -91,6 +91,13 @@ class RedirectToGateway implements ObserverInterface
         /** @var OrderInterface $order */
         $order = $observer->getData('order');
         $payment = $order->getPayment();
+        
+        if (!($order instanceof OrderInterface)) {
+            throw new InvalidDataException(__(
+                'Order could not be retrieved from the observed subject\'s ' .
+                'data.'
+            ));
+        }
 
         if (!($payment instanceof OrderPaymentInterface)) {
             throw new InvalidDataException(__(
