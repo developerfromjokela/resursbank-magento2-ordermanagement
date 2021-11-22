@@ -14,6 +14,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 class UpdateStatus implements ArgumentInterface
@@ -61,7 +62,8 @@ class UpdateStatus implements ArgumentInterface
     ): ResultInterface {
         try {
             $this->phHelper->syncOrderStatus(
-                $this->order->resolveOrderFromRequest()
+                $this->order->resolveOrderFromRequest(),
+                PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
             );
         } catch (Exception $e) {
             $this->log->exception($e);
