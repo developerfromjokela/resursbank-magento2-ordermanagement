@@ -14,17 +14,10 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order;
-use Resursbank\Core\Helper\Request;
-use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 class UpdateStatus implements ArgumentInterface
 {
-    /**
-     * @var Request
-     */
-    private Request $request;
-
     /**
      * @var Log
      */
@@ -42,18 +35,15 @@ class UpdateStatus implements ArgumentInterface
 
     /**
      * @param Log $log
-     * @param Request $request
      * @param Order $order
      * @param PaymentHistory $phHelper
      */
     public function __construct(
         Log $log,
-        Request $request,
         Order $order,
         PaymentHistory $phHelper
     ) {
         $this->log = $log;
-        $this->request = $request;
         $this->order = $order;
         $this->phHelper = $phHelper;
     }
@@ -70,13 +60,8 @@ class UpdateStatus implements ArgumentInterface
         ResultInterface $result
     ): ResultInterface {
         try {
-            // We resolve order by quote id to support intermediate browser
-            // change during signing.
-            $quoteId = $this->request->getQuoteId();
-
             $this->phHelper->syncOrderStatus(
-                $this->order->getOrderByQuoteId($quoteId),
-                PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
+                $this->order->resolveOrderFromRequest()
             );
         } catch (Exception $e) {
             $this->log->exception($e);
