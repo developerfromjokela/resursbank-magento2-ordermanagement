@@ -21,6 +21,9 @@ use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 
+/**
+ * Create payment history entry indicating client reach order failure page.
+ */
 class UpdateStatusFailure implements ArgumentInterface
 {
     /**
@@ -118,7 +121,7 @@ class UpdateStatusFailure implements ArgumentInterface
             ->setPaymentId($paymentId)
             ->setEvent(PaymentHistoryInterface::EVENT_REACHED_ORDER_FAILURE)
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
-        
+
         return $entry;
     }
 }

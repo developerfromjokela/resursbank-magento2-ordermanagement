@@ -26,7 +26,7 @@
     <!-- Events occruing after failed order placement. -->
     <type name="Magento\Checkout\Controller\Onepage\Failure">
         <!--
-        Update order status on the order failure page.
+        Create payment history entry indicating client reach order failure page.
 
         NOTE: The order of execution is important. There are several other
         events which occur at order placement. See the Core module for most of
