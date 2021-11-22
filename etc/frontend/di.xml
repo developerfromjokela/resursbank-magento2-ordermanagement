@@ -22,4 +22,12 @@
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
             sortOrder="21"/>
     </type>
+
+    <!-- Record a payment history event after an order has been canceled. -->
+    <type name="Resursbank\Core\Helper\Order">
+        <plugin
+            name="resursbank_ordermanagement_order_canceled"
+            type="Resursbank\Ordermanagement\Plugin\Helper\Order\Cancel"
+            sortOrder="10"/>
+    </type>
 </config>
