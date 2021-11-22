@@ -140,6 +140,11 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const EVENT_ORDER_CANCELED = 'order_canceled';
+
+    /**
+     * @var string
+     */
     public const EVENT_GATEWAY_REDIRECTED_TO = 'gateway_redirected_to';
 
     /**
@@ -167,7 +172,8 @@ interface PaymentHistoryInterface
         self::EVENT_REFUND_FAILED => 'Refund payment failed. Check the logs.',
         self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.',
         self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.',
-        self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.'
+        self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.',
+        self::EVENT_ORDER_CANCELED => 'Order canceled.'
     ];
 
     /**
