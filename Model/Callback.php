@@ -156,11 +156,11 @@ class Callback implements CallbackInterface
      * @inheritDoc
      */
     public function unfreeze(
-        string $orderIncId,
+        string $paymentId,
         string $digest
     ): void {
         try {
-            $this->execute('unfreeze', $orderIncId, $digest);
+            $this->execute('unfreeze', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -170,11 +170,11 @@ class Callback implements CallbackInterface
      * @inheritDoc
      */
     public function booked(
-        string $orderIncId,
+        string $paymentId,
         string $digest
     ): void {
         try {
-            $order = $this->execute('booked', $orderIncId, $digest);
+            $order = $this->execute('booked', $paymentId, $digest);
 
             // Send order confirmation email if this is first BOOKED.
             if (!$this->receivedCallback($order)) {
@@ -189,11 +189,11 @@ class Callback implements CallbackInterface
      * @inheritDoc
      */
     public function update(
-        string $orderIncId,
+        string $paymentId,
         string $digest
     ): void {
         try {
-            $this->execute('update', $orderIncId, $digest);
+            $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -228,7 +228,7 @@ class Callback implements CallbackInterface
      * General callback instructions.
      *
      * @param string $type
-     * @param string $orderIncId
+     * @param string $paymentId
      * @param string $digest
      * @return Order
      * @throws CallbackValidationException
@@ -242,7 +242,7 @@ class Callback implements CallbackInterface
      */
     private function execute(
         string $type,
-        string $orderIncId,
+        string $paymentId,
         string $digest
     ): Order {
         // Required for PHPStan to validate that loadByIncrementId() exists as
@@ -254,11 +254,11 @@ class Callback implements CallbackInterface
         }
 
         /** @var Order $order */
-        $order = $this->orderInterface->loadByIncrementId($orderIncId);
+        $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                __('Failed to locate order ' . $orderIncId)
+                __('Failed to locate order ' . $paymentId)
             );
         }
 
@@ -277,8 +277,8 @@ class Callback implements CallbackInterface
 
         $this->phRepository->save($entry);
 
-        $this->validate($orderIncId, $digest);
-        $this->logIncoming($type, $orderIncId, $digest);
+        $this->validate($paymentId, $digest);
+        $this->logIncoming($type, $paymentId, $digest);
 
         $orderStatus = $this->phHelper->getPaymentStatus($order);
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
