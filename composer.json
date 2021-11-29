@@ -9,7 +9,8 @@
         "AFL-3.0"
     ],
     "require": {
-        "php": "^7.3.0"
+        "php": "^7.3.0",
+        "resursbank/magento-core": "~1.0"
     },
     "autoload": {
         "files": [
