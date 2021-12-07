@@ -264,7 +264,6 @@ class Callback implements CallbackInterface
 
         $payment = $order->getPayment();
 
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $entry
             ->setPaymentId((int) $payment->getEntityId())
