@@ -283,6 +283,7 @@ class Callback implements CallbackInterface
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
+            $this->orderHelper->setPendingPaymentState($order);
             $this->orderHelper->cancelOrder($order);
         }
 

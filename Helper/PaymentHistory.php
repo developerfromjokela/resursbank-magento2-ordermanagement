@@ -155,9 +155,15 @@ class PaymentHistory extends AbstractHelper
      */
     public function paymentStatusToOrderState(int $paymentStatus): string
     {
+        /* NOTE: Order state defines what actions are available for an order.
+        payment_review for example will disable all order controls, like
+        invoice, shipment etc. Which is why we need to change it depending on
+        the status of our payment at Resurs Bank. */
         switch ($paymentStatus) {
-            case OrderStatus::PROCESSING:
             case OrderStatus::PENDING:
+                $result = Order::STATE_PAYMENT_REVIEW;
+                break;
+            case OrderStatus::PROCESSING:
                 $result = Order::STATE_PENDING_PAYMENT;
                 break;
             case OrderStatus::COMPLETED:
