@@ -109,25 +109,29 @@ class Refund implements CommandInterface
              * than the database transactions to obtain the creditmemo. So the
              * if statement is actually properly optimized.
              */
-            if ($connection !== null &&
-                $memo instanceof Creditmemo &&
-                $connection->canCredit($paymentId)
+            if ($connection === null ||
+                !($memo instanceof Creditmemo) ||
+                !$connection->canCredit($paymentId)
             ) {
-                // Log API method being called.
-                $history->entryFromCmd(
-                    $data,
-                    History::EVENT_REFUND_API_CALLED
+                throw new PaymentDataException(
+                    __('Payment not creditable.')
                 );
-
-                // Add items to API payload.
-                $this->addOrderLines(
-                    $connection,
-                    $this->creditmemoConverter->convert($memo)
-                );
-
-                // Refund payment.
-                $connection->creditPayment($paymentId, [], false, true);
             }
+
+            // Log API method being called.
+            $history->entryFromCmd(
+                $data,
+                History::EVENT_REFUND_API_CALLED
+            );
+
+            // Add items to API payload.
+            $this->addOrderLines(
+                $connection,
+                $this->creditmemoConverter->convert($memo)
+            );
+
+            // Refund payment.
+            $connection->creditPayment($paymentId, [], false, true);
         } catch (Exception $e) {
             // Log error.
             $this->log->exception($e);
