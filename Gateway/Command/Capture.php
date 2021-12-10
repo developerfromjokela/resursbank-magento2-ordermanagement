@@ -87,24 +87,28 @@ class Capture implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_CAPTURE_CALLED);
 
-            if ($connection !== null && $connection->canDebit($paymentId)) {
-                // Log API method being called.
-                $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
-
-                // Perform partial debit.
-                if ($this->isPartial($commandSubject, $data)) {
-                    // Flag ECom to drop specLine data (remove payment lines).
-                    $connection->setFinalizeWithoutSpec();
-
-                    // Add payment line for entire amount to debit.
-                    // Ecom wrongly specifies some arguments as int when they
-                    // should be floats.
-                    $connection->addOrderLine('', '', $amount);
-                }
-
-                // Capture payment.
-                $connection->finalizePayment($paymentId);
+            if ($connection === null || !$connection->canDebit($paymentId)) {
+                throw new PaymentDataException(
+                    __('Payment not ready for capture.')
+                );
             }
+
+            // Log API method being called.
+            $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
+
+            // Perform partial debit.
+            if ($this->isPartial($commandSubject, $data)) {
+                // Flag ECom to drop specLine data (remove payment lines).
+                $connection->setFinalizeWithoutSpec();
+
+                // Add payment line for entire amount to debit.
+                // Ecom wrongly specifies some arguments as int when they
+                // should be floats.
+                $connection->addOrderLine('', '', $amount);
+            }
+
+            // Capture payment.
+            $connection->finalizePayment($paymentId);
 
             // Set transaction id.
             $payment->setTransactionId($data->getOrder()->getOrderIncrementId());
