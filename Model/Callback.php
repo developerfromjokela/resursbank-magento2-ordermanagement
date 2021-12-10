@@ -264,7 +264,6 @@ class Callback implements CallbackInterface
 
         $payment = $order->getPayment();
 
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $entry
             ->setPaymentId((int) $payment->getEntityId())
@@ -284,6 +283,7 @@ class Callback implements CallbackInterface
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
+            $this->orderHelper->setPendingPaymentState($order);
             $this->orderHelper->cancelOrder($order);
         }
 

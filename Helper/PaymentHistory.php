@@ -79,7 +79,6 @@ class PaymentHistory extends AbstractHelper
         OrderInterface $order,
         string $event = ''
     ): void {
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $payment = $order->getPayment();
 
@@ -121,11 +120,10 @@ class PaymentHistory extends AbstractHelper
         PaymentDataObjectInterface $data,
         string $event
     ): void {
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
 
-        $entry
-            ->setPaymentId((int) $data->getPayment()->getId()) /** @phpstan-ignore-line */
+        /** @phpstan-ignore-next-line */
+        $entry->setPaymentId((int) $data->getPayment()->getId())
             ->setEvent($event)
             ->setUser(PaymentHistoryInterface::USER_CLIENT);
 
@@ -157,6 +155,10 @@ class PaymentHistory extends AbstractHelper
      */
     public function paymentStatusToOrderState(int $paymentStatus): string
     {
+        /* NOTE: Order state defines what actions are available for an order.
+        payment_review for example will disable all order controls, like
+        invoice, shipment etc. Which is why we need to change it depending on
+        the status of our payment at Resurs Bank. */
         switch ($paymentStatus) {
             case OrderStatus::PENDING:
                 $result = Order::STATE_PAYMENT_REVIEW;
