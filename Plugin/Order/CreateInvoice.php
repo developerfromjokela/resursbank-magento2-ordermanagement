@@ -21,7 +21,6 @@ use Resursbank\Core\Api\PaymentMethodRepositoryInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
-use Magento\Sales\Api\TransactionRepositoryInterface;
 
 /**
  * Perform sale operation on order success page. Essentially this means; create
@@ -65,11 +64,6 @@ class CreateInvoice
     private Config $config;
 
     /**
-     * @var TransactionRepositoryInterface
-     */
-    private TransactionRepositoryInterface $transactionRepository;
-
-    /**
      * @param Log $log
      * @param SaleOperation $saleOperation
      * @param PaymentMethods $paymentMethods
@@ -77,7 +71,6 @@ class CreateInvoice
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param Config $config
-     * @param TransactionRepositoryInterface $transactionRepository
      */
     public function __construct(
         Log $log,
@@ -86,8 +79,7 @@ class CreateInvoice
         PaymentMethodRepositoryInterface $paymentMethodRepository,
         PaymentHistoryFactory $phFactory,
         PaymentHistoryRepositoryInterface $phRepository,
-        Config $config,
-        TransactionRepositoryInterface $transactionRepository
+        Config $config
     ) {
         $this->log = $log;
         $this->saleOperation = $saleOperation;
@@ -96,7 +88,6 @@ class CreateInvoice
         $this->phFactory = $phFactory;
         $this->phRepository = $phRepository;
         $this->config = $config;
-        $this->transactionRepository = $transactionRepository;
     }
 
     /**
@@ -114,7 +105,6 @@ class CreateInvoice
             ) {
                 $this->log->info('Invoicing order ' . $order->getIncrementId());
                 $this->saleOperation->execute($order->getPayment());
-                $this->closeTransaction($order->getPayment(), $order);
                 $this->trackPaymentHistoryEvent($order->getPayment());
             }
         } catch (Exception $e) {
@@ -122,35 +112,6 @@ class CreateInvoice
         }
 
         return $result;
-    }
-
-    /**
-     * When we redirect the client to our gateway we create a single
-     * transaction record in our gateway command (Authorize). We
-     * therefore expect there to only be a single transaction at
-     * this point.
-     *
-     * NOTE: At present there are no methods on the transaction interface to
-     * confirm authorized amount.
-     *
-     * @param OrderPaymentInterface $payment
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function closeTransaction(
-        OrderPaymentInterface $payment,
-        OrderInterface $order
-    ): void {
-        if ((float) $order->getTotalDue() === 0.0) {
-            $this->transactionRepository
-                ->get($payment->getLastTransId())
-                ->setIsClosed(true);
-        } else {
-            $this->log->error(
-                'Failed to close transaction for order ' .
-                $order->getIncrementId()
-            );
-        }
     }
 
     /**
