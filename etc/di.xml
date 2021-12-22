@@ -61,7 +61,18 @@
 
     <!-- Prevent order confirmation email from being sent upon order creation. -->
     <type name="Magento\Sales\Model\Order">
-        <plugin name="resursbank_ordermanagement_stop_order_confirmation_email" type="Resursbank\Ordermanagement\Plugin\Order\StopConfirmationEmail" />
+        <plugin
+            name="resursbank_ordermanagement_stop_order_confirmation_email"
+            type="Resursbank\Ordermanagement\Plugin\Order\StopConfirmationEmail" />
+    </type>
+
+    <!-- Automatically create invoice. -->
+    <type name="Magento\Sales\Api\Data\OrderInterface">
+        <!-- Late execution to allow preceding plugins to modify status. -->
+        <plugin
+            name="resursbank_ordermanagement_create_invoice"
+            type="Resursbank\Ordermanagement\Plugin\Order\CreateInvoice"
+            sortOrder="9998"/>
     </type>
 
     <!-- Display Resurs Bank payment info on order / invoice view. -->

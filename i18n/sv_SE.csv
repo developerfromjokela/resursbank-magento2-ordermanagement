@@ -37,3 +37,5 @@
 "Order Management","Orderhantering"
 "Payment not ready for capture.","Betalningen är inte redo för debitering."
 "Payment not ready for credit.","Betalningen är inte redo att krediteras."
+"Automatically create invoices","Skapa fakturor automatiskt"
+"Automatically create invoice when an order obtains the status 'resursbank_finalized'.","Skapa automatiskt faktura när beställning erhåller status 'resursbank_finalized'."
