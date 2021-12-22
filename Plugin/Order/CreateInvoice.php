@@ -23,8 +23,7 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 
 /**
- * Perform sale operation on order success page. Essentially this means; create
- * invoice for the order after the payment has been signed at the gateway.
+ * Perform sale operation when order status changes to 'resursbank_finalized'.
  */
 class CreateInvoice
 {
@@ -145,29 +144,7 @@ class CreateInvoice
             $this->paymentMethods->isResursBankMethod(
                 $order->getPayment()->getMethod()
             ) &&
-            $this->isDebited($order->getPayment()) &&
             (float) $order->getTotalInvoiced() === 0.0
-        );
-    }
-
-    /**
-     * Check whether the payment method will debit automatically. This method is
-     * utilised to resolve various flags for our payment methods.
-     *
-     * @param OrderPaymentInterface $payment
-     * @return bool
-     */
-    private function isDebited(
-        OrderPaymentInterface $payment
-    ): bool {
-        $method = $this->paymentMethodRepository->getByCode($payment->getMethod());
-
-        return (
-            $method->getType() === 'PAYMENT_PROVIDER' &&
-            (
-                $method->getSpecificType() === 'INTERNET' ||
-                $method->getSpecificType() === 'SWISH'
-            )
         );
     }
 }
