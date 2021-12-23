@@ -26,6 +26,11 @@ class Config extends AbstractConfig
     /**
      * @var string
      */
+    public const GROUP_ADVANCED = 'advanced';
+
+    /**
+     * @var string
+     */
     public const TRIGGER_KEY = 'triggeredAt';
 
     /**
@@ -124,6 +129,23 @@ class Config extends AbstractConfig
         return (string) $this->get(
             self::GROUP_CALLBACKS,
             'test_received_at',
+            $scopeCode,
+            $scopeType
+        );
+    }
+
+    /**
+     * @param string $scopeCode
+     * @param string $scopeType
+     * @return bool
+     */
+    public function isAutoInvoiceEnabled(
+        string $scopeCode,
+        string $scopeType = ScopeInterface::SCOPE_STORES
+    ): bool {
+        return $this->isEnabled(
+            self::GROUP_ADVANCED,
+            'auto_invoice',
             $scopeCode,
             $scopeType
         );
