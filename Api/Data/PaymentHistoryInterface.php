@@ -215,18 +215,16 @@ interface PaymentHistoryInterface
     /**
      * Get ID.
      *
-     * @param int|null $default
      * @return int|null
      */
-    public function getId(int $default = null): ?int;
+    public function getId(): ?int;
 
     /**
      * Get payment ID.
      *
-     * @param int|null $default
-     * @return int
+     * @return int|null
      */
-    public function getPaymentId(int $default = null): ?int;
+    public function getPaymentId(): ?int;
 
     /**
      * Set payment ID.
@@ -239,10 +237,9 @@ interface PaymentHistoryInterface
     /**
      * Get payment event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getEvent(string $default = null): ?string;
+    public function getEvent(): ?string;
 
     /**
      * Set payment event.
@@ -255,10 +252,9 @@ interface PaymentHistoryInterface
     /**
      * Get user that triggered the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getUser(string $default = null): ?string;
+    public function getUser(): ?string;
 
     /**
      * Set user that triggered the event.
@@ -271,10 +267,9 @@ interface PaymentHistoryInterface
     /**
      * Get extra information about the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getExtra(string $default = null): ?string;
+    public function getExtra(): ?string;
 
     /**
      * Set extra information about the event. This may for example include the
@@ -289,10 +284,9 @@ interface PaymentHistoryInterface
     /**
      * Get the state_from information about the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getStateFrom(string $default = null): ?string;
+    public function getStateFrom(): ?string;
 
     /**
      * Set the state that this entry went from.
@@ -305,10 +299,9 @@ interface PaymentHistoryInterface
     /**
      * Get the state_to information about the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getStateTo(string $default = null): ?string;
+    public function getStateTo(): ?string;
 
     /**
      * Set the state that this entry went to.
@@ -321,10 +314,9 @@ interface PaymentHistoryInterface
     /**
      * Get the status_from information about the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getStatusFrom(string $default = null): ?string;
+    public function getStatusFrom(): ?string;
 
     /**
      * Set the status that this entry went from.
@@ -337,10 +329,9 @@ interface PaymentHistoryInterface
     /**
      * Get the status_to information about the event.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getStatusTo(string $default = null): ?string;
+    public function getStatusTo(): ?string;
 
     /**
      * Set the status that this entry went to.
@@ -353,10 +344,9 @@ interface PaymentHistoryInterface
     /**
      * Get the time when the event was created.
      *
-     * @param string|null $default
-     * @return string
+     * @return string|null
      */
-    public function getCreatedAt(string $default = null): ?string;
+    public function getCreatedAt(): ?string;
 
     /**
      * Set the time when the event entry was created.

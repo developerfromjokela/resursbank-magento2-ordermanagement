@@ -133,21 +133,13 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetPaymentIdReturnsDefaultValue(): void
-    {
-        self::assertSame(123432, $this->paymentHistory->getPaymentId(123432));
-    }
-
-    /**
      * Assert that default is NOT returned when a value is set.
      */
     public function testGetPaymentIdDoesNotReturnsDefaultValue(): void
     {
         $this->paymentHistory->setPaymentId(123432);
 
-        self::assertSame(123432, $this->paymentHistory->getPaymentId(98765431));
+        self::assertSame(123432, $this->paymentHistory->getPaymentId());
     }
 
     /**
@@ -164,34 +156,6 @@ class PaymentHistoryTest extends TestCase
         );
     }
 
-
-    /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetEventReturnsDefaultValue(): void
-    {
-        self::assertSame(
-            PaymentHistoryInterface::EVENT_LABELS[PaymentHistoryInterface::EVENT_CALLBACK_BOOKED],
-            $this->paymentHistory
-                ->getEvent(PaymentHistoryInterface::EVENT_LABELS[PaymentHistoryInterface::EVENT_CALLBACK_BOOKED])
-        );
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetEventDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory
-            ->setEvent(PaymentHistoryInterface::EVENT_LABELS[PaymentHistoryInterface::EVENT_CALLBACK_BOOKED]);
-
-        self::assertSame(
-            PaymentHistoryInterface::EVENT_LABELS[PaymentHistoryInterface::EVENT_CALLBACK_BOOKED],
-            $this->paymentHistory
-                ->getEvent(PaymentHistoryInterface::EVENT_LABELS[PaymentHistoryInterface::EVENT_CALLBACK_UPDATE])
-        );
-    }
-
     /**
      * Assert that getter returns the value using the setter.
      */
@@ -202,48 +166,12 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetCreatedAtReturnsDefaultValue(): void
-    {
-        self::assertSame('2021-01-01 00:00:00', $this->paymentHistory->getCreatedAt('2021-01-01 00:00:00'));
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetCreatedAtDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setCreatedAt('2021-01-01 00:00:00');
-
-        self::assertSame('2021-01-01 00:00:00', $this->paymentHistory->getCreatedAt('2021-12-31 00:00:00'));
-    }
-
-    /**
      * Assert that getter returns the value using the setter.
      */
     public function testGetStateFromReturnsCorrectValue(): void
     {
         $this->paymentHistory->setStateFrom('Oregon');
         self::assertSame('Oregon', $this->paymentHistory->getStateFrom());
-    }
-
-    /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetStateFromReturnsDefaultValue(): void
-    {
-        self::assertSame('Colorado', $this->paymentHistory->getStateFrom('Colorado'));
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetStateFromDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setStateFrom('Colorado');
-
-        self::assertSame('Colorado', $this->paymentHistory->getStateFrom('Oregon'));
     }
 
     /**
@@ -266,48 +194,12 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetStateToReturnsDefaultValue(): void
-    {
-        self::assertSame('processing', $this->paymentHistory->getStatusFrom('processing'));
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetStateToDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setStatusFrom('pending');
-
-        self::assertSame('pending', $this->paymentHistory->getStatusFrom('complete'));
-    }
-
-    /**
      * Assert that getter returns the value using the setter.
      */
     public function testGetStatusToReturnsCorrectValue(): void
     {
         $this->paymentHistory->setStatusTo('complete');
         self::assertSame('complete', $this->paymentHistory->getStatusTo());
-    }
-
-    /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetStatusToReturnsDefaultValue(): void
-    {
-        self::assertSame('complete', $this->paymentHistory->getStatusTo('complete'));
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetStatusToDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setStatusTo('complete');
-
-        self::assertSame('complete', $this->paymentHistory->getStatusTo('canceled'));
     }
 
     /**
@@ -323,55 +215,11 @@ class PaymentHistoryTest extends TestCase
     }
 
     /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetUserReturnsDefaultValue(): void
-    {
-        self::assertSame(
-            PaymentHistoryInterface::USER_LABELS[PaymentHistoryInterface::USER_CUSTOMER],
-            $this->paymentHistory->getUser(PaymentHistoryInterface::USER_LABELS[PaymentHistoryInterface::USER_CUSTOMER])
-        );
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetUserDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setUser(PaymentHistoryInterface::USER_LABELS[PaymentHistoryInterface::USER_CUSTOMER]);
-
-        self::assertSame(
-            PaymentHistoryInterface::USER_LABELS[PaymentHistoryInterface::USER_CUSTOMER],
-            $this->paymentHistory->getUser(
-                PaymentHistoryInterface::USER_LABELS[PaymentHistoryInterface::USER_RESURS_BANK]
-            )
-        );
-    }
-
-    /**
      * Assert that getter returns the value using the setter.
      */
     public function testGetExtraReturnsCorrectValue(): void
     {
         $this->paymentHistory->setExtra('EXTRA!');
         self::assertSame('EXTRA!', $this->paymentHistory->getExtra());
-    }
-
-    /**
-     * Assert that default is returned when a value is not set.
-     */
-    public function testGetExtraReturnsDefaultValue(): void
-    {
-        self::assertSame('EXTRA!EXTRA!', $this->paymentHistory->getExtra('EXTRA!EXTRA!'));
-    }
-
-    /**
-     * Assert that default is NOT returned when a value is set.
-     */
-    public function testGetExtraDoesNotReturnsDefaultValue(): void
-    {
-        $this->paymentHistory->setExtra('EXTRA!');
-
-        self::assertSame('EXTRA!', $this->paymentHistory->getExtra('EXTRA!EXTRA!'));
     }
 }

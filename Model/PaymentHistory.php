@@ -28,21 +28,21 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
      * @inheritDoc
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function getId(int $default = null): ?int
+    public function getId(): ?int
     {
         $data = $this->_getData(self::ENTITY_ID);
 
-        return $data === null ? $default : (int)$data;
+        return $data === null ? null : (int)$data;
     }
 
     /**
      * @inheritDoc
      */
-    public function getPaymentId(int $default = null): ?int
+    public function getPaymentId(): ?int
     {
         $data = $this->_getData(self::ENTITY_PAYMENT_ID);
 
-        return $data === null ? $default : (int)$data;
+        return $data === null ? null : (int)$data;
     }
 
     /**
@@ -56,9 +56,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getEvent(string $default = null): ?string
+    public function getEvent(): ?string
     {
-        return $this->_getData(self::ENTITY_EVENT) ?? $default;
+        $data = $this->_getData(self::ENTITY_EVENT);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -72,9 +74,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getUser(string $default = null): ?string
+    public function getUser(): ?string
     {
-        return $this->_getData(self::ENTITY_USER) ?? $default;
+        $data = $this->_getData(self::ENTITY_USER);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -88,9 +92,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getExtra(string $default = null): ?string
+    public function getExtra(): ?string
     {
-        return $this->_getData(self::ENTITY_EXTRA) ?? $default;
+        $data = $this->_getData(self::ENTITY_EXTRA);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -104,9 +110,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStateFrom(string $default = null): ?string
+    public function getStateFrom(): ?string
     {
-        return $this->_getData(self::ENTITY_STATE_FROM) ?? $default;
+        $data = $this->_getData(self::ENTITY_STATE_FROM);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -120,9 +128,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStateTo(string $default = null): ?string
+    public function getStateTo(): ?string
     {
-        return $this->_getData(self::ENTITY_STATE_TO) ?? $default;
+        $data = $this->_getData(self::ENTITY_STATE_TO);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -136,9 +146,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStatusFrom(string $default = null): ?string
+    public function getStatusFrom(): ?string
     {
-        return $this->_getData(self::ENTITY_STATUS_FROM) ?? $default;
+        $data = $this->_getData(self::ENTITY_STATUS_FROM);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -152,9 +164,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getStatusTo(string $default = null): ?string
+    public function getStatusTo(): ?string
     {
-        return $this->_getData(self::ENTITY_STATUS_TO) ?? $default;
+        $data = $this->_getData(self::ENTITY_STATUS_TO);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
@@ -168,9 +182,11 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     /**
      * @inheritDoc
      */
-    public function getCreatedAt(string $default = null): ?string
+    public function getCreatedAt(): ?string
     {
-        return $this->_getData(self::ENTITY_CREATED_AT) ?? $default;
+        $data = $this->_getData(self::ENTITY_CREATED_AT);
+
+        return $data === null ? null : (string)$data;
     }
 
     /**
