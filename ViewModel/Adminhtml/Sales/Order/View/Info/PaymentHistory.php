@@ -115,12 +115,12 @@ class PaymentHistory implements ArgumentInterface
         return [
             'event' => $eventAction === null ? '' : $eventLabel,
             'user' => $user === null ? '' : $event->userLabel($user),
-            'timestamp' => $event->getCreatedAt(''),
-            'extra' => $event->getExtra(''),
-            'state_from' => $event->getStateFrom(''),
-            'state_to' => $event->getStateTo(''),
-            'status_from' => $event->getStatusFrom(''),
-            'status_to' => $event->getStatusTo('')
+            'timestamp' => $event->getCreatedAt() ?? '',
+            'extra' => $event->getExtra() ?? '',
+            'state_from' => $event->getStateFrom() ?? '',
+            'state_to' => $event->getStateTo() ?? '',
+            'status_from' => $event->getStatusFrom() ?? '',
+            'status_to' => $event->getStatusTo() ?? ''
         ];
     }
 
