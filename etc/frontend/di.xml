@@ -20,7 +20,7 @@
         <plugin
             name="resursbank_ordermanagement_update_order_status"
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
-            sortOrder="21"/>
+            sortOrder="10"/>
     </type>
 
     <!-- Events occruing after failed order placement. -->
@@ -35,7 +35,7 @@
         <plugin
             name="resursbank_ordermanagement_update_order_status_failure"
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatusFailure"
-            sortOrder="21"/>
+            sortOrder="10"/>
     </type>
 
     <!-- Record a payment history event after an order has been canceled. -->
