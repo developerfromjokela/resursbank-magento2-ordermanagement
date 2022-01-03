@@ -61,10 +61,14 @@ class UpdateStatus implements ArgumentInterface
         ResultInterface $result
     ): ResultInterface {
         try {
-            $this->phHelper->syncOrderStatus(
-                $this->order->resolveOrderFromRequest(),
-                PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
-            );
+            $order = $this->order->resolveOrderFromRequest();
+            
+            if ($this->order->getResursbankResult($order) === null) {
+                $this->phHelper->syncOrderStatus(
+                    $this->order->resolveOrderFromRequest(),
+                    PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
+                );
+            }
         } catch (Exception $e) {
             $this->log->exception($e);
         }
