@@ -24,7 +24,7 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 /**
  * Create payment history entry indicating client reach order failure page.
  */
-class UpdateStatusFailure implements ArgumentInterface
+class LogFailure implements ArgumentInterface
 {
     /**
      * @var Log

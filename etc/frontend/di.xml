@@ -33,8 +33,8 @@
         them.
         -->
         <plugin
-            name="resursbank_ordermanagement_update_order_status_failure"
-            type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatusFailure"
+            name="resursbank_ordermanagement_log_failure"
+            type="Resursbank\Ordermanagement\Plugin\Order\LogFailure"
             sortOrder="10"/>
     </type>
 
