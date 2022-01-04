@@ -76,13 +76,17 @@ class UpdateStatusFailure implements ArgumentInterface
         ResultInterface $result
     ): ResultInterface {
         try {
-            $this->phRepository->save(
-                $this->createHistoryEntry(
-                    $this->getPaymentId(
-                        $this->orderHelper->resolveOrderFromRequest()
+            $order = $this->orderHelper->resolveOrderFromRequest();
+
+            if ($this->orderHelper->getResursbankResult($order) === null) {
+                $this->phRepository->save(
+                    $this->createHistoryEntry(
+                        $this->getPaymentId(
+                            $this->orderHelper->resolveOrderFromRequest()
+                        )
                     )
-                )
-            );
+                );
+            }
         } catch (Exception $e) {
             $this->log->exception($e);
         }
