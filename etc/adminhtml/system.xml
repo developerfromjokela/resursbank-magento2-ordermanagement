@@ -11,7 +11,7 @@
             <group id="resursbank_section">
                 <group id="api">
                     <field id="ordermanagement" type="select" sortOrder="4" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Order Management</label>
+                        <label>Order management</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>resursbank/aftershop/enabled</config_path>
                     </field>
@@ -19,12 +19,12 @@
                 <group id="callbacks" sortOrder="4" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Callback Settings</label>
                     <field id="registration" type="button" sortOrder="0" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Callback Registration</label>
+                        <label>Callback registration</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
                         <config_path>resursbank/callbacks/registration</config_path>
                     </field>
                     <field id="test" type="button" sortOrder="1" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Test Callbacks</label>
+                        <label>Test callbacks</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
                         <config_path>resursbank/callbacks/test</config_path>
                     </field>
@@ -45,7 +45,7 @@
                 </group>
                 <group id="advanced">
                     <group id="ordermanagement" type="text" sortOrder="10" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Order Management</label>
+                        <label>Order management</label>
                         <field id="auto_invoice" type="select" sortOrder="0" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Automatically create invoices</label>
                             <comment>Automatically create invoice when an order obtains the status 'resursbank_finalized'.</comment>
