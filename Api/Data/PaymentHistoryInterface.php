@@ -163,6 +163,19 @@ interface PaymentHistoryInterface
     public const EVENT_REACHED_ORDER_FAILURE = 'reached_order_failure';
 
     /**
+<<<<<<< Updated upstream
+=======
+     * @var string
+     */
+    public const EVENT_PAYMENT_BOOK_SIGNED = 'payment_book_signed';
+
+    /**
+     * @var string
+     */
+    public const EVENT_PAYMENT_BOOK_SIGNED_COMPLETED = 'payment_book_signed_completed';
+
+    /**
+>>>>>>> Stashed changes
      * @array
      */
     public const EVENT_LABELS = [
@@ -185,7 +198,13 @@ interface PaymentHistoryInterface
         self::EVENT_ORDER_CANCELED => 'Order canceled.',
         self::EVENT_INVOICE_CREATED => 'Invoice created.',
         self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.',
+<<<<<<< Updated upstream
         self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.'
+=======
+        self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.',
+        self::EVENT_PAYMENT_BOOK_SIGNED => 'Book signed payment API call initiated.',
+        self::EVENT_PAYMENT_BOOK_SIGNED_COMPLETED => 'Book signed payment API call completed.',
+>>>>>>> Stashed changes
     ];
 
     /**
