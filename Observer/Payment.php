@@ -77,7 +77,7 @@ class Payment implements ObserverInterface
     {
         try {
             $orderPayment = $this->getOrderPayment($observer);
-            
+
             if ($this->paymentMethods->isResursBankMethod($orderPayment->getMethod())) {
                 $this->saveHistoryEntry(
                     (int) $orderPayment->getEntityId(),

@@ -12,8 +12,6 @@
             instance="Resursbank\Ordermanagement\Observer\RedirectToGateway"
         />
     </event>
-<<<<<<< Updated upstream
-=======
     <event name="resursbank_book_signed_payment_before">
         <observer
             name="resursbank_ordermanagement_create_payment_history_entry_for_payment"
@@ -26,5 +24,4 @@
             instance="Resursbank\Ordermanagement\Observer\Payment"
         />
     </event>
->>>>>>> Stashed changes
 </config>
