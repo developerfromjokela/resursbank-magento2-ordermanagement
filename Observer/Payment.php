@@ -77,13 +77,12 @@ class Payment implements ObserverInterface
     {
         try {
             $orderPayment = $this->getOrderPayment($observer);
-            $paymentSession = $this->getPaymentSession($observer);
 
             if ($this->paymentMethods->isResursBankMethod($orderPayment->getMethod())) {
                 $this->saveHistoryEntry(
                     (int) $orderPayment->getEntityId(),
-                    $observer->getEventName(),
-                    $paymentSession->getBookPaymentStatus()
+                    $this->getBookPaymentStatus($observer),
+                    $observer->getEvent()->getName()
                 );
             }
         } catch (Exception $e) {
@@ -120,22 +119,19 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * The payment session will only be supplied when available (ie in events
+     * dispatched after completing an API call).
+     *
      * @param Observer $observer
-     * @return ApiPayment
-     * @throws InvalidDataException
+     * @return string
      */
-    private function getPaymentSession(Observer $observer): ApiPayment
+    private function getBookPaymentStatus(Observer $observer): string
     {
-        $result = $observer->getData('paymentSession');
+        $session = $observer->getData('paymentSession');
 
-        if (!($result instanceof ApiPayment)) {
-            throw new InvalidDataException(__(
-                'Payment session could not be retrieved from the observed ' .
-                'subject\'s data.'
-            ));
-        }
-
-        return $result;
+        return ($session instanceof ApiPayment) ?
+            $session->getBookPaymentStatus() :
+            '';
     }
 
     /**
@@ -151,7 +147,6 @@ class Payment implements ObserverInterface
         string $paymentStatus,
         string $eventName
     ): void {
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $phEventName = $this->getPaymentHistoryEvent($eventName);
 
@@ -177,14 +172,6 @@ class Payment implements ObserverInterface
     private function getPaymentHistoryEvent(string $eventName): string
     {
         switch ($eventName) {
-            case 'resursbank_create_payment_before':
-                $result = PaymentHistoryInterface::EVENT_PAYMENT_CREATE;
-                break;
-
-            case 'resursbank_create_payment_after':
-                $result = PaymentHistoryInterface::EVENT_PAYMENT_CREATE_COMPLETED;
-                break;
-
             case 'resursbank_book_signed_payment_before':
                 $result = PaymentHistoryInterface::EVENT_PAYMENT_BOOK_SIGNED;
                 break;

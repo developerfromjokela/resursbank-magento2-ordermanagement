@@ -165,16 +165,6 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
-    public const EVENT_PAYMENT_CREATE = 'payment_create';
-
-    /**
-     * @var string
-     */
-    public const EVENT_PAYMENT_CREATE_COMPLETED = 'payment_create_completed';
-
-    /**
-     * @var string
-     */
     public const EVENT_PAYMENT_BOOK_SIGNED = 'payment_book_signed';
 
     /**
@@ -206,10 +196,8 @@ interface PaymentHistoryInterface
         self::EVENT_INVOICE_CREATED => 'Invoice created.',
         self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.',
         self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.',
-        self::EVENT_PAYMENT_CREATE => 'Create payment API call initiated.',
-        self::EVENT_PAYMENT_CREATE_COMPLETED => 'Create payment API call completed.',
         self::EVENT_PAYMENT_BOOK_SIGNED => 'Book signed payment API call initiated.',
-        self::EVENT_PAYMENT_BOOK_SIGNED_COMPLETED => 'Book signed payment API call completed.',
+        self::EVENT_PAYMENT_BOOK_SIGNED_COMPLETED => 'Book signed payment API call completed.'
     ];
 
     /**
