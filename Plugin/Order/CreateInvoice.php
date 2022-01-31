@@ -176,8 +176,8 @@ class CreateInvoice
             $order->getPayment() instanceof OrderPaymentInterface &&
             $this->paymentMethods->isResursBankMethod(
                 $order->getPayment()->getMethod()
-            ) &&
-            (float) $order->getTotalInvoiced() === 0.0
+            )
+//            (float) $order->getTotalInvoiced() === 0.0
         );
     }
 }
