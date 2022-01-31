@@ -103,9 +103,15 @@ class CreateInvoice
             if ($this->isEnabled($order) &&
                 $order->getPayment() instanceof OrderPaymentInterface
             ) {
-                $this->trackPaymentHistoryEvent($order->getPayment());
-                $this->log->info('Invoicing order ' . $order->getIncrementId());
-                $this->saleOperation->execute($order->getPayment());
+                /** @noinspection NestedPositiveIfStatementsInspection */
+                /* Since there is a potential for race conditions in this plugin
+                we need the following validation to finish as quickly as
+                possible, for this reason it's not merged with its parent. */
+                if (!$this->hasCreatedInvoice($order->getPayment())) {
+                    $this->trackPaymentHistoryEvent($order->getPayment());
+                    $this->log->info('Invoicing ' . $order->getIncrementId());
+                    $this->saleOperation->execute($order->getPayment());
+                }
             }
         } catch (Exception $e) {
             $this->log->exception($e);
@@ -160,7 +166,6 @@ class CreateInvoice
     /**
      * @param OrderInterface $order
      * @return bool
-     * @throws LocalizedException
      */
     private function isEnabled(
         OrderInterface $order
@@ -172,7 +177,7 @@ class CreateInvoice
             $this->paymentMethods->isResursBankMethod(
                 $order->getPayment()->getMethod()
             ) &&
-            !$this->hasCreatedInvoice($order->getPayment())
+            (float) $order->getTotalInvoiced() === 0.0
         );
     }
 }
