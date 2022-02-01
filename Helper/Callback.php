@@ -126,7 +126,7 @@ class Callback extends AbstractHelper
         foreach ($types as $type) {
             $connection->setRegisterCallback(
                 constant(
-                    'Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES::' .
+                    'Resursbank\Ecommerce\Types\Callback::' .
                     strtoupper($type)
                 ),
                 $this->urlCallbackTemplate($type),
@@ -217,7 +217,7 @@ class Callback extends AbstractHelper
         $store = $this->storeManager->getStore(
             $this->scope->getId(ScopeInterface::SCOPE_STORE)
         );
-        
+
         if (!($store instanceof Store)) {
             throw new LocalizedException(__('$store not an instance of Store'));
         }
