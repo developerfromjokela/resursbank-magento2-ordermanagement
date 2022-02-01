@@ -150,11 +150,6 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
-    public const EVENT_INVOICE_CREATED = 'order_invoice_created';
-
-    /**
-     * @var string
-     */
     public const EVENT_GATEWAY_REDIRECTED_TO = 'gateway_redirected_to';
 
     /**
@@ -193,7 +188,6 @@ interface PaymentHistoryInterface
         self::EVENT_REFUND_API_CALLED => 'Payment was credited at Resurs.',
         self::EVENT_REACHED_ORDER_SUCCESS => 'Client reached order success page.',
         self::EVENT_ORDER_CANCELED => 'Order canceled.',
-        self::EVENT_INVOICE_CREATED => 'Invoice created.',
         self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.',
         self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.',
         self::EVENT_PAYMENT_BOOK_SIGNED => 'Book signed payment API call initiated.',
