@@ -327,7 +327,8 @@ class Callback implements CallbackInterface
             ->getList($criteria)
             ->getItems();
 
-        return count($items) > 0;
+        // NOTE: This needs to be 1.
+        return count($items) > 1;
     }
 
     /**
