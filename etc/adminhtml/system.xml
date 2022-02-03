@@ -43,17 +43,6 @@
                         <config_path>resursbank/callbacks/url_list</config_path>
                     </field>
                 </group>
-                <group id="advanced">
-                    <group id="ordermanagement" type="text" sortOrder="10" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Order management</label>
-                        <field id="auto_invoice" type="select" sortOrder="0" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
-                            <label>Automatically create invoices</label>
-                            <comment>Automatically create invoice when an order obtains the status 'resursbank_finalized'.</comment>
-                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                            <config_path>resursbank/advanced/auto_invoice</config_path>
-                        </field>
-                    </group>
-                </group>
             </group>
         </section>
     </system>

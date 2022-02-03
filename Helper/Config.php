@@ -133,21 +133,4 @@ class Config extends AbstractConfig
             $scopeType
         );
     }
-
-    /**
-     * @param string $scopeCode
-     * @param string $scopeType
-     * @return bool
-     */
-    public function isAutoInvoiceEnabled(
-        string $scopeCode,
-        string $scopeType = ScopeInterface::SCOPE_STORES
-    ): bool {
-        return $this->isEnabled(
-            self::GROUP_ADVANCED,
-            'auto_invoice',
-            $scopeCode,
-            $scopeType
-        );
-    }
 }

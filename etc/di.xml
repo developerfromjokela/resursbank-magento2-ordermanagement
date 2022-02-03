@@ -66,15 +66,6 @@
             type="Resursbank\Ordermanagement\Plugin\Order\StopConfirmationEmail" />
     </type>
 
-    <!-- Automatically create invoice. -->
-    <type name="Magento\Sales\Api\Data\OrderInterface">
-        <!-- Late execution to allow preceding plugins to modify status. -->
-        <plugin
-            name="resursbank_ordermanagement_create_invoice"
-            type="Resursbank\Ordermanagement\Plugin\Order\CreateInvoice"
-            sortOrder="9998"/>
-    </type>
-
     <!-- Display Resurs Bank payment info on order / invoice view. -->
     <type name="Magento\Sales\Block\Adminhtml\Order\View\Info">
         <plugin
