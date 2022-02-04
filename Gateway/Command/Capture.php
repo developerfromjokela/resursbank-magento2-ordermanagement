@@ -16,19 +16,22 @@ use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
-use function get_class;
+use Resursbank\Ordermanagement\Model\Invoice;
+use Resursbank\Ordermanagement\Model\Api\Payment\Converter\InvoiceConverter;
+use Resursbank\RBEcomPHP\ResursBank;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Capture implements CommandInterface
 {
+    use CommandTraits;
+
     /**
      * @var Log
      */
@@ -45,25 +48,40 @@ class Capture implements CommandInterface
     private PaymentHistory $paymentHistory;
 
     /**
+     * @var Invoice
+     */
+    private Invoice $invoice;
+
+    /**
+     * @var InvoiceConverter
+     */
+    private InvoiceConverter $invoiceConverter;
+
+    /**
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param PaymentHistory $paymentHistory
+     * @param Invoice $invoice
+     * @param InvoiceConverter $invoiceConverter
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
-        PaymentHistory $paymentHistory
+        PaymentHistory $paymentHistory,
+        Invoice $invoice,
+        InvoiceConverter $invoiceConverter
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
         $this->paymentHistory = $paymentHistory;
+        $this->invoice = $invoice;
+        $this->invoiceConverter = $invoiceConverter;
     }
 
     /**
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
-     * @throws PaymentDataException
      * @throws PaymentException
      * @throws LocalizedException
      */
@@ -76,10 +94,7 @@ class Capture implements CommandInterface
         // Resolve data from command subject.
         $data = SubjectReader::readPayment($commandSubject);
         $paymentId = $data->getOrder()->getOrderIncrementId();
-        $payment = $this->getPayment($data);
-        $amount = $this->getAmount($commandSubject);
 
-        /** @noinspection BadExceptionsProcessingInspection */
         try {
             // Establish API connection.
             $connection = $this->apiPayment->getConnectionCommandSubject($data);
@@ -87,37 +102,9 @@ class Capture implements CommandInterface
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_CAPTURE_CALLED);
 
-            if ($connection === null || !$connection->canDebit($paymentId)) {
-                throw new PaymentDataException(
-                    __('Payment not ready for capture.')
-                );
-            }
-
-            // Log API method being called.
-            $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
-
-            // Perform partial debit.
-            if ($this->isPartial($commandSubject, $data)) {
-                // Flag ECom to drop specLine data (remove payment lines).
-                $connection->setFinalizeWithoutSpec();
-
-                // Add payment line for entire amount to debit.
-                // Ecom wrongly specifies some arguments as int when they
-                // should be floats.
-                $connection->addOrderLine('', '', $amount);
-            }
-
-            // Capture payment.
-            $connection->finalizePayment($paymentId);
-
-            // Set transaction id.
-            $payment->setTransactionId($data->getOrder()->getOrderIncrementId());
-
-            // Close transaction when order is paid in full.
-            if ((float) $payment->getAmountAuthorized() ===
-                ((float) $payment->getAmountPaid() + $amount)
-            ) {
-                $payment->setIsTransactionClosed(true);
+            // Skip capture online if payment is already debited.
+            if ($connection->canDebit($paymentId)) {
+                $this->capture($commandSubject, $data, $connection, $paymentId);
             }
         } catch (Exception $e) {
             // Log error.
@@ -132,26 +119,55 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Capture online.
+     *
+     * @param array $commandSubject
      * @param PaymentDataObjectInterface $data
-     * @return Payment
+     * @param ResursBank $connection
+     * @param string $paymentId
+     * @return void
+     * @throws AlreadyExistsException
      * @throws PaymentDataException
+     * @throws Exception
      */
-    private function getPayment(
-        PaymentDataObjectInterface $data
-    ): Payment {
-        $payment = $data->getPayment();
+    private function capture(
+        array $commandSubject,
+        PaymentDataObjectInterface $data,
+        ResursBank $connection,
+        string $paymentId
+    ): void {
+        // Shortcut for improved readability.
+        $history = &$this->paymentHistory;
+        $payment = $this->getPayment($data);
+        $amount = $this->getAmount($commandSubject);
 
-        if (!$payment instanceof Payment) {
-            throw new PaymentDataException(__(
-                'Unexpected payment entity. Expected %1 but got %2.',
-                Payment::class,
-                get_class($data->getPayment())
-            ));
+        // Log API method being called.
+        $history->entryFromCmd($data, History::EVENT_CAPTURE_API_CALLED);
+
+        // Add items to API payload.
+        $this->addOrderLines(
+            $connection,
+            $this->invoiceConverter->convert(
+                $this->invoice->getInvoice()
+            )
+        );
+
+        // Refund payment.
+        $connection->finalizePayment($paymentId, [], false, true);
+
+        // Set transaction id.
+        $payment->setTransactionId(
+            $data->getOrder()->getOrderIncrementId()
+        );
+
+        // Close transaction when order is paid in full.
+        if ((float)$payment->getAmountAuthorized() ===
+            ((float)$payment->getAmountPaid() + $amount)
+        ) {
+            $payment->setIsTransactionClosed(true);
         }
-
-        return $payment;
     }
-
+    
     /**
      * @param array<mixed> $data
      * @return float
@@ -165,21 +181,5 @@ class Capture implements CommandInterface
         }
 
         return (float) $data['amount'];
-    }
-
-    /**
-     * @param array<mixed> $subjectData
-     * @param PaymentDataObjectInterface $data
-     * @return bool
-     * @throws PaymentDataException
-     */
-    private function isPartial(
-        array $subjectData,
-        PaymentDataObjectInterface $data
-    ): bool {
-        $requested = $this->getAmount($subjectData);
-        $total = (float) $this->getPayment($data)->getAmountAuthorized();
-
-        return $requested < $total;
     }
 }

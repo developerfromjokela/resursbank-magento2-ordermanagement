@@ -17,6 +17,7 @@ use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\PaymentMethods;
 use Magento\Sales\Model\OrderRepository;
@@ -82,14 +83,15 @@ class ApiPayment extends AbstractHelper
      * Validate command subject data and return API connection if eligible.
      *
      * @param PaymentDataObjectInterface $paymentData
-     * @return ResursBank|null
+     * @return ResursBank
      * @throws ValidatorException
      * @throws InputException
      * @throws NoSuchEntityException
+     * @throws PaymentDataException
      */
     public function getConnectionCommandSubject(
         PaymentDataObjectInterface $paymentData
-    ): ?ResursBank {
+    ): ResursBank {
         /**
          * NOTE: The gateway commands will provide us with an instance of
          * Magento\Payment\Gateway\Data\OrderAdapterInterface. This contract
@@ -101,12 +103,20 @@ class ApiPayment extends AbstractHelper
          */
         $order = $this->orderRepository->get($paymentData->getOrder()->getId());
 
-        return (
+        $connection = (
             $this->validateOrder($order) &&
             $this->isAfterShopEnabled($order)
         ) ?
             $this->getConnectionFromOrder($order) :
             null;
+
+        if ($connection === null) {
+            throw new PaymentDataException(
+                __('Failed to resolve API connection from order information.')
+            );
+        }
+
+        return $connection;
     }
 
     /**
