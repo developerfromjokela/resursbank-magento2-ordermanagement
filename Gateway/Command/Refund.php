@@ -14,24 +14,25 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
+use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
-use Resursbank\Core\Model\Api\Payment\Item;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
 use Resursbank\RBEcomPHP\ResursBank;
-use function get_class;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Refund implements CommandInterface
 {
+    use CommandTraits;
+
     /**
      * @var Log
      */
@@ -86,52 +87,17 @@ class Refund implements CommandInterface
         $data = SubjectReader::readPayment($commandSubject);
         $paymentId = $data->getOrder()->getOrderIncrementId();
 
-        /** @noinspection BadExceptionsProcessingInspection */
         try {
-            $payment = $data->getPayment();
-
-            if (!($payment instanceof Payment)) {
-                throw new PaymentDataException(
-                    __('Unexpected Payment class %1', get_class($payment))
-                );
-            }
-
-            $memo = $payment->getCreditmemo();
-
             // Establish API connection.
             $connection = $this->apiPayment->getConnectionCommandSubject($data);
 
             // Log command being called.
             $history->entryFromCmd($data, History::EVENT_REFUND_CALLED);
 
-            /**
-             * NOTE: canCredit will execute API calls which are more expensive
-             * than the database transactions to obtain the creditmemo. So the
-             * if statement is actually properly optimized.
-             */
-            if ($connection === null ||
-                !($memo instanceof Creditmemo) ||
-                !$connection->canCredit($paymentId)
-            ) {
-                throw new PaymentDataException(
-                    __('Payment not creditable.')
-                );
+            // Skip refunding online if payment is already refunded.
+            if ($connection->canCredit($paymentId)) {
+                $this->refund($data, $connection, $paymentId);
             }
-
-            // Log API method being called.
-            $history->entryFromCmd(
-                $data,
-                History::EVENT_REFUND_API_CALLED
-            );
-
-            // Add items to API payload.
-            $this->addOrderLines(
-                $connection,
-                $this->creditmemoConverter->convert($memo)
-            );
-
-            // Refund payment.
-            $connection->creditPayment($paymentId, [], false, true);
         } catch (Exception $e) {
             // Log error.
             $this->log->exception($e);
@@ -145,30 +111,63 @@ class Refund implements CommandInterface
     }
 
     /**
-     * Use the addOrderLine method in ECom to add payload data while avoiding
-     * methods that override supplied data.
+     * Resolve credit memo from payment.
      *
+     * @param Payment $payment
+     * @return Creditmemo
+     * @throws PaymentDataException
+     */
+    private function getMemo(
+        Payment $payment
+    ): Creditmemo {
+        $memo = $payment->getCreditmemo();
+
+        if (!($memo instanceof Creditmemo)) {
+            throw new PaymentDataException(__('Invalid credit memo.'));
+        }
+
+        return $memo;
+    }
+
+    /**
+     * Refund online.
+     *
+     * @param PaymentDataObjectInterface $data
      * @param ResursBank $connection
-     * @param array<Item> $data
+     * @param string $paymentId
+     * @return void
+     * @throws AlreadyExistsException
+     * @throws PaymentDataException
      * @throws Exception
      */
-    private function addOrderLines(
+    private function refund(
+        PaymentDataObjectInterface $data,
         ResursBank $connection,
-        array $data
+        string $paymentId
     ): void {
-        foreach ($data as $item) {
-            // Ecom wrongly specifies some arguments as int when they should
-            // be floats.
-            /** @phpstan-ignore-next-line */
-            $connection->addOrderLine(
-                $item->getArtNo(),
-                $item->getDescription(),
-                $item->getUnitAmountWithoutVat(),
-                $item->getVatPct(),
-                $item->getUnitMeasure(),
-                $item->getType(),
-                $item->getQuantity()
-            );
+        // Shortcut for improved readability.
+        $history = &$this->paymentHistory;
+
+        if (!$connection->canCredit($paymentId)) {
+            throw new PaymentDataException(__('Payment not ready for credit.'));
         }
+
+        // Log API method being called.
+        $history->entryFromCmd(
+            $data,
+            History::EVENT_REFUND_API_CALLED
+        );
+
+        // Add items to API payload.
+        $this->addOrderLines(
+            $connection,
+            $this->creditmemoConverter->convert(
+                $this->getMemo($this->getPayment($data))
+            )
+        );
+
+        // Refund payment.
+        $connection->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+        $connection->creditPayment($paymentId, [], false, true);
     }
 }

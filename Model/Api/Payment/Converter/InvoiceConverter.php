@@ -10,22 +10,21 @@ namespace Resursbank\Ordermanagement\Model\Api\Payment\Converter;
 
 use Exception;
 use Magento\Sales\Api\Data\OrderItemInterface;
-use Magento\Sales\Model\Order\Creditmemo;
-use Magento\Sales\Model\Order\Creditmemo\Item;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Invoice\Item;
 use Magento\Sales\Model\ResourceModel\Order\Tax\ItemFactory as TaxItemResourceFactory;
 use Resursbank\Core\Model\Api\Payment\Converter\AbstractConverter;
 use Resursbank\Core\Model\Api\Payment\Converter\Item\DiscountItemFactory;
 use Resursbank\Core\Model\Api\Payment\Converter\Item\ShippingItemFactory;
 use Resursbank\Core\Model\Api\Payment\Item as PaymentItem;
 use Resursbank\Core\Helper\Log;
-use Resursbank\Core\Model\Api\Payment\ItemFactory;
-use Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Creditmemo\ProductItemFactory;
+use Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Invoice\ProductItemFactory;
 use function is_string;
 
 /**
- * Creditmemo entity conversion for payment payloads.
+ * Invoice entity conversion for payment payloads.
  */
-class CreditmemoConverter extends AbstractConverter
+class InvoiceConverter extends AbstractConverter
 {
     /**
      * @var ProductItemFactory
@@ -33,28 +32,20 @@ class CreditmemoConverter extends AbstractConverter
     private ProductItemFactory $productItemFactory;
 
     /**
-     * @var ItemFactory
-     */
-    private ItemFactory $itemFactory;
-
-    /**
      * @param Log $log
      * @param TaxItemResourceFactory $taxItemResourceFact
      * @param ShippingItemFactory $shippingItemFactory
      * @param DiscountItemFactory $discountItemFactory
      * @param ProductItemFactory $productItemFactory
-     * @param ItemFactory $itemFactory
      */
     public function __construct(
         Log $log,
         TaxItemResourceFactory $taxItemResourceFact,
         ShippingItemFactory $shippingItemFactory,
         DiscountItemFactory $discountItemFactory,
-        ProductItemFactory $productItemFactory,
-        ItemFactory $itemFactory
+        ProductItemFactory $productItemFactory
     ) {
         $this->productItemFactory = $productItemFactory;
-        $this->itemFactory = $itemFactory;
 
         parent::__construct(
             $log,
@@ -68,48 +59,46 @@ class CreditmemoConverter extends AbstractConverter
      * Convert supplied entity to a collection of PaymentItem instances. These
      * objects can later be mutated into a simple array the API can interpret.
      *
-     * @param Creditmemo $entity
+     * @param Invoice $entity
      * @return PaymentItem[]
      * @throws Exception
      */
     public function convert(
-        Creditmemo $entity
+        Invoice $entity
     ): array {
         $shippingMethod = $entity->getOrder()->getShippingMethod();
 
         return array_merge(
+            $this->getProductData($entity),
             array_merge(
-                $this->getProductData($entity),
-                array_merge(
-                    $this->getDiscountData(
-                        (string) $entity->getOrder()->getCouponCode(),
-                        (float) $entity->getDiscountAmount(),
-                        (float) $entity->getDiscountTaxCompensationAmount()
-                    ),
-                    $this->getShippingData(
-                        is_string($shippingMethod) ? $shippingMethod : '',
-                        (string) $entity->getOrder()->getShippingDescription(),
-                        (float) $entity->getShippingInclTax(),
-                        $this->getTaxPercentage(
-                            (int) $entity->getOrderId(),
-                            'shipping'
-                        )
+                $this->getDiscountData(
+                    (string) $entity->getOrder()->getCouponCode(),
+                    (float) $entity->getDiscountAmount(),
+                    (float) $entity->getDiscountTaxCompensationAmount()
+                ),
+                $this->getShippingData(
+                    is_string($shippingMethod) ? $shippingMethod : '',
+                    (string) $entity->getOrder()->getShippingDescription(),
+                    (float) $entity->getShippingInclTax(),
+                    $this->getTaxPercentage(
+                        (int) $entity->getOrderId(),
+                        'shipping'
                     )
                 )
-            ),
-            $this->getAdjustmentFee($entity)
+            )
         );
     }
 
     /**
-     * Extract product information from Creditmemo entity.
+     * Extract product information from Invoice entity.
      *
-     * @param Creditmemo $entity
+     * @param Invoice $entity
      * @return PaymentItem[]
      * @throws Exception
+     * @noinspection DuplicatedCode
      */
     protected function getProductData(
-        Creditmemo $entity
+        Invoice $entity
     ): array {
         $result = [];
 
@@ -131,44 +120,13 @@ class CreditmemoConverter extends AbstractConverter
     }
 
     /**
-     * Extract adjustment fee information from Creditmemo entity.
-     *
-     * NOTE: Since there is no corresponding type at Resurs Bank we report this
-     * as a product.
-     *
-     * @param Creditmemo $entity
-     * @return PaymentItem[]
-     * @throws Exception
-     */
-    protected function getAdjustmentFee(
-        Creditmemo $entity
-    ): array {
-        $result = [];
-        $fee = (float) $entity->getAdjustment();
-
-        if ($fee > 0) {
-            $result[] = $this->itemFactory->create([
-                PaymentItem::KEY_ART_NO => 'refundfee',
-                PaymentItem::KEY_DESCRIPTION => (string) __('Refund Fee'),
-                PaymentItem::KEY_QUANTITY => 1,
-                PaymentItem::KEY_UNIT_MEASURE => 'st',
-                PaymentItem::KEY_UNIT_AMOUNT_WITHOUT_VAT => $fee,
-                PaymentItem::KEY_VAT_PCT => 0,
-                PaymentItem::KEY_TYPE => PaymentItem::TYPE_PRODUCT
-            ]);
-        }
-
-        return $result;
-    }
-
-    /**
      * Whether to include product data in payment payload.
      *
-     * @param Creditmemo $entity
+     * @param Invoice $entity
      * @return bool
      */
     public function includeProductData(
-        Creditmemo $entity
+        Invoice $entity
     ): bool {
         $items = $entity->getAllItems();
 
