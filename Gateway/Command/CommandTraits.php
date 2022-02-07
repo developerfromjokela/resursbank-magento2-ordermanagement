@@ -17,7 +17,7 @@ use Resursbank\RBEcomPHP\ResursBank;
 use function get_class;
 
 /**
- * Command functionality for gateway commands.
+ * Common functionality for gateway commands.
  */
 trait CommandTraits
 {
