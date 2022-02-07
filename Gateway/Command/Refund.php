@@ -168,7 +168,7 @@ class Refund implements CommandInterface
         is created in the payment at Resurs Bank, it's marked as DEBIT but never
         AUTHORIZE, because of this ECom won't see it in getPaymentDiffAsTable(),
         and thus we cannot credit the new discount order line after it has been
-        added). The line blow changes what data ECom utilises to identify order
+        added). The line below changes what data ECom utilises to identify order
         lines and is essentially a work-around to this problem (doing this ECom
         will see the initial discount line, which is in AUTHORIZE, and pass the
         validation for our new discount order line).  */
