@@ -18,9 +18,8 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Model\Invoice;
 
 /**
- * Add created invoice to Magentos registry when it's created. This provides
- * access to the invoice from our capture command, so we can accurately compile
- * data for our outgoing API calls to debit payment.
+ * Store invoice created during capture in Model/Invoice (see that class for
+ * more information).
  */
 class TrackInvoice implements ObserverInterface
 {
