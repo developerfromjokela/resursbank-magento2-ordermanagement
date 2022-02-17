@@ -146,10 +146,10 @@ class CreditmemoConverter extends AbstractConverter
         $result = [];
         $fee = (float) $entity->getAdjustment();
 
-        if ($fee > 0) {
+        if ($fee !== 0.0) {
             $result[] = $this->itemFactory->create([
-                PaymentItem::KEY_ART_NO => 'refundfee',
-                PaymentItem::KEY_DESCRIPTION => (string) __('Refund Fee'),
+                PaymentItem::KEY_ART_NO => 'adjustment',
+                PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment Fee'),
                 PaymentItem::KEY_QUANTITY => 1,
                 PaymentItem::KEY_UNIT_MEASURE => 'st',
                 PaymentItem::KEY_UNIT_AMOUNT_WITHOUT_VAT => $fee,
