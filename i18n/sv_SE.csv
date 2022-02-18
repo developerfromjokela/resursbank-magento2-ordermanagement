@@ -39,3 +39,4 @@
 "Payment not ready for capture.","Betalningen är inte redo för debitering."
 "Payment not ready for credit.","Betalningen är inte redo att krediteras."
 "Refund Fee","Krediteringsavgift"
+"Resurs Bank does not support negative credit memos.","Resurs Bank accepterar inte negativa kreditnotor."

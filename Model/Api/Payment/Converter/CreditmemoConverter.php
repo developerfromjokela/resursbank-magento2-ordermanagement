@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Model\Api\Payment\Converter;
 
 use Exception;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Creditmemo\Item;
@@ -75,6 +76,12 @@ class CreditmemoConverter extends AbstractConverter
     public function convert(
         Creditmemo $entity
     ): array {
+        if ((float) $entity->getGrandTotal() < 0.0) {
+            throw new LocalizedException(
+                __('Resurs Bank does not support negative credit memos.')
+            );
+        }
+
         $shippingMethod = $entity->getOrder()->getShippingMethod();
 
         return array_merge(
@@ -149,7 +156,7 @@ class CreditmemoConverter extends AbstractConverter
         if ($fee !== 0.0) {
             $result[] = $this->itemFactory->create([
                 PaymentItem::KEY_ART_NO => 'adjustment',
-                PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment Fee'),
+                PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment'),
                 PaymentItem::KEY_QUANTITY => 1,
                 PaymentItem::KEY_UNIT_MEASURE => 'st',
                 PaymentItem::KEY_UNIT_AMOUNT_WITHOUT_VAT => $fee,
