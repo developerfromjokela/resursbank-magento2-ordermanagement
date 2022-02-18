@@ -76,7 +76,7 @@ class CreditmemoConverter extends AbstractConverter
     public function convert(
         Creditmemo $entity
     ): array {
-        if ($entity->getGrandTotal() < 0) {
+        if ((float) $entity->getGrandTotal() < 0.0) {
             throw new LocalizedException(
                 __('Resurs Bank does not support negative credit memos.')
             );
