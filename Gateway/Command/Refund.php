@@ -177,6 +177,6 @@ class Refund implements CommandInterface
         );
 
         // Refund payment.
-        $connection->creditPayment($paymentId, [], false, true);
+        $connection->creditPayment($paymentId, [], false, true, true);
     }
 }

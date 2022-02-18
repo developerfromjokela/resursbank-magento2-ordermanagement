@@ -153,7 +153,7 @@ class Capture implements CommandInterface
         );
 
         // Refund payment.
-        $connection->finalizePayment($paymentId, [], false, true);
+        $connection->finalizePayment($paymentId, [], false, true, true);
 
         // Set transaction id.
         $payment->setTransactionId(
