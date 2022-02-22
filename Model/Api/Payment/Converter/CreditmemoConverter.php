@@ -155,7 +155,7 @@ class CreditmemoConverter extends AbstractConverter
 
         if ($fee !== 0.0) {
             $result[] = $this->itemFactory->create([
-                PaymentItem::KEY_ART_NO => 'adjustment',
+                PaymentItem::KEY_ART_NO => $this->getAdjustmentArtNo(),
                 PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment'),
                 PaymentItem::KEY_QUANTITY => 1,
                 PaymentItem::KEY_UNIT_MEASURE => 'st',
@@ -166,6 +166,18 @@ class CreditmemoConverter extends AbstractConverter
         }
 
         return $result;
+    }
+
+    /**
+     * This article number must be unique at the time of
+     * writing to avoid EComPHP filtering the order lines from
+     * the API payload.
+     *
+     * @return string
+     */
+    private function getAdjustmentArtNo(): string
+    {
+        return 'adjustment' . time();
     }
 
     /**
