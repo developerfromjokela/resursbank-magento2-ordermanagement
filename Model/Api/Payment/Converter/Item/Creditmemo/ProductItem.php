@@ -113,10 +113,10 @@ class ProductItem extends AbstractItem
         if ($product->getProductType() === 'bundle' &&
             $this->hasFixedPrice()
         ) {
-            $result = (float)(
+            $result = ((float)(
                     $product->getTaxAmount() /
                     $product->getPrice()
-                ) * 100;
+                ) * 100) / $this->getQuantity();
         } elseif ($product->getProductType() === 'configurable') {
             $result = (float) $product->getTaxPercent();
         } elseif (!($parent instanceof OrderItemInterface) ||
