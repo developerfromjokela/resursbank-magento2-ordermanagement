@@ -16,5 +16,18 @@
             "PRIMARY": true,
             "SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_PAYMENT_HISTORY_PAYMENT_ID": true
         }
+    },
+    "resursbank_checkout_callback_queue": {
+        "column": {
+            "id": true,
+            "created_at": true,
+            "type": true,
+            "payment_id": true,
+            "digest": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_CALLBACK_QUEUE_PAYMENT_ID": true
+        }
     }
 }
