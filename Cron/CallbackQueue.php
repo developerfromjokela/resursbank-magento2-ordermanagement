@@ -8,15 +8,15 @@ declare(strict_types=1);
 
 namespace ResursBank\Ordermanagement\Cron;
 
-use Psr\Log\LoggerInterface as LoggerInterface;
-use Resursbank\Ordermanagement\Model\Callback;
+use Exception;
+use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Model\CallbackFactory as CallbackFactory;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
 
 class CallbackQueue {
-    /** @var LoggerInterface  */
-    protected LoggerInterface $logger;
+    /** @var Log  */
+    protected Log $logger;
 
     /** @var CollectionFactory  */
     private CollectionFactory $collectionFactory;
@@ -28,7 +28,7 @@ class CallbackQueue {
     private CallbackFactory $callbackFactory;
 
     public function __construct(
-        LoggerInterface $logger,
+        Log $logger,
         CollectionFactory $collectionFactory,
         ResourceModel $resourceModel,
         CallbackFactory $callbackFactory
@@ -56,7 +56,11 @@ class CallbackQueue {
             if (!empty($queuedCallback->getType()) && in_array($queuedCallback->getType(), ['unfreeze', 'booked', 'update', 'test'])) {
                 $method = $queuedCallback->getType();
                 $callback->$method($queuedCallback->getPaymentId(), $queuedCallback->getDigest());
-                $this->resourceModel->delete($queuedCallback);
+                try {
+                    $this->resourceModel->delete($queuedCallback);
+                } catch (Exception $e) {
+                    $this->logger->exception($e);
+                }
             }
         }
     }

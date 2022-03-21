@@ -61,10 +61,10 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     /** @var CallbackFactory  */
     private CallbackFactory $callbackFactory;
 
-    /** @var \Resursbank\Ordermanagement\Model\CallbackQueueFactory  */
+    /** @var CallbackQueueFactory  */
     private CallbackQueueFactory $callbackQueueFactory;
 
-    /** @var CollectionFactory|CollectionFactory  */
+    /** @var CollectionFactory  */
     private CollectionFactory $cqCollectionFactory;
 
     /** @var CallbackQueueResourceModel  */
@@ -266,17 +266,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         $item->setData('digest', $digest);
 
         $this->cqResource->save($item);
-    }
-
-    /**
-     * Process callback
-     *
-     * @return void
-     */
-    public function process(): void
-    {
-        $cb = $this->callbackFactory->create();
-        // todo: implement
     }
 
     /**
