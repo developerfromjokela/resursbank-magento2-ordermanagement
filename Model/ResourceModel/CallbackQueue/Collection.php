@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue;
 
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection as AbstractCollection;
 use Resursbank\Ordermanagement\Model\CallbackQueue as Model;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as Resource;
-use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection as AbstractCollection;
 
 class Collection extends AbstractCollection
 {

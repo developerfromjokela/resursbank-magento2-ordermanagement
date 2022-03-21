@@ -199,31 +199,6 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function test(
-        string $param1,
-        string $param2,
-        string $param3,
-        string $param4,
-        string $param5
-    ): void {
-        try {
-            $this->logIncoming('test', '', '');
-
-            $this->config->setCallbackTestReceivedAt(
-                (int) $this->scope->getId(),
-                $this->scope->getType()
-            );
-
-            // Clear the config cache so this value show up.
-            $this->cacheTypeList->cleanType('config');
-        } catch (Exception $e) {
-            $this->handleError($e);
-        }
-    }
-
-    /**
      * General callback instructions.
      *
      * @param string $type
