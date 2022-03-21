@@ -26,15 +26,15 @@
         <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="Primary key"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="varchar" name="type" length="255" nullable="false" comment="Callback Type"/>
-        <column xsi:type="int" name="payment_id" padding="10" unsigned="true" nullable="false" comment="Order payment reference."/>
+        <column xsi:type="varchar" name="payment_id" length="32" unsigned="true" nullable="false" comment="Order payment reference."/>
         <column xsi:type="varchar" name="digest" length="255" nullable="true" comment="Digest"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
         <constraint xsi:type="foreign"
-                    referenceId="SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_CALLBACK_QUEUE_PAYMENT_ID"
+                    referenceId="SALES_ORDER_INCREMENT_ID_RESURSBANK_CHECKOUT_CALLBACK_QUEUE_PAYMENT_ID"
                     table="resursbank_checkout_callback_queue"
                     column="payment_id"
-                    referenceTable="sales_order_payment" referenceColumn="entity_id"/>
+                    referenceTable="sales_order" referenceColumn="increment_id"/>
     </table>
 </schema>
