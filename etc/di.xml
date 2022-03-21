@@ -8,7 +8,8 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
     <!-- Callback interface. -->
-    <preference for="Resursbank\Ordermanagement\Api\CallbackInterface" type="Resursbank\Ordermanagement\Model\Callback" />
+    <preference for="Resursbank\Ordermanagement\Api\CallbackInterface"
+                type="Resursbank\Ordermanagement\Model\Callback" />
 
     <!-- Payment method configuration. -->
     <type name="Resursbank\Core\Model\Payment\Resursbank">
@@ -42,7 +43,8 @@
     </virtualType>
 
     <!-- Callback queue -->
-    <preference for="Resursbank\Ordermanagement\Api\Data\CallbackQueueInterface" type="Resursbank\Ordermanagement\Model\CallbackQueue" />
+    <preference for="Resursbank\Ordermanagement\Api\CallbackQueueInterface"
+                type="Resursbank\Ordermanagement\Model\CallbackQueue" />
 
     <!-- Payment History -->
     <preference for="Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface" type="Resursbank\Ordermanagement\Model\PaymentHistory" />
