@@ -58,9 +58,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     /** @var TypeListInterface  */
     private TypeListInterface $cacheTypeList;
 
-    /** @var CallbackFactory  */
-    private CallbackFactory $callbackFactory;
-
     /** @var CallbackQueueFactory  */
     private CallbackQueueFactory $callbackQueueFactory;
 
@@ -85,7 +82,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         CallbackLog $callbackLog,
         ConfigHelper $config,
         CallbackHelper $callbackHelper,
-        CallbackFactory $callbackFactory,
         CallbackQueueFactory $callbackQueueFactory,
         CollectionFactory $cqCollectionFactory,
         CallbackQueueResourceModel $cqResource,
@@ -99,7 +95,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         $this->config = $config;
         $this->callbackHelper = $callbackHelper;
         $this->callbackLog = $callbackLog;
-        $this->callbackFactory = $callbackFactory;
         $this->cacheTypeList = $cacheTypeList;
         $this->callbackQueueFactory = $callbackQueueFactory;
         $this->cqCollectionFactory = $cqCollectionFactory;
