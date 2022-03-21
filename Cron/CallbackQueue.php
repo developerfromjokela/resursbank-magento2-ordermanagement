@@ -45,7 +45,7 @@ class CallbackQueue {
             ->create()
             ->setPageSize(10)
             ->setCurPage(1)
-            ->setOrder('id', 'DESC')
+            ->setOrder('id', 'ASC')
             ->load();
 
         foreach ($queuedCallbacks as $queuedCallback) {
