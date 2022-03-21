@@ -275,9 +275,6 @@ class Callback implements CallbackInterface
 
         $this->phRepository->save($entry);
 
-        $this->validate($paymentId, $digest);
-        $this->logIncoming($type, $paymentId, $digest);
-
         $orderStatus = $this->phHelper->getPaymentStatus($order);
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
 
@@ -331,30 +328,6 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Validate the digest.
-     *
-     * @param string $paymentId
-     * @param string $digest
-     * @throws CallbackValidationException
-     * @throws FileSystemException
-     * @throws RuntimeException
-     */
-    private function validate(
-        string $paymentId,
-        string $digest
-    ): void {
-        $ourDigest = strtoupper(
-            sha1($paymentId . $this->callbackHelper->salt())
-        );
-
-        if ($ourDigest !== $digest) {
-            throw new CallbackValidationException(
-                __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
-            );
-        }
-    }
-
-    /**
      * @param Exception $exception
      * @return void
      * @throws Exception
@@ -367,22 +340,5 @@ class Callback implements CallbackInterface
         if ($exception instanceof CallbackValidationException) {
             throw new Exception($exception->getMessage());
         }
-    }
-
-    /**
-     * Log incoming callbacks.
-     *
-     * @param string $type
-     * @param string $paymentId
-     * @param string $digest
-     */
-    private function logIncoming(
-        string $type,
-        string $paymentId,
-        string $digest
-    ): void {
-        $this->callbackLog->info(
-            "[$type] - PaymentId: $paymentId. Digest: $digest"
-        );
     }
 }
