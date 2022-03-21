@@ -256,6 +256,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
+     * @throws AlreadyExistsException
      */
     private function addToQueue(string $type, string $paymentId, string $digest): void
     {
@@ -264,13 +265,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         $item->setData('payment_id', $paymentId);
         $item->setData('digest', $digest);
 
-        try {
-            $this->cqResource->save($item);
-        } catch (AlreadyExistsException $e) {
-            // Todo: Do something, though this shouldn't happen
-        } catch (Exception $e) {
-            // Todo: Do something, most likely throw another exception
-        }
+        $this->cqResource->save($item);
     }
 
     /**
