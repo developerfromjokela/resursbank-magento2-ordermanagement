@@ -158,7 +158,6 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        $this->log->info("Running ".__METHOD__);
         try {
             $this->execute('unfreeze', $paymentId, $digest);
         } catch (Exception $e) {
@@ -173,7 +172,6 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        $this->log->info("Running ".__METHOD__);
         try {
             $order = $this->execute('booked', $paymentId, $digest);
 
@@ -193,7 +191,6 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        $this->log->info("Running ".__METHOD__);
         try {
             $this->execute('update', $paymentId, $digest);
         } catch (Exception $e) {
@@ -211,7 +208,6 @@ class Callback implements CallbackInterface
         string $param4,
         string $param5
     ): void {
-        $this->log->info("Running ".__METHOD__);
         try {
             $this->logIncoming('test', '', '');
 
@@ -347,12 +343,9 @@ class Callback implements CallbackInterface
         string $paymentId,
         string $digest
     ): void {
-        $this->log->info($this->callbackHelper->salt());
         $ourDigest = strtoupper(
             sha1($paymentId . $this->callbackHelper->salt())
         );
-        $this->log->info("sal: ".$this->callbackHelper->salt());
-        $this->log->info("our digest: ".$ourDigest);
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(

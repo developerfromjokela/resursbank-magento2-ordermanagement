@@ -107,7 +107,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
      */
     public function unfreeze(string $paymentId, string $digest): void
     {
-        $this->log->info("Received unfreeze...");
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('unfreeze', $paymentId, $digest);
@@ -121,7 +120,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
      */
     public function booked(string $paymentId, string $digest): void
     {
-        $this->log->info("Received booked...");
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('booked', $paymentId, $digest);
@@ -135,7 +133,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
      */
     public function update(string $paymentId, string $digest): void
     {
-        $this->log->info("Received update...");
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('update', $paymentId, $digest);
@@ -149,7 +146,6 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
      */
     public function test(string $param1, string $param2, string $param3, string $param4, string $param5): void
     {
-        $this->log->info("Received test...");
         try {
             $this->logIncoming('test', '', '');
 
@@ -211,12 +207,9 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         string $paymentId,
         string $digest
     ): void {
-        $this->log->info($this->callbackHelper->salt());
         $ourDigest = strtoupper(
             sha1($paymentId . $this->callbackHelper->salt())
         );
-        $this->log->info("salt: ".$this->callbackHelper->salt());
-        $this->log->info("our digest: ".$ourDigest);
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(
