@@ -11,27 +11,16 @@ namespace Resursbank\Ordermanagement\Test\Unit\Model;
 use Grpc\Call;
 use PHPUnit\Framework\TestCase;
 use Resursbank\Ordermanagement\Model\CallbackQueue;
-
+use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\Exception\FileSystemException;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
-use Magento\Framework\Webapi\Exception as WebapiException;
-use Magento\Framework\Model\AbstractModel as AbstractModel;
-use Magento\Sales\Model\Order;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Ordermanagement\Api\CallbackQueueInterface;
-use Resursbank\Ordermanagement\Exception\CallbackValidationException;
-use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Model\CallbackQueueFactory;
-use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
-use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\Collection as Collection;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
@@ -48,46 +37,46 @@ class CallbackQueueTest extends TestCase
     /** @var CallbackQueue */
     private CallbackQueue $callbackQueue;
 
-    /** @var Context|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var Context|MockObject  */
     private $contextMock;
 
-    /** @var Registry|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var Registry|MockObject  */
     private $registryMock;
 
-    /** @var OrderInterface|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var OrderInterface|MockObject  */
     private $orderInterfaceMock;
 
-    /** @var TypeListInterface|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var TypeListInterface|MockObject  */
     private $typeListInterfaceMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|Scope  */
+    /** @var MockObject|Scope  */
     private $scopeMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|Log  */
+    /** @var MockObject|Log  */
     private $logMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|CallbackLog  */
+    /** @var MockObject|CallbackLog  */
     private $callbackLogMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|ConfigHelper  */
+    /** @var MockObject|ConfigHelper  */
     private $configHelperMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|CallbackHelper  */
+    /** @var MockObject|CallbackHelper  */
     private $callbackHelperMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|CallbackQueueFactory  */
+    /** @var MockObject|CallbackQueueFactory  */
     private $callbackQueueFactoryMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|CollectionFactory  */
+    /** @var MockObject|CollectionFactory  */
     private $collectionFactoryMock;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|CallbackQueueResourceModel  */
+    /** @var MockObject|CallbackQueueResourceModel  */
     private $callbackQueueResourceModelMock;
 
-    /** @var AbstractResource|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var AbstractResource|MockObject  */
     private $abstractResourceMock;
 
-    /** @var AbstractDb|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var AbstractDb|MockObject  */
     private $resourceCollectionMock;
 
     private array $data = [
