@@ -269,7 +269,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
             ->create()
             ->setPageSize($count)
             ->setCurPage(1)
-            ->setOrder('id', 'DESC')
+            ->setOrder('id', 'ASC')
             ->load();
     }
 
