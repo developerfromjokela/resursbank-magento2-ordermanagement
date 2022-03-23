@@ -142,6 +142,8 @@ class CallbackQueueTest extends WebapiAbstract
         $ch = curl_init($url);
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, Request::HTTP_METHOD_POST);
+        } elseif ($method == 'PUT') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, Request::HTTP_METHOD_PUT);
         } else {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, Request::HTTP_METHOD_GET);
         }
