@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Test\Api\Model;
 
+use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\RuntimeException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Authentication\OauthHelper;
 use Magento\TestFramework\Authentication\Rest\OauthClient;
@@ -22,7 +24,7 @@ use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 class CallbackQueueTest extends WebapiAbstract
 {
     /** @var CallbackHelper|MockObject  */
-    private CallbackHelper|MockObject $callbackHelper;
+    private $callbackHelper;
 
     protected function setUp(): void
     {
@@ -30,18 +32,94 @@ class CallbackQueueTest extends WebapiAbstract
     }
 
     /**
+     * Assert that the test endpoint exists
+     *
+     * @return void
+     */
+    public function testTest(): void
+    {
+        $params = [
+            'param1' => '001',
+            'param2' => '002',
+            'param3' => '003',
+            'param4' => '004',
+            'param5' => '005'
+        ];
+        $serviceInfo = [
+            'rest' => [
+                'resourcePath' => '/V1/resursbank_ordermanagement/order/test/param1/'.$params['param1'].'/param2/'
+                    .$params['param2'].'/param3/'.$params['param3'].'/param4/'.$params['param4'].'/param5/'.$params['param5'],
+                'httpMethod' => Request::HTTP_METHOD_GET
+            ],
+        ];
+        try {
+            $response = $this->_webApiCall($serviceInfo);
+        } catch (Exception $e) {
+            $response = false;
+        }
+
+        // Our response should be an empty array
+        $this->assertIsArray($response);
+        $this->assertEmpty($response);
+    }
+
+    /**
+     * Assert that we get correct HTTP status code from the test endpoint
+     *
+     * @return void
+     * @throws LocalizedException
+     */
+    public function testTestHttpCode(): void
+    {
+        $parameters = [
+            'param1' => '001',
+            'param2' => '002',
+            'param3' => '003',
+            'param4' => '004',
+            'param5' => '005'
+        ];
+        $result = $this->callApi('test', 'GET', $parameters);
+        $httpStatusCode = $result['requestInfo']['http_code'];
+
+        $this->assertEquals(200, $httpStatusCode);
+    }
+
+    /**
      * Assert that we get correct HTTP response code for missing orders
      *
      * @return void
      * @throws LocalizedException
-     * @throws \Magento\Framework\Oauth\Exception
      */
     public function testMissingOrder(): void
     {
         // Generate URL
         $paymentId = "foobar1234";
-        $digest = strtoupper(sha1($paymentId.$this->callbackHelper->salt()));
-        $resourcePath = '/V1/resursbank_ordermanagement/order/update/paymentId/'.$paymentId.'/digest/'.$digest;
+        $digest = $this->getDigest($paymentId);
+        $parameters = [
+            'paymentId' => $paymentId,
+            'digest' => $digest
+        ];
+        $result = $this->callApi('update', 'GET', $parameters);
+        $httpStatusCode = $result['requestInfo']['http_code'];
+
+        $this->assertEquals(410, $httpStatusCode);
+    }
+
+    /**
+     * Makes calls to the API
+     *
+     * @param string $endpoint
+     * @param string $method
+     * @param array $parameters
+     * @return array
+     * @throws LocalizedException
+     */
+    private function callApi(string $endpoint, string $method, array $parameters): array
+    {
+        $resourcePath = '/V1/resursbank_ordermanagement/order/'.$endpoint; //.'/paymentId/'.$paymentId.'/digest/'.$digest;
+        foreach ($parameters as $name => $value) {
+            $resourcePath .= '/'.$name.'/'.$value;
+        }
         $storeCode = Bootstrap::getObjectManager()
             ->get(StoreManagerInterface::class)
             ->getStore()
@@ -62,43 +140,29 @@ class CallbackQueueTest extends WebapiAbstract
 
         // Call API
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, \Magento\Framework\Webapi\Rest\Request::HTTP_METHOD_GET);
+        if ($method == 'POST') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, Request::HTTP_METHOD_POST);
+        } else {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, Request::HTTP_METHOD_GET);
+        }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $authHeader);
-        curl_exec($ch);
-        $reqInfo = curl_getinfo($ch);
-        $httpStatusCode = $reqInfo['http_code'];
-        $this->assertEquals(410, $httpStatusCode);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = [];
+        $result['response'] = curl_exec($ch);
+        $result['requestInfo'] = curl_getinfo($ch);
+        return $result;
     }
 
     /**
-     * Assert that the test endpoint exists
+     * Generate digest string
      *
-     * @return void
+     * @param string $paymentId
+     * @return string
+     * @throws FileSystemException
+     * @throws RuntimeException
      */
-    public function testTest(): void
+    private function getDigest(string $paymentId): string
     {
-        $params = [
-            'param1' => '001',
-            'param2' => '002',
-            'param3' => '003',
-            'param4' => '004',
-            'param5' => '005'
-        ];
-        $serviceInfo = [
-            'rest' => [
-                'resourcePath' => '/V1/resursbank_ordermanagement/order/test/param1/'.$params['param1'].'/param2/'
-                .$params['param2'].'/param3/'.$params['param3'].'/param4/'.$params['param4'].'/param5/'.$params['param5'],
-                'httpMethod' => Request::HTTP_METHOD_GET
-            ],
-        ];
-        try {
-            $response = $this->_webApiCall($serviceInfo);
-        } catch (Exception $e) {
-            $response = false;
-        }
-
-        // Our response should be an empty array
-        $this->assertIsArray($response);
-        $this->assertEmpty($response);
+        return strtoupper(sha1($paymentId.$this->callbackHelper->salt()));
     }
 }
