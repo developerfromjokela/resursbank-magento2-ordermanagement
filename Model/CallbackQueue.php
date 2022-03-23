@@ -244,7 +244,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
             throw new WebapiException(
                 __($exception->getMessage()),
                 0,
-                WebapiException::HTTP_NOT_FOUND
+                410
             );
         }
     }
