@@ -110,6 +110,8 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('unfreeze', $paymentId, $digest);
+        } catch (OrderNotFoundException $e) {
+            $this->handleError($e);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -123,6 +125,8 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('booked', $paymentId, $digest);
+        } catch (OrderNotFoundException $e) {
+            $this->handleError($e);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -136,6 +140,8 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         try {
             $this->checkRequest($paymentId, $digest);
             $this->addToQueue('update', $paymentId, $digest);
+        } catch (OrderNotFoundException $e) {
+            $this->handleError($e);
         } catch (Exception $e) {
             $this->handleError($e);
         }
@@ -233,6 +239,12 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
                 __($exception->getMessage()),
                 0,
                 WebapiException::HTTP_NOT_ACCEPTABLE
+            );
+        } elseif ($exception instanceof OrderNotFoundException) {
+            throw new WebapiException(
+                __($exception->getMessage()),
+                0,
+                WebapiException::HTTP_NOT_FOUND
             );
         }
     }
