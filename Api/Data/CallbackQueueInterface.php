@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Api\Data;
 
 use Magento\Framework\Webapi\Exception as WebapiException;
+use Resursbank\Ordermanagement\Helper\Log as Log;
 
 interface CallbackQueueInterface
 {
