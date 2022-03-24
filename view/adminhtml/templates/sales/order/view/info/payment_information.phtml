@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 use Magento\Framework\Escaper;
+use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 
@@ -19,11 +20,16 @@ if (isset($block)) {
 }
 
 if (isset($viewModel, $block)) {
-    $order = $viewModel->setOrder(
-        $viewModel->getOrder(
-            $block->getOrderIdFromRequest()
-        )
-    );
+    $order = $viewModel->getOrder($block->getOrderIdFromRequest());
+    if ($order instanceof OrderInterface) {
+        $order = $viewModel->setOrder(
+            $viewModel->getOrder(
+                $block->getOrderIdFromRequest()
+            )
+        );
+    } else {
+        $order = null;
+    }
 }
 ?>
 
@@ -47,7 +53,7 @@ if (isset($viewModel, $block)) {
                     </div>
                 </div>
                 <div class="admin__page-section-content">
-    
+
                     <?php // Payment information.?>
                     <div class="admin__page-section-item">
                         <div class="admin__page-section-item-content">
@@ -84,11 +90,11 @@ if (isset($viewModel, $block)) {
                                     <tr>
                                         <th>
                                             <?= $escaper->escapeHtml(__('Status')) ?>
-    
+
                                         </th>
                                         <td>
                                             <?= $escaper->escapeHtml(__($viewModel->getPaymentStatus())) ?>
-    
+
                                         </td>
                                     </tr>
                                     <tr>
@@ -119,7 +125,7 @@ if (isset($viewModel, $block)) {
                             </table>
                         </div>
                     </div>
-    
+
                     <?php // Customer information.?>
                     <div class="admin__page-section-item">
                         <div class="admin__page-section-item-title">
@@ -141,7 +147,7 @@ if (isset($viewModel, $block)) {
                                     <tr>
                                         <th>
                                             <?= $escaper->escapeHtml(__('Address')) ?>
-    
+
                                         </th>
                                         <td>
                                             <?php foreach ($viewModel->getCustomerAddress() as $value): ?>
@@ -161,7 +167,7 @@ if (isset($viewModel, $block)) {
                                     <tr>
                                         <th>
                                             <?= $escaper->escapeHtml(__('Email')) ?>
-    
+
                                         </th>
                                         <td>
                                             <?= $escaper->escapeHtml($viewModel->getCustomerEmail()) ?>
