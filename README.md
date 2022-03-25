@@ -12,6 +12,6 @@ Functionality to interact with payments at Resurs Bank.
 
 ---
 
-#### 1.1.1
+#### 1.6.1
 
-* Updated composer metadata.
+* Fixed problem on shipment view.
