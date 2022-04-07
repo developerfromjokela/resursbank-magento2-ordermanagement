@@ -10,7 +10,7 @@
 
     <!-- Payment is unfrozen, which means it can be captured. -->
     <route url="/V1/resursbank_ordermanagement/order/unfreeze/paymentId/:paymentId/digest/:digest" method="GET">
-        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="unfreeze"/>
+        <service class="Resursbank\Ordermanagement\Api\CallbackQueueInterface" method="unfreeze"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
@@ -18,7 +18,7 @@
 
     <!-- Payment has been booked by Resurs Bank. This means the payment has been unfrozen and is preparing to be finalized. -->
     <route url="/V1/resursbank_ordermanagement/order/booked/paymentId/:paymentId/digest/:digest" method="POST">
-        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="booked"/>
+        <service class="Resursbank\Ordermanagement\Api\CallbackQueueInterface" method="booked"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
@@ -26,7 +26,7 @@
 
     <!-- Payment has been updated at Resurs Bank. -->
     <route url="/V1/resursbank_ordermanagement/order/update/paymentId/:paymentId/digest/:digest" method="GET">
-        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="update"/>
+        <service class="Resursbank\Ordermanagement\Api\CallbackQueueInterface" method="update"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
@@ -34,7 +34,7 @@
 
     <!-- Test to verify callback URLs are working. -->
     <route url="/V1/resursbank_ordermanagement/order/test/param1/:param1/param2/:param2/param3/:param3/param4/:param4/param5/:param5" method="GET">
-        <service class="Resursbank\Ordermanagement\Api\CallbackInterface" method="test"/>
+        <service class="Resursbank\Ordermanagement\Api\CallbackQueueInterface" method="test"/>
         <resources>
             <resource ref="anonymous" />
         </resources>

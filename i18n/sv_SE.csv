@@ -40,3 +40,5 @@
 "Payment not ready for credit.","Betalningen är inte redo att krediteras."
 "Refund Fee","Krediteringsavgift"
 "Resurs Bank does not support negative credit memos.","Resurs Bank accepterar inte negativa kreditnotor."
+"Automatically create invoices","Skapa fakturor automatiskt"
+"Automatically create invoice when an order obtains the status 'resursbank_finalized'.","Skapa automatiskt faktura när beställning erhåller status 'resursbank_finalized'."

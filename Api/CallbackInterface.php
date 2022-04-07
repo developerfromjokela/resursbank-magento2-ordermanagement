@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Api;
 
-use Magento\Framework\Webapi\Exception as WebapiException;
+use Exception;
 
 interface CallbackInterface
 {
@@ -18,7 +18,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
-     * @throws WebapiException
+     * @throws Exception
      */
     public function unfreeze(string $paymentId, string $digest): void;
 
@@ -29,7 +29,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
-     * @throws WebapiException
+     * @throws Exception
      */
     public function booked(string $paymentId, string $digest): void;
 
@@ -39,27 +39,7 @@ interface CallbackInterface
      * @param string $paymentId
      * @param string $digest
      * @return void
-     * @throws WebapiException
+     * @throws Exception
      */
     public function update(string $paymentId, string $digest): void;
-
-    /**
-     * Handling inbound callback test from Resurs Bank. Store values in config
-     * table.
-     *
-     * @param string $param1
-     * @param string $param2
-     * @param string $param3
-     * @param string $param4
-     * @param string $param5
-     * @return void
-     * @throws WebapiException
-     */
-    public function test(
-        string $param1,
-        string $param2,
-        string $param3,
-        string $param4,
-        string $param5
-    ): void;
 }
