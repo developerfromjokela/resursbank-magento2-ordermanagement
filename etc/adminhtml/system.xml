@@ -16,8 +16,9 @@
                         <config_path>resursbank/aftershop/enabled</config_path>
                     </field>
                 </group>
-                <group id="callbacks" sortOrder="4" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                <group id="callbacks" sortOrder="4" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Callback Settings</label>
+                    <comment>Callbacks are handled by cron, please ensure that cron is active.</comment>
                     <field id="registration" type="button" sortOrder="0" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Callback registration</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
