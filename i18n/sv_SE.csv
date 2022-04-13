@@ -15,6 +15,7 @@
 "Test callbacks","Testa callbacks"
 "Perform test","Utför test"
 "Callback Settings","Callbacks",
+"Callbacks are handled by cron, please ensure that cron is active.","Callbacks hanteras av cron, vänligen säkerställ att cron är aktivt."
 "Update","Uppdatera"
 "Failed to capture payment.","Debitering av betalning misslyckades."
 "Failed to cancel payment.","Annullering av betalning misslyckades."
