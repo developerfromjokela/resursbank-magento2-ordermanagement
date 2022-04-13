@@ -150,6 +150,11 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const EVENT_INVOICE_CREATED = 'order_invoice_created';
+
+    /**
+     * @var string
+     */
     public const EVENT_GATEWAY_REDIRECTED_TO = 'gateway_redirected_to';
 
     /**

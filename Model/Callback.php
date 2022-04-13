@@ -17,7 +17,6 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
-use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
@@ -200,31 +199,6 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function test(
-        string $param1,
-        string $param2,
-        string $param3,
-        string $param4,
-        string $param5
-    ): void {
-        try {
-            $this->logIncoming('test', '', '');
-
-            $this->config->setCallbackTestReceivedAt(
-                (int) $this->scope->getId(),
-                $this->scope->getType()
-            );
-
-            // Clear the config cache so this value show up.
-            $this->cacheTypeList->cleanType('config');
-        } catch (Exception $e) {
-            $this->handleError($e);
-        }
-    }
-
-    /**
      * General callback instructions.
      *
      * @param string $type
@@ -275,9 +249,6 @@ class Callback implements CallbackInterface
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
 
         $this->phRepository->save($entry);
-
-        $this->validate($paymentId, $digest);
-        $this->logIncoming($type, $paymentId, $digest);
 
         $orderStatus = $this->phHelper->getPaymentStatus($order);
         $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
@@ -332,33 +303,9 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Validate the digest.
-     *
-     * @param string $paymentId
-     * @param string $digest
-     * @throws CallbackValidationException
-     * @throws FileSystemException
-     * @throws RuntimeException
-     */
-    private function validate(
-        string $paymentId,
-        string $digest
-    ): void {
-        $ourDigest = strtoupper(
-            sha1($paymentId . $this->callbackHelper->salt())
-        );
-
-        if ($ourDigest !== $digest) {
-            throw new CallbackValidationException(
-                __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
-            );
-        }
-    }
-
-    /**
      * @param Exception $exception
      * @return void
-     * @throws WebapiException
+     * @throws Exception
      */
     private function handleError(
         Exception $exception
@@ -366,28 +313,7 @@ class Callback implements CallbackInterface
         $this->log->exception($exception);
 
         if ($exception instanceof CallbackValidationException) {
-            throw new WebapiException(
-                __($exception->getMessage()),
-                0,
-                WebapiException::HTTP_NOT_ACCEPTABLE
-            );
+            throw new Exception($exception->getMessage());
         }
-    }
-
-    /**
-     * Log incoming callbacks.
-     *
-     * @param string $type
-     * @param string $paymentId
-     * @param string $digest
-     */
-    private function logIncoming(
-        string $type,
-        string $paymentId,
-        string $digest
-    ): void {
-        $this->callbackLog->info(
-            "[$type] - PaymentId: $paymentId. Digest: $digest"
-        );
     }
 }
