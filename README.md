@@ -15,3 +15,10 @@ Functionality to interact with payments at Resurs Bank.
 #### 1.6.1
 
 * Fixed problem on shipment view.
+
+#### 1.7.4
+
+* Added feature to automatically generate invoice for payment methods that automatically debit purchases.
+* Expanded documentation.
+* Replaced logotypes.
+* Added support for PHP 8.1
