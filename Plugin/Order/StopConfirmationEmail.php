@@ -10,6 +10,7 @@ namespace Resursbank\Ordermanagement\Plugin\Order;
 
 use Magento\Sales\Model\Order;
 use Resursbank\Core\Helper\Order as OrderHelper;
+use Resursbank\Core\Helper\PaymentMethods;
 
 /**
  * Prevent order confirmation email from being sent when the order is created.
@@ -23,12 +24,20 @@ class StopConfirmationEmail
     private OrderHelper $orderHelper;
 
     /**
+     * @var PaymentMethods
+     */
+    private PaymentMethods $paymentMethods;
+
+    /**
      * @param OrderHelper $orderHelper
+     * @param PaymentMethods $paymentMethods
      */
     public function __construct(
-        OrderHelper $orderHelper
+        OrderHelper $orderHelper,
+        PaymentMethods  $paymentMethods
     ) {
         $this->orderHelper = $orderHelper;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -41,7 +50,13 @@ class StopConfirmationEmail
         Order $subject,
         Order $result
     ): Order {
-        if ($this->orderHelper->isNew($subject)) {
+        $method = $subject->getPayment() !== null ?
+            $subject->getPayment()->getMethod() :
+            '';
+        
+        if ($this->orderHelper->isNew($subject) &&
+            $this->paymentMethods->isResursBankMethod($method)
+        ) {
             $result->setCanSendNewEmailFlag(false);
         }
 
