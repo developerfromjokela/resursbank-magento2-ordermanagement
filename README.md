@@ -22,3 +22,7 @@ Functionality to interact with payments at Resurs Bank.
 * Expanded documentation.
 * Replaced logotypes.
 * Added support for PHP 8.1
+
+#### 1.7.5
+
+* Order confirmation email is now sent immediately after order is placed using a payment method that does not come from Resurs Bank.
