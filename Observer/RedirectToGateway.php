@@ -20,6 +20,7 @@ use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
+use function constant;
 
 /**
  * Create payment history entry before the customer is redirected to gateway.
@@ -90,14 +91,15 @@ class RedirectToGateway implements ObserverInterface
     {
         /** @var OrderInterface $order */
         $order = $observer->getData('order');
-        $payment = $order->getPayment();
-        
+
         if (!($order instanceof OrderInterface)) {
             throw new InvalidDataException(__(
                 'Order could not be retrieved from the observed subject\'s ' .
                 'data.'
             ));
         }
+
+        $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
             throw new InvalidDataException(__(
@@ -115,7 +117,6 @@ class RedirectToGateway implements ObserverInterface
      */
     public function saveHistoryEntry(int $paymentId): void
     {
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $entry
             ->setPaymentId($paymentId)
