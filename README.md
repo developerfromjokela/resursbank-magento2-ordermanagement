@@ -26,3 +26,8 @@ Functionality to interact with payments at Resurs Bank.
 #### 1.7.5
 
 * Order confirmation email is now sent immediately after order is placed using a payment method that does not come from Resurs Bank.
+
+#### 1.7.7
+
+* Fixed null pointer.
+* Order status and state are now more accurately reflected in history entries.
