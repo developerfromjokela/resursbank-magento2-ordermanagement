@@ -20,7 +20,12 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
-        <constraint xsi:type="foreign" referenceId="SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_PAYMENT_HISTORY_PAYMENT_ID" table="resursbank_checkout_payment_history" column="payment_id" referenceTable="sales_order_payment" referenceColumn="entity_id"/>
+        <constraint xsi:type="foreign"
+                    referenceId="SALES_ORDER_PAYMENT_ENTITY_ID_RESURSBANK_CHECKOUT_PAYMENT_HISTORY_PAYMENT_ID"
+                    table="resursbank_checkout_payment_history"
+                    column="payment_id"
+                    referenceTable="sales_order_payment"
+                    referenceColumn="entity_id"/>
     </table>
     <table name="resursbank_checkout_callback_queue" resource="default" engine="innodb" comment="Resurs Bank Callback Queue">
         <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="Primary key"/>
@@ -36,5 +41,16 @@
                     table="resursbank_checkout_callback_queue"
                     column="payment_id"
                     referenceTable="sales_order" referenceColumn="increment_id"/>
+    </table>
+    <table name="resursbank_checkout_payment" resource="default" engine="innodb" comment="Resurs Bank Order Details">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Prim Key"/>
+        <column xsi:type="varchar" name="reference" length="255" nullable="false" comment="Resurs Bank Payment Identifier (Order Increment ID)"/>
+        <column xsi:type="varchar" name="status" length="255" nullable="false" comment="Payment status"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="RESURSBANK_ORDER_PAYMENT_ID">
+            <column name="payment_id"/>
+        </constraint>
     </table>
 </schema>

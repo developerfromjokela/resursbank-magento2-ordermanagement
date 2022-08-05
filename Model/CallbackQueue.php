@@ -187,7 +187,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
             );
         }
 
-        /** @var Order $order */
+        /** @var Payment $order */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {

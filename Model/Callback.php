@@ -204,7 +204,7 @@ class Callback implements CallbackInterface
      * @param string $type
      * @param string $paymentId
      * @param string $digest
-     * @return Order
+     * @return Payment
      * @throws CallbackValidationException
      * @throws FileSystemException
      * @throws OrderNotFoundException
@@ -227,7 +227,7 @@ class Callback implements CallbackInterface
             );
         }
 
-        /** @var Order $order */
+        /** @var Payment $order */
         $order = $this->orderInterface->loadByIncrementId($paymentId);
 
         if (!$order->getId()) {
@@ -273,7 +273,7 @@ class Callback implements CallbackInterface
     /**
      * Check to see if an order has received BOOKED callback.
      *
-     * @param Order $order
+     * @param Payment $order
      * @return bool
      * @throws LocalizedException
      */
