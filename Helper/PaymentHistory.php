@@ -98,14 +98,20 @@ class PaymentHistory extends AbstractHelper
             ->setEvent($event)
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
             ->setStateFrom($order->getState())
-            ->setStateTo($orderState)
-            ->setStatusFrom($order->getStatus())
-            ->setStatusTo($orderStatus);
+            ->setStatusFrom($order->getStatus());
 
         $order->setStatus($orderStatus);
         $order->setState($orderState);
 
         $this->orderRepo->save($order);
+
+        // Reload order from database.
+        $updatedOrder = $this->orderRepo->get($order->getId());
+
+        // Set entry status /state based on actual data from order.
+        $entry->setStateTo($updatedOrder->getState());
+        $entry->setStatusTo($updatedOrder->getStatus());
+
         $this->phRepository->save($entry);
     }
 
