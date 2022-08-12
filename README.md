@@ -31,3 +31,7 @@ Functionality to interact with payments at Resurs Bank.
 
 * Fixed null pointer.
 * Order status and state are now more accurately reflected in history entries.
+
+#### 1.7.8
+
+* 2.4.5 compatibility update.
