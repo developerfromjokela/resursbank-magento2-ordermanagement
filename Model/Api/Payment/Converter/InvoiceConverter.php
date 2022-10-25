@@ -71,11 +71,6 @@ class InvoiceConverter extends AbstractConverter
         return array_merge(
             $this->getProductData($entity),
             array_merge(
-                $this->getDiscountData(
-                    (string) $entity->getOrder()->getCouponCode(),
-                    (float) $entity->getDiscountAmount(),
-                    (float) $entity->getDiscountTaxCompensationAmount()
-                ),
                 $this->getShippingData(
                     is_string($shippingMethod) ? $shippingMethod : '',
                     (string) $entity->getOrder()->getShippingDescription(),
@@ -101,6 +96,7 @@ class InvoiceConverter extends AbstractConverter
         Invoice $entity
     ): array {
         $result = [];
+        $discountItems = [];
 
         if ($this->includeProductData($entity)) {
             foreach ($entity->getAllItems() as $product) {
@@ -112,11 +108,18 @@ class InvoiceConverter extends AbstractConverter
                     ]);
 
                     $result[] = $item->getItem();
+
+                    $this->addDiscountItem(
+                        (float) $product->getDiscountAmount(),
+                        $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
+                        (float) $product->getQty(),
+                        $discountItems
+                    );
                 }
             }
         }
 
-        return $result;
+        return array_merge($result, $discountItems);
     }
 
     /**
