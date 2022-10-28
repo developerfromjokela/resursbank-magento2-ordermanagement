@@ -85,17 +85,19 @@ class ProductItem extends AbstractItem
 
         if ($product->getProductType() === 'bundle') {
             $result = $this->hasFixedPrice() ?
-                (float) $product->getPrice() :
+                (float) $product->getPriceInclTax() :
                 0.0;
         } elseif ($parent instanceof OrderItemInterface) {
             if ($parent->getProductType() === 'bundle' &&
                 $this->hasDynamicPrice()
             ) {
-                $result = (float) $product->getPrice();
+                $result = (float) $product->getPriceInclTax();
             }
         } else {
-            $result = (float) $product->getPrice();
+            $result = (float) $product->getPriceInclTax();
         }
+
+        $result /= (1 + ((float) $product->getTaxPercent() / 100));
 
         return $this->sanitizeUnitAmountWithoutVat($result);
     }
