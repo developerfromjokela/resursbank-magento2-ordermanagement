@@ -35,3 +35,8 @@ Functionality to interact with payments at Resurs Bank.
 #### 1.7.8
 
 * 2.4.5 compatibility update.
+
+#### 1.7.9
+
+* Updated discount and VAT handling.
+
