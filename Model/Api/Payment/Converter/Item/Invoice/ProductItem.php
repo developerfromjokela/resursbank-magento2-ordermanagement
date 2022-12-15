@@ -78,28 +78,13 @@ class ProductItem extends AbstractItem
      */
     public function getUnitAmountWithoutVat(): float
     {
-        $result = 0.0;
-
         $product = $this->getOrderItem();
-        $parent = $product->getParentItem();
 
-        if ($product->getProductType() === 'bundle') {
-            $result = $this->hasFixedPrice() ?
-                (float) $product->getPriceInclTax() :
-                0.0;
-        } elseif ($parent instanceof OrderItemInterface) {
-            if ($parent->getProductType() === 'bundle' &&
-                $this->hasDynamicPrice()
-            ) {
-                $result = (float) $product->getPriceInclTax();
-            }
-        } else {
-            $result = (float) $product->getPriceInclTax();
-        }
-
-        $result /= (1 + ((float) $product->getTaxPercent() / 100));
-
-        return $this->sanitizeUnitAmountWithoutVat($result);
+        return $this->sanitizeUnitAmountWithoutVat(
+            $this->isBundle() && !$this->hasFixedPrice() ?
+                0.0 :
+                (float) $product->getPriceInclTax() / (1 + ((float) $product->getTaxPercent() / 100))
+        );
     }
 
     /**
@@ -108,24 +93,10 @@ class ProductItem extends AbstractItem
      */
     public function getVatPct(): int
     {
-        $result = 0.0;
         $product = $this->getOrderItem();
-        $parent = $product->getParentItem();
-
-        if ($product->getProductType() === 'bundle' &&
-            $this->hasFixedPrice()
-        ) {
-            $result = ((float)(
-                    $product->getTaxAmount() /
-                    $product->getPrice()
-                ) * 100) / $this->getQuantity();
-        } elseif ($product->getProductType() === 'configurable') {
-            $result = (float) $product->getTaxPercent();
-        } elseif (!($parent instanceof OrderItemInterface) ||
-            $parent->getProductType() !== 'configurable'
-        ) {
-            $result = (float) $product->getTaxPercent();
-        }
+        $result = $this->isBundle() && !$this->hasFixedPrice() ?
+            0.0 :
+            (float) $product->getTaxPercent();
 
         return (int) round($result);
     }
@@ -181,5 +152,14 @@ class ProductItem extends AbstractItem
         }
 
         return $product;
+    }
+
+    /**
+     * @return bool
+     * @throws PaymentDataException
+     */
+    public function isBundle(): bool
+    {
+        return $this->getOrderItem()->getProductType() === 'bundle';
     }
 }
