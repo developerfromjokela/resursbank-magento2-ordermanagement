@@ -41,11 +41,17 @@ class CallbackQueue {
 
     public function execute() {
         $this->logger->info("Running CallbackQueue cron job");
+
+        // NOTE: Two minute delay to mitigate potential race conditions.
         $queuedCallbacks = $this->collectionFactory
             ->create()
             ->setPageSize(10)
             ->setCurPage(1)
             ->setOrder('id', 'ASC')
+            ->addFieldToFilter(
+                'created_at',
+                ['to' => date('Y-m-d H:i:s', time()-120)]
+            )
             ->load();
 
         foreach ($queuedCallbacks as $queuedCallback) {
