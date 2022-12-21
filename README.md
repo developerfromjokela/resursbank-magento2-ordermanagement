@@ -40,3 +40,6 @@ Functionality to interact with payments at Resurs Bank.
 
 * Updated discount and VAT handling.
 
+#### 1.8.0
+
+* Added two minute delay for all callback execution to mitigate race conditions invoked by other third party modules.
