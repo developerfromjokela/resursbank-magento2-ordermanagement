@@ -17,6 +17,7 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order as OrderHelper;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
@@ -47,6 +48,11 @@ class LogFailure implements ArgumentInterface
     private OrderHelper $orderHelper;
 
     /**
+     * @var PaymentMethods
+     */
+    private PaymentMethods $paymentMethods;
+
+    /**
      * @param Log $log
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
@@ -56,12 +62,14 @@ class LogFailure implements ArgumentInterface
         Log $log,
         PaymentHistoryFactory $phFactory,
         PaymentHistoryRepositoryInterface $phRepository,
-        OrderHelper $orderHelper
+        OrderHelper $orderHelper,
+        PaymentMethods $paymentMethods
     ) {
         $this->log = $log;
         $this->phFactory = $phFactory;
         $this->phRepository = $phRepository;
         $this->orderHelper = $orderHelper;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -78,7 +86,7 @@ class LogFailure implements ArgumentInterface
         try {
             $order = $this->orderHelper->resolveOrderFromRequest();
 
-            if ($this->orderHelper->getResursbankResult($order) === null) {
+            if ($this->isEnabled($order)) {
                 $this->phRepository->save(
                     $this->createHistoryEntry(
                         $this->getPaymentId(
@@ -127,5 +135,19 @@ class LogFailure implements ArgumentInterface
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
 
         return $entry;
+    }
+
+    /**
+     * Check if this plugin is enabled.
+     *
+     * @param OrderInterface $order
+     * @return bool
+     */
+    private function isEnabled(OrderInterface $order): bool
+    {
+        return (
+            $this->paymentMethods->isResursBankOrder($order) &&
+            $this->orderHelper->getResursbankResult($order) === null
+        );
     }
 }
