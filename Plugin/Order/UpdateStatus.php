@@ -12,8 +12,10 @@ use Exception;
 use Magento\Checkout\Controller\Onepage\Success;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
@@ -35,18 +37,26 @@ class UpdateStatus implements ArgumentInterface
     private PaymentHistory $phHelper;
 
     /**
+     * @var PaymentMethods
+     */
+    private PaymentMethods $paymentMethods;
+
+    /**
      * @param Log $log
      * @param Order $order
      * @param PaymentHistory $phHelper
+     * @param PaymentMethods $paymentMethods
      */
     public function __construct(
         Log $log,
         Order $order,
-        PaymentHistory $phHelper
+        PaymentHistory $phHelper,
+        PaymentMethods $paymentMethods
     ) {
         $this->log = $log;
         $this->order = $order;
         $this->phHelper = $phHelper;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -62,8 +72,8 @@ class UpdateStatus implements ArgumentInterface
     ): ResultInterface {
         try {
             $order = $this->order->resolveOrderFromRequest();
-            
-            if ($this->order->getResursbankResult($order) === null) {
+
+            if ($this->isEnabled($order)) {
                 $this->phHelper->syncOrderStatus(
                     $this->order->resolveOrderFromRequest(),
                     PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
@@ -74,5 +84,19 @@ class UpdateStatus implements ArgumentInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Check if this plugin is enabled.
+     *
+     * @param OrderInterface $order
+     * @return bool
+     */
+    private function isEnabled(OrderInterface $order): bool
+    {
+        return (
+            $this->paymentMethods->isResursBankOrder($order) &&
+            $this->order->getResursbankResult($order) === null
+        );
     }
 }

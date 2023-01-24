@@ -13,6 +13,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Helper\Order as Subject;
+use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -42,6 +43,11 @@ class Cancel
     private Log $log;
 
     /**
+     * @var PaymentMethods
+     */
+    private PaymentMethods $paymentMethods;
+
+    /**
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
@@ -49,11 +55,13 @@ class Cancel
     public function __construct(
         PaymentHistoryRepositoryInterface $phRepository,
         PaymentHistoryFactory $phFactory,
-        Log $log
+        Log $log,
+        PaymentMethods $paymentMethods
     ) {
         $this->phRepository = $phRepository;
         $this->phFactory = $phFactory;
         $this->log = $log;
+        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -68,23 +76,25 @@ class Cancel
         OrderInterface $result
     ): OrderInterface {
         try {
-            $payment = $result->getPayment();
+            if ($this->paymentMethods->isResursBankOrder($result)) {
+                $payment = $result->getPayment();
 
-            if (!($payment instanceof OrderPaymentInterface)) {
-                throw new InvalidDataException(__(
-                    'Payment does not exist for order ' .
-                    $result->getIncrementId()
-                ));
+                if (!($payment instanceof OrderPaymentInterface)) {
+                    throw new InvalidDataException(__(
+                        'Payment does not exist for order ' .
+                        $result->getIncrementId()
+                    ));
+                }
+
+                /* @noinspection PhpUndefinedMethodInspection */
+                $entry = $this->phFactory->create();
+                $entry
+                    ->setPaymentId((int)$payment->getEntityId())
+                    ->setEvent(PaymentHistoryInterface::EVENT_ORDER_CANCELED)
+                    ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+
+                $this->phRepository->save($entry);
             }
-
-            /* @noinspection PhpUndefinedMethodInspection */
-            $entry = $this->phFactory->create();
-            $entry
-                ->setPaymentId((int) $payment->getEntityId())
-                ->setEvent(PaymentHistoryInterface::EVENT_ORDER_CANCELED)
-                ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
-
-            $this->phRepository->save($entry);
         } catch (Exception $e) {
             $this->log->exception($e);
         }
