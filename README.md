@@ -43,3 +43,7 @@ Functionality to interact with payments at Resurs Bank.
 #### 1.8.0
 
 * Added two minute delay for all callback execution to mitigate race conditions invoked by other third party modules.
+
+#### 1.8.3
+
+* Added saftey checks, ensuring code doesn't execute when not applicable to the payment method applied on an order.
