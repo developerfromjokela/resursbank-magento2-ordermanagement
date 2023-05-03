@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Magento\Framework\Exception\LocalizedException;
+use Throwable;
 use function constant;
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
@@ -157,7 +158,7 @@ class Callback extends AbstractHelper
                     ->getConnection($credentials)
                     ->getCallBacksByRest();
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->log->exception($e);
         }
 
