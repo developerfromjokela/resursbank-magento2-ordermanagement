@@ -1,0 +1,91 @@
+#!/bin/sh -eu
+
+if [ ! -d .git/hooks ]; then
+  echo "Error: Please run this script from the root of the repository."
+  exit 1;
+fi
+
+# Resolve PHP cmd.
+dockerCmd=""
+phpService=""
+phpCmd=""
+
+read -p "Enter absolute path to module directory (app/code/resursbank/magento-ordermanagement) within PHP container (no trailing slash): " dir
+read -p "Enter absolute path to Magento root within PHP container (no trailing slash): " mageDir
+read -p "Running PHP in Docker (y/n)?" localPhp
+case "$localPhp" in
+  y|Y ) read -p "Enter name of docker compose command (eg. docker compose or docker-compose): " dockerCmd; read -p "Enter name of php server (eg. php or phpfpm): " phpService; phpCmd="${dockerCmd} exec -w ${dir} -T ${phpService}";;
+  n|N ) read -p "Enter name of/path to php binary (eg. php): " php;;
+  * ) echo "Invalid response."; exit 1;;
+esac
+
+echo "--==( Setting up git pre-commit hook )==--"
+
+# Create git pre-commit hook file.
+HOOK_FILE=".git/hooks/pre-commit"
+
+if [ -f $HOOK_FILE ]; then
+  rm -f $HOOK_FILE
+fi
+
+touch $HOOK_FILE
+chmod +x $HOOK_FILE
+
+cat <<EOT >> $HOOK_FILE
+#!/usr/bin/env -S bash
+
+ERRORS=0
+
+echo "==========================================================="
+echo "#             APPLYING AUTOMATIC ADJUSTMENTS              #"
+echo "==========================================================="
+
+SRC_FILES=""
+
+for file in \$(git diff --name-only --cached)
+do
+    if $phpCmd test -f "$dir/\$file"; then
+        SRC_FILES="\$SRC_FILES $dir/\$file"
+    fi
+done
+
+if [ -n "\$SRC_FILES" ]; then
+    echo "---==( Automatically adjusting files using phpcbf )==---"
+    $phpCmd $mageDir/vendor/bin/phpcbf --extensions=php --standard=PSR12,Magento2 \$SRC_FILES
+else
+    echo "No fixable errors found."
+fi
+
+echo "==========================================================="
+echo "#                  SCANNING SOURCE FILES                  #"
+echo "==========================================================="
+
+if [ -n "\$SRC_FILES" ]; then
+    echo "---==( Executing PHPCS for affected files. )==---"
+    if ! $phpCmd $mageDir/vendor/bin/phpcs --extensions=php,phtml --standard=PSR12,Magento2 \$SRC_FILES; then
+        ERRORS=1
+    fi
+fi
+
+echo "---==( Executing PHPMD tests on source files. )==---"
+if ! $phpCmd $mageDir/vendor/bin/phpmd $dir text $mageDir/dev/tests/static/testsuite/Magento/Test/Php/_files/phpmd/ruleset.xml; then
+    ERRORS=1
+fi
+
+echo "--==( Executing phpstan source files. )==---"
+if ! $phpCmd $mageDir/vendor/bin/phpstan analyse -l 1 -c $mageDir/dev/tests/static/testsuite/Magento/Test/Php/_files/phpstan/phpstan.neon $dir; then
+    ERRORS=1
+fi
+
+if [ "\${ERRORS}" = "1" ]; then
+    exec < /dev/tty
+    read -p "Continue commit despite remaining errors? (y/n)?" continueCommit
+    case "\$continueCommit" in
+        y|Y ) exit 0;;
+        * ) echo "Aborting."; exit 1;;
+    esac
+fi
+EOT
+
+echo OK
+exit 0
