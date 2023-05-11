@@ -18,12 +18,6 @@
                 </group>
                 <group id="callbacks" sortOrder="4" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Callback Settings</label>
-                    <comment>Callbacks are handled by cron, please ensure that cron is active.</comment>
-                    <field id="registration" type="button" sortOrder="0" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Callback registration</label>
-                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
-                        <config_path>resursbank/callbacks/registration</config_path>
-                    </field>
                     <field id="test" type="button" sortOrder="1" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Test callbacks</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
