@@ -10,7 +10,16 @@
         <section id="payment">
             <group id="resursbank_section">
                 <group id="api">
-                    <field id="ordermanagement" type="select" sortOrder="4" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <field id="registration" type="button" sortOrder="5" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <comment>Callbacks are handled by cron, please ensure that cron is active.</comment>
+                        <label>Callback registration</label>
+                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Registration</frontend_model>
+                        <config_path>resursbank/callbacks/registration</config_path>
+                        <depends>
+                            <field id="flow" separator=",">simplified,rco</field>
+                        </depends>
+                    </field>
+                    <field id="ordermanagement" type="select" sortOrder="7" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Order management</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>resursbank/aftershop/enabled</config_path>
