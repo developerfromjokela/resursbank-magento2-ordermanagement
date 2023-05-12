@@ -116,22 +116,23 @@ class CreditmemoConverter extends AbstractConverter
         $result = [];
         $discountItems = [];
 
-        if ($this->includeProductData($entity)) {
+        if ($this->includeProductData(entity: $entity)) {
             foreach ($entity->getAllItems() as $product) {
                 if ($product->getQty() > 0 &&
-                    !$this->hasConfigurableParent($product)
+                    !$this->hasConfigurableParent(product: $product)
                 ) {
-                    $item = $this->productItemFactory->create([
+                    $item = $this->productItemFactory->create(data: [
                         'product' => $product
                     ]);
 
                     $result[] = $item->getItem();
 
                     $this->addDiscountItem(
-                        (float) $product->getDiscountAmount(),
-                        $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
-                        (float) $product->getQty(),
-                        $discountItems
+                        totalAmount: (float) $product->getDiscountAmount() + (float) $product->getDiscountTaxCompensationAmount(),
+                        amount: (float) $product->getDiscountAmount(),
+                        taxPercent: $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
+                        productQty: (float) $product->getQty(),
+                        items: $discountItems
                     );
                 }
             }
@@ -157,14 +158,15 @@ class CreditmemoConverter extends AbstractConverter
         $fee = (float) $entity->getAdjustment();
 
         if ($fee !== 0.0) {
-            $result[] = $this->itemFactory->create([
+            $result[] = $this->itemFactory->create(data: [
                 PaymentItem::KEY_ART_NO => $this->getAdjustmentArtNo(),
                 PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment'),
                 PaymentItem::KEY_QUANTITY => 1,
                 PaymentItem::KEY_UNIT_MEASURE => 'st',
                 PaymentItem::KEY_UNIT_AMOUNT_WITHOUT_VAT => $fee,
                 PaymentItem::KEY_VAT_PCT => 0,
-                PaymentItem::KEY_TYPE => PaymentItem::TYPE_PRODUCT
+                PaymentItem::KEY_TYPE => PaymentItem::TYPE_PRODUCT,
+                PaymentItem::KEY_TOTAL_AMOUNT_INCL_VAT => $fee
             ]);
         }
 

@@ -98,22 +98,23 @@ class InvoiceConverter extends AbstractConverter
         $result = [];
         $discountItems = [];
 
-        if ($this->includeProductData($entity)) {
+        if ($this->includeProductData(entity: $entity)) {
             foreach ($entity->getAllItems() as $product) {
                 if ($product->getQty() > 0 &&
-                    !$this->hasConfigurableParent($product)
+                    !$this->hasConfigurableParent(product: $product)
                 ) {
-                    $item = $this->productItemFactory->create([
+                    $item = $this->productItemFactory->create(data: [
                         'product' => $product
                     ]);
 
                     $result[] = $item->getItem();
 
                     $this->addDiscountItem(
-                        (float) $product->getDiscountAmount(),
-                        $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
-                        (float) $product->getQty(),
-                        $discountItems
+                        totalAmount: (float) $product->getDiscountAmount() + (float) $product->getDiscountTaxCompensationAmount(),
+                        amount: (float) $product->getDiscountAmount(),
+                        taxPercent: $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
+                        productQty: (float) $product->getQty(),
+                        items: $discountItems
                     );
                 }
             }
