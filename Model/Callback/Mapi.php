@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model\Callback;
 
-use Magento\Framework\Serialize\Serializer\Json;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Ecom\Exception\HttpException;
 use Resursbank\Ecom\Module\Callback\Http\AuthorizationController;
@@ -17,10 +16,6 @@ use Resursbank\Ecom\Module\Callback\Repository;
 use Resursbank\Ecom\Lib\Model\Callback\CallbackInterface;
 use Resursbank\Ordermanagement\Api\MapiInterface;
 use Throwable;
-
-use function constant;
-
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -29,7 +24,7 @@ use Resursbank\Ordermanagement\Model\CallbackQueue;
 use Magento\Framework\Webapi\Exception as WebapiException;
 
 /**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * MAPI callback integration.
  */
 class Mapi implements MapiInterface
 {
@@ -50,6 +45,7 @@ class Mapi implements MapiInterface
     /**
      * Process incoming MAPI authorization callback.
      *
+     * @throws WebapiException
      */
     public function authorization(): void
     {
@@ -102,7 +98,7 @@ class Mapi implements MapiInterface
     /**
      * Process incoming MAPI test callback.
      *
-     * @throws HttpException
+     * @throws WebapiException
      * @return void
      */
     public function test(): void
@@ -118,9 +114,9 @@ class Mapi implements MapiInterface
         } catch (Throwable $error) {
             $this->log->exception(error: $error);
 
-            throw new HttpException(
-                message: 'Failed to process test callback.',
-                code: 503
+            throw new WebapiException(
+                phrase: __('Failed to process test callback.'),
+                httpCode: 503
             );
         }
     }

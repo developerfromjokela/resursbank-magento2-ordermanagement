@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Api;
 
-use Magento\Framework\Webapi\Exception as WebapiException;
-use Resursbank\Ordermanagement\Helper\Log as Log;
-
 /**
  * MAPI callback interface.
  */
