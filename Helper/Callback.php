@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Magento\Framework\Exception\LocalizedException;
+use Resursbank\Core\Helper\Config;
 use Throwable;
 use function constant;
 use Exception;
@@ -35,41 +36,6 @@ use stdClass;
 class Callback extends AbstractHelper
 {
     /**
-     * @var Api
-     */
-    private Api $api;
-
-    /**
-     * @var Credentials
-     */
-    private Credentials $credentials;
-
-    /**
-     * @var DeploymentConfig
-     */
-    private DeploymentConfig $deploymentConfig;
-
-    /**
-     * @var RequestInterface
-     */
-    private RequestInterface $request;
-
-    /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var Scope
-     */
-    private Scope $scope;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private StoreManagerInterface $storeManager;
-
-    /**
      * @param Context $context
      * @param Api $api
      * @param Credentials $credentials
@@ -78,26 +44,20 @@ class Callback extends AbstractHelper
      * @param Log $log
      * @param Scope $scope
      * @param StoreManagerInterface $storeManager
+     * @param Config $config
      */
     public function __construct(
         Context $context,
-        Api $api,
-        Credentials $credentials,
-        DeploymentConfig $deploymentConfig,
-        RequestInterface $request,
-        Log $log,
-        Scope $scope,
-        StoreManagerInterface $storeManager
+        private readonly Api $api,
+        private readonly Credentials $credentials,
+        private readonly DeploymentConfig $deploymentConfig,
+        private readonly RequestInterface $request,
+        private readonly Log $log,
+        private readonly Scope $scope,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly Config $config
     ) {
-        $this->api = $api;
-        $this->credentials = $credentials;
-        $this->deploymentConfig = $deploymentConfig;
-        $this->request = $request;
-        $this->log = $log;
-        $this->scope = $scope;
-        $this->storeManager = $storeManager;
-
-        parent::__construct($context);
+        parent::__construct(context: $context);
     }
 
     /**
@@ -212,26 +172,32 @@ class Callback extends AbstractHelper
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
-    private function urlCallbackTemplate(
+    public function urlCallbackTemplate(
         string $type
     ) : string {
         $store = $this->storeManager->getStore(
-            $this->scope->getId(ScopeInterface::SCOPE_STORE)
+            storeId: $this->scope->getId(type: ScopeInterface::SCOPE_STORE)
         );
 
         if (!($store instanceof Store)) {
-            throw new LocalizedException(__('$store not an instance of Store'));
+            throw new LocalizedException(
+                phrase: __('$store not an instance of Store')
+            );
         }
 
-        $suffix = $type === 'test' ?
-            'param1/a/param2/b/param3/c/param4/d/param5/e' :
-            'paymentId/{paymentId}/digest/{digest}';
+        $suffix = '';
+
+        if (!$this->config->isMapiActive(scopeCode: $store->getCode())) {
+            $suffix = $type === 'test' ?
+                '/param1/a/param2/b/param3/c/param4/d/param5/e' :
+                '/paymentId/{paymentId}/digest/{digest}';
+        }
 
         return (
             $store->getBaseUrl(
                 UrlInterface::URL_TYPE_LINK,
                 $this->request->isSecure()
-            ) . "rest/V1/resursbank_ordermanagement/order/$type/$suffix"
+            ) . "rest/V1/resursbank_ordermanagement/order/$type$suffix"
         );
     }
 }
