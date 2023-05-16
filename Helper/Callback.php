@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
@@ -11,7 +12,9 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\Exception\LocalizedException;
 use Resursbank\Core\Helper\Config;
 use Throwable;
+
 use function constant;
+
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -174,7 +177,7 @@ class Callback extends AbstractHelper
      */
     public function urlCallbackTemplate(
         string $type
-    ) : string {
+    ): string {
         $store = $this->storeManager->getStore(
             storeId: $this->scope->getId(type: ScopeInterface::SCOPE_STORE)
         );

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
@@ -16,7 +17,9 @@ use Resursbank\Ecom\Module\Callback\Repository;
 use Resursbank\Ecom\Lib\Model\Callback\CallbackInterface;
 use Resursbank\Ordermanagement\Api\MapiInterface;
 use Throwable;
+
 use function constant;
+
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
@@ -57,7 +60,7 @@ class Mapi implements MapiInterface
                 callback: $controller->getRequestData(),
                 process: function (
                     CallbackInterface $callback
-                ): void  {
+                ): void {
                     $order = $this->orderHelper->getOrderFromPaymentId(
                         paymentId: $callback->getPaymentId()
                     );
@@ -68,7 +71,8 @@ class Mapi implements MapiInterface
 
                     if ($this->orderHelper->getResursbankResult(order: $order) !== true) {
                         throw new HttpException(
-                            message: 'Order not ready for callbacks yet.', code: 503
+                            message: 'Order not ready for callbacks yet.',
+                            code: 503
                         );
                     }
 
