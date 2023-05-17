@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
@@ -95,6 +96,11 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const EVENT_CALLBACK_AUTHORIZATION = 'callback_authorization';
+
+    /**
+     * @var string
+     */
     public const EVENT_CAPTURE_CALLED = 'capture_called';
 
     /**
@@ -182,6 +188,7 @@ interface PaymentHistoryInterface
         self::EVENT_CALLBACK_UNFREEZE_COMPLETED => 'Callback "Unfreeze" completed.',
         self::EVENT_CALLBACK_UPDATE => 'Callback "Update" received.',
         self::EVENT_CALLBACK_UPDATE_COMPLETED => 'Callback "Update" completed.',
+        self::EVENT_CALLBACK_AUTHORIZATION => 'Callback "Authorization received."',
         self::EVENT_CAPTURE_CALLED => 'Capture payment was called.',
         self::EVENT_CAPTURE_FAILED => 'Capture payment failed. Check the logs.',
         self::EVENT_CAPTURE_API_CALLED => 'Payment was debited at Resurs.',

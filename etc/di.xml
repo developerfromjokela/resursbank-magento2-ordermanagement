@@ -94,4 +94,8 @@
             name="resursbank_ordermanagement_api"
             type="Resursbank\Ordermanagement\Plugin\Helper\Api" />
     </type>
+
+    <!-- MAPI callbacks. -->
+    <preference for="Resursbank\Ordermanagement\Api\MapiInterface"
+                type="Resursbank\Ordermanagement\Model\Callback\Mapi" />
 </config>
