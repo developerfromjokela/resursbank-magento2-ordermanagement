@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Helper;
 
 use Magento\Framework\Exception\LocalizedException;
+use Resursbank\Core\Helper\Callback as CoreCallback;
 use Resursbank\Core\Helper\Config;
 use Throwable;
 
@@ -48,6 +49,7 @@ class Callback extends AbstractHelper
      * @param Scope $scope
      * @param StoreManagerInterface $storeManager
      * @param Config $config
+     * @param CoreCallback $coreCallback
      */
     public function __construct(
         Context $context,
@@ -58,7 +60,8 @@ class Callback extends AbstractHelper
         private readonly Log $log,
         private readonly Scope $scope,
         private readonly StoreManagerInterface $storeManager,
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly CoreCallback $coreCallback
     ) {
         parent::__construct(context: $context);
     }
@@ -196,11 +199,10 @@ class Callback extends AbstractHelper
                 '/paymentId/{paymentId}/digest/{digest}';
         }
 
-        return (
-            $store->getBaseUrl(
-                UrlInterface::URL_TYPE_LINK,
-                $this->request->isSecure()
-            ) . "rest/V1/resursbank_ordermanagement/order/$type$suffix"
+        return $this->coreCallback->getUrl(
+            store: $store,
+            type: $type,
+            suffix: $suffix
         );
     }
 }
