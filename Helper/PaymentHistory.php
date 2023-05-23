@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
@@ -19,57 +20,50 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Resursbank\Core\Helper\Api;
+use Resursbank\Core\Helper\Config;
+use Resursbank\Core\Helper\Scope;
+use Resursbank\Core\Helper\Order as OrderHelper;
+use Resursbank\Ecom\Module\Payment\Enum\Status;
+use Resursbank\Ecom\Module\Payment\Repository as PaymentRepository;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
+use Throwable;
 
 class PaymentHistory extends AbstractHelper
 {
     /**
-     * @var Api
-     */
-    private Api $api;
-
-    /**
-     * @var PaymentHistoryFactory
-     */
-    private PaymentHistoryFactory $phFactory;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private PaymentHistoryRepositoryInterface $phRepository;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepo;
-
-    /**
      * @param Context $context
-     * @param PaymentHistoryFactory $phFactory
-     * @param PaymentHistoryRepositoryInterface $phRepository
+     * @param PaymentHistoryFactory $paymentHistoryFactory
+     * @param PaymentHistoryRepositoryInterface $paymentHistoryRepository
      * @param OrderRepositoryInterface $orderRepo
      * @param Api $api
+     * @param Scope $scope
+     * @param Config $config
+     * @param OrderHelper $orderHelper
+     * @param Log $logHelper
      */
     public function __construct(
         Context $context,
-        PaymentHistoryFactory $phFactory,
-        PaymentHistoryRepositoryInterface $phRepository,
-        OrderRepositoryInterface $orderRepo,
-        Api $api
+        private readonly PaymentHistoryFactory $paymentHistoryFactory,
+        private readonly PaymentHistoryRepositoryInterface $paymentHistoryRepository,
+        private readonly OrderRepositoryInterface $orderRepo,
+        private readonly Api $api,
+        private readonly Scope $scope,
+        private readonly Config $config,
+        private readonly OrderHelper $orderHelper,
+        private readonly Log $logHelper
     ) {
-        $this->phFactory = $phFactory;
-        $this->phRepository = $phRepository;
-        $this->orderRepo = $orderRepo;
-        $this->api = $api;
-
-        parent::__construct($context);
+        parent::__construct(context: $context);
     }
 
     /**
+     * Sync order status from Resurs Bank.
+     *
+     * @param OrderInterface $order
+     * @param string $event
      * @throws AlreadyExistsException
      * @throws ResolveOrderStatusFailedException
      * @throws LocalizedException
@@ -79,40 +73,96 @@ class PaymentHistory extends AbstractHelper
         OrderInterface $order,
         string $event = ''
     ): void {
-        $entry = $this->phFactory->create();
+        $entry = $this->paymentHistoryFactory->create();
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new LocalizedException(__(
+            throw new LocalizedException(phrase: __(
                 'Payment does not exist for order ' .
                 $order->getIncrementId()
             ));
         }
 
-        $paymentStatus = $this->getPaymentStatus($order);
-        $orderStatus = $this->paymentStatusToOrderStatus($paymentStatus);
-        $orderState = $this->paymentStatusToOrderState($paymentStatus);
+        if (!$this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
+            $updatedOrder = $this->handleLegacyPaymentStatus(order: $order);
+        } else {
+            $updatedOrder = $this->handleMapiPaymentStatus(order: $order);
+        }
 
         $entry
-            ->setPaymentId((int) $payment->getEntityId())
-            ->setEvent($event)
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
-            ->setStateFrom($order->getState())
-            ->setStatusFrom($order->getStatus());
-
-        $order->setStatus($orderStatus);
-        $order->setState($orderState);
-
-        $this->orderRepo->save($order);
-
-        // Reload order from database.
-        $updatedOrder = $this->orderRepo->get($order->getId());
+            ->setPaymentId(identifier: (int) $payment->getEntityId())
+            ->setEvent(event: $event)
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK)
+            ->setStateFrom(state: $order->getState())
+            ->setStatusFrom(status: $order->getStatus());
 
         // Set entry status /state based on actual data from order.
-        $entry->setStateTo($updatedOrder->getState());
-        $entry->setStatusTo($updatedOrder->getStatus());
+        $entry->setStateTo(state: $updatedOrder->getState());
+        $entry->setStatusTo(status: $updatedOrder->getStatus());
 
-        $this->phRepository->save($entry);
+        $this->paymentHistoryRepository->save(entry: $entry);
+    }
+
+    /**
+     * Handle status changes for legacy API orders.
+     *
+     * @param OrderInterface $order
+     * @return OrderInterface
+     * @throws ResolveOrderStatusFailedException
+     */
+    private function handleLegacyPaymentStatus(OrderInterface $order): OrderInterface
+    {
+        $paymentStatus = $this->getPaymentStatus(order: $order);
+        $orderStatus = $this->paymentStatusToOrderStatus(paymentStatus: $paymentStatus);
+        $orderState = $this->paymentStatusToOrderState(paymentStatus: $paymentStatus);
+
+        $order->setStatus(status: $orderStatus);
+        $order->setState(state: $orderState);
+
+        $this->orderRepo->save(entity: $order);
+
+        // Reload order from database.
+        return $this->orderRepo->get(id: $order->getId());
+    }
+
+    /**
+     * Handle status changes for MAPI orders.
+     *
+     * @param OrderInterface $order
+     * @return OrderInterface
+     */
+    private function handleMapiPaymentStatus(OrderInterface $order): OrderInterface
+    {
+        try {
+            $payment = PaymentRepository::get(paymentId: $this->orderHelper->getPaymentId(order: $order));
+        } catch (Throwable $error) {
+            $this->logHelper->error(text: $error->getMessage());
+            return $order;
+        }
+
+        if ($order->isCanceled()) {
+            return $order;
+        }
+
+        switch ($payment->status) {
+            case Status::REJECTED:
+                $this->orderHelper->cancelOrder(order: $order);
+                $order->setState(state: Order::STATE_CANCELED);
+                $order->setStatus(status: Order::STATE_CANCELED);
+                $this->orderRepo->save(entity: $order);
+                break;
+            case Status::FROZEN:
+                $order->setState(state: Order::STATE_PAYMENT_REVIEW);
+                $order->setStatus(status: Order::STATE_PAYMENT_REVIEW);
+                $this->orderRepo->save(entity: $order);
+                break;
+            case Status::ACCEPTED:
+                $order->setStatus(status: ResursbankStatuses::CONFIRMED);
+                $this->orderRepo->save(entity: $order);
+                break;
+        }
+
+        return $this->orderRepo->get(id: $order->getId());
     }
 
     /**
@@ -126,14 +176,14 @@ class PaymentHistory extends AbstractHelper
         PaymentDataObjectInterface $data,
         string $event
     ): void {
-        $entry = $this->phFactory->create();
+        $entry = $this->paymentHistoryFactory->create();
 
         /** @phpstan-ignore-next-line */
         $entry->setPaymentId((int) $data->getPayment()->getId())
             ->setEvent($event)
             ->setUser(PaymentHistoryInterface::USER_CLIENT);
 
-        $this->phRepository->save($entry);
+        $this->paymentHistoryRepository->save($entry);
     }
 
     /**
@@ -146,10 +196,10 @@ class PaymentHistory extends AbstractHelper
     public function getPaymentStatus(OrderInterface $order): int
     {
         $connection = $this->api->getConnection(
-            $this->api->getCredentialsFromOrder($order)
+            credentials: $this->api->getCredentialsFromOrder($order)
         );
 
-        return $connection->getOrderStatusByPayment($order->getIncrementId());
+        return $connection->getOrderStatusByPayment(paymentIdOrPaymentObject: $order->getIncrementId());
     }
 
     /**
@@ -182,7 +232,7 @@ class PaymentHistory extends AbstractHelper
                 $result = Order::STATE_CLOSED;
                 break;
             default:
-                throw new ResolveOrderStatusFailedException(__(
+                throw new ResolveOrderStatusFailedException(phrase: __(
                     sprintf(
                         'Order state (%s) could not be converted.',
                         $paymentStatus
@@ -219,7 +269,7 @@ class PaymentHistory extends AbstractHelper
                 $result = Order::STATE_CLOSED;
                 break;
             default:
-                throw new ResolveOrderStatusFailedException(__(
+                throw new ResolveOrderStatusFailedException(phrase: __(
                     sprintf(
                         'Order status (%s) could not be converted.',
                         $paymentStatus
