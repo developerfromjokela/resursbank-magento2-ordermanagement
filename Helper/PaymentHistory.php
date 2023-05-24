@@ -23,6 +23,7 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Core\Helper\Order as OrderHelper;
+use Resursbank\Ecom\Lib\Model\Payment;
 use Resursbank\Ecom\Module\Payment\Enum\Status;
 use Resursbank\Ecom\Module\Payment\Repository as PaymentRepository;
 use Resursbank\Ecommerce\Types\OrderStatus;
@@ -150,25 +151,73 @@ class PaymentHistory extends AbstractHelper
 
         switch ($payment->status) {
             case Status::REJECTED:
-                $this->orderHelper->cancelOrder(order: $order);
-                $order->setState(state: Order::STATE_CANCELED);
-                $order->setStatus(status: Order::STATE_CANCELED);
-                $this->orderRepo->save(entity: $order);
+                $this->handleRejectedMapiPayment(order: $order, payment: $payment);
                 break;
             case Status::FROZEN:
-                $order->setState(state: Order::STATE_PAYMENT_REVIEW);
-                $order->setStatus(status: Order::STATE_PAYMENT_REVIEW);
-                $this->orderRepo->save(entity: $order);
+                $this->handleFrozenMapiPayment(order: $order);
                 break;
             case Status::ACCEPTED:
-                $order->setStatus(status: ResursbankStatuses::CONFIRMED);
-                $this->orderRepo->save(entity: $order);
+                $this->handleAcceptedMapiPayment(order: $order);
                 break;
             default:
                 break;
         }
 
         return $this->orderRepo->get(id: $order->getId());
+    }
+
+    /**
+     * Handles rejected payments.
+     *
+     * @param OrderInterface $order
+     * @param Payment $payment
+     * @return void
+     */
+    private function handleRejectedMapiPayment(
+        OrderInterface $order,
+        Payment $payment
+    ): void {
+        $this->orderHelper->cancelOrder(order: $order);
+        $order->setState(state: Order::STATE_CANCELED);
+
+        try {
+            if (PaymentRepository::getTaskStatusDetails(paymentId: $payment->id)->completed) {
+                $order->setStatus(status: OrderHelper::CREDIT_DENIED_CODE);
+            }
+        } catch (Throwable $error) {
+            $this->logHelper->error(
+                text: 'Fetching task status failed: ' . $error->getMessage()
+            );
+        }
+
+        $this->orderRepo->save(entity: $order);
+    }
+
+    /**
+     * Handles frozen payments.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleFrozenMapiPayment(
+        OrderInterface $order
+    ): void {
+        $order->setState(state: Order::STATE_PAYMENT_REVIEW);
+        $order->setStatus(status: Order::STATE_PAYMENT_REVIEW);
+        $this->orderRepo->save(entity: $order);
+    }
+
+    /**
+     * Handles accepted payments.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleAcceptedMapiPayment(
+        OrderInterface $order
+    ): void {
+        $order->setStatus(status: ResursbankStatuses::CONFIRMED);
+        $this->orderRepo->save(entity: $order);
     }
 
     /**
