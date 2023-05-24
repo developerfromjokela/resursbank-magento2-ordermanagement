@@ -149,21 +149,30 @@ class PaymentHistory extends AbstractHelper
             return $order;
         }
 
-        switch ($payment->status) {
-            case Status::REJECTED:
-                $this->handleRejectedMapiPayment(order: $order, payment: $payment);
-                break;
-            case Status::FROZEN:
-                $this->handleFrozenMapiPayment(order: $order);
-                break;
-            case Status::ACCEPTED:
-                $this->handleAcceptedMapiPayment(order: $order);
-                break;
-            default:
-                break;
+        if ($payment->isCaptured()) {
+            $this->handleCapturedMapiPayment(order: $order);
+        } elseif ($payment->isFrozen()) {
+            $this->handleFrozenMapiPayment(order: $order);
+        } elseif ($payment->status === Status::REJECTED) {
+            $this->handleRejectedMapiPayment(order: $order, payment: $payment);
+        } elseif ($payment->status === Status::ACCEPTED) {
+            $this->handleAcceptedMapiPayment(order: $order);
         }
 
         return $this->orderRepo->get(id: $order->getId());
+    }
+
+    /**
+     * Handles captured payments.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleCapturedMapiPayment(OrderInterface $order): void
+    {
+        $order->setState(state: Order::STATE_PROCESSING);
+        $order->setStatus(status: ResursbankStatuses::FINALIZED);
+        $this->orderRepo->save(entity: $order);
     }
 
     /**
