@@ -32,6 +32,9 @@ use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Throwable;
 
+/**
+ * Handles payment history updates.
+ */
 class PaymentHistory extends AbstractHelper
 {
     /**
@@ -83,10 +86,10 @@ class PaymentHistory extends AbstractHelper
             ));
         }
 
-        if (!$this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
-            $updatedOrder = $this->handleLegacyPaymentStatus(order: $order);
-        } else {
+        if ($this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
             $updatedOrder = $this->handleMapiPaymentStatus(order: $order);
+        } else {
+            $updatedOrder = $this->handleLegacyPaymentStatus(order: $order);
         }
 
         $entry
@@ -109,6 +112,7 @@ class PaymentHistory extends AbstractHelper
      * @param OrderInterface $order
      * @return OrderInterface
      * @throws ResolveOrderStatusFailedException
+     * @throws Exception
      */
     private function handleLegacyPaymentStatus(OrderInterface $order): OrderInterface
     {
@@ -160,6 +164,8 @@ class PaymentHistory extends AbstractHelper
                 $order->setStatus(status: ResursbankStatuses::CONFIRMED);
                 $this->orderRepo->save(entity: $order);
                 break;
+            default:
+                break;
         }
 
         return $this->orderRepo->get(id: $order->getId());
@@ -179,11 +185,11 @@ class PaymentHistory extends AbstractHelper
         $entry = $this->paymentHistoryFactory->create();
 
         /** @phpstan-ignore-next-line */
-        $entry->setPaymentId((int) $data->getPayment()->getId())
-            ->setEvent($event)
-            ->setUser(PaymentHistoryInterface::USER_CLIENT);
+        $entry->setPaymentId(identifier: (int) $data->getPayment()->getId())
+            ->setEvent(event: $event)
+            ->setUser(user: PaymentHistoryInterface::USER_CLIENT);
 
-        $this->paymentHistoryRepository->save($entry);
+        $this->paymentHistoryRepository->save(entry: $entry);
     }
 
     /**
@@ -196,7 +202,7 @@ class PaymentHistory extends AbstractHelper
     public function getPaymentStatus(OrderInterface $order): int
     {
         $connection = $this->api->getConnection(
-            credentials: $this->api->getCredentialsFromOrder($order)
+            credentials: $this->api->getCredentialsFromOrder(order: $order)
         );
 
         return $connection->getOrderStatusByPayment(paymentIdOrPaymentObject: $order->getIncrementId());
