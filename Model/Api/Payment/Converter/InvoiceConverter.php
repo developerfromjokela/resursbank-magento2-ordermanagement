@@ -110,7 +110,6 @@ class InvoiceConverter extends AbstractConverter
                     $result[] = $item->getItem();
 
                     $this->addDiscountItem(
-                        totalAmount: (float) $product->getDiscountAmount() + (float) $product->getDiscountTaxCompensationAmount(),
                         amount: (float) $product->getDiscountAmount(),
                         taxPercent: $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
                         productQty: (float) $product->getQty(),
