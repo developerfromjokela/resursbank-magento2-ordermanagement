@@ -225,6 +225,7 @@ class PaymentHistory extends AbstractHelper
     private function handleAcceptedMapiPayment(
         OrderInterface $order
     ): void {
+        $order->setState(state: Order::STATE_PENDING_PAYMENT);
         $order->setStatus(status: ResursbankStatuses::CONFIRMED);
         $this->orderRepo->save(entity: $order);
     }
