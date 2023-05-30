@@ -12,6 +12,9 @@ namespace Resursbank\Ordermanagement\Helper;
 use Magento\Framework\Exception\LocalizedException;
 use Resursbank\Core\Helper\Callback as CoreCallback;
 use Resursbank\Core\Helper\Config;
+use Resursbank\Ecom\Exception\CallbackException;
+use Resursbank\Ecom\Lib\Model\Callback\Enum\TestStatus;
+use Resursbank\Ecom\Module\Callback\Repository;
 use Throwable;
 
 use function constant;
@@ -140,22 +143,44 @@ class Callback extends AbstractHelper
      */
     public function test(): void
     {
-        $connection = $this->api->getConnection(
-            $this->credentials->resolveFromConfig(
-                $this->scope->getId(),
-                $this->scope->getType()
-            )
+        $store = $this->storeManager->getStore(
+            storeId: $this->scope->getId(type: ScopeInterface::SCOPE_STORE)
         );
 
-        // NOTE: The three 's','a','d' values exist because the API expects five
-        // values.
-        $connection->triggerCallback([
-            $this->scope->getId(),
-            $this->scope->getType(),
-            's',
-            'a',
-            'd'
-        ]);
+        if (!($store instanceof Store)) {
+            throw new LocalizedException(
+                phrase: __('$store not an instance of Store')
+            );
+        }
+
+        if ($this->config->isMapiActive(scopeCode: $store->getCode())) {
+            $response = Repository::triggerTest(
+                url: $this->urlCallbackTemplate(type: 'testMapi')
+            );
+
+            if ($response->status !== TestStatus::OK) {
+                throw new CallbackException(
+                    message: 'Test callback failed with status ' . $response->status->value . " ($response->code)"
+                );
+            }
+        } else {
+            $connection = $this->api->getConnection(
+                credentials: $this->credentials->resolveFromConfig(
+                    scopeCode: $this->scope->getId(),
+                    scopeType: $this->scope->getType()
+                )
+            );
+
+            // NOTE: The three 's','a','d' values exist because the API expects five
+            // values.
+            $connection->triggerCallback(params: [
+                $this->scope->getId(),
+                $this->scope->getType(),
+                's',
+                'a',
+                'd'
+            ]);
+        }
     }
 
     /**

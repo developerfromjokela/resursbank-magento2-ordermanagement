@@ -62,7 +62,10 @@ class Mapi implements MapiInterface
                     );
 
                     if ($order === null) {
-                        throw new HttpException(message: 'Order not found.', code: 503);
+                        throw new HttpException(
+                            message: 'Order not found.',
+                            code: 503
+                        );
                     }
 
                     if ($this->orderHelper->getResursbankResult(order: $order) !== true) {
@@ -73,7 +76,10 @@ class Mapi implements MapiInterface
                     }
 
                     if (!$this->config->isMapiActive(scopeCode: (string) $order->getStoreId())) {
-                        throw new HttpException(message: 'MAPI not activated.', code: 503);
+                        throw new HttpException(
+                            message: 'MAPI not activated.',
+                            code: 503
+                        );
                     }
 
                     $this->paymentHistory->syncOrderStatus(
