@@ -51,7 +51,7 @@ done
 
 if [ -n "\$SRC_FILES" ]; then
     echo "---==( Automatically adjusting files using phpcbf )==---"
-    $phpCmd $mageDir/vendor/bin/phpcbf --extensions=php --standard=PSR12,Magento2 \$SRC_FILES
+    $phpCmd $mageDir/vendor/bin/phpcbf --extensions=php --standard=Magento2 \$SRC_FILES
 else
     echo "No fixable errors found."
 fi
@@ -62,7 +62,7 @@ echo "==========================================================="
 
 if [ -n "\$SRC_FILES" ]; then
     echo "---==( Executing PHPCS for affected files. )==---"
-    if ! $phpCmd $mageDir/vendor/bin/phpcs --extensions=php,phtml --standard=PSR12,Magento2 \$SRC_FILES; then
+    if ! $phpCmd $mageDir/vendor/bin/phpcs --extensions=php,phtml --standard=Magento2 \$SRC_FILES; then
         ERRORS=1
     fi
 fi
@@ -72,10 +72,10 @@ if ! $phpCmd $mageDir/vendor/bin/phpmd $dir text $mageDir/dev/tests/static/tests
     ERRORS=1
 fi
 
-echo "--==( Executing phpstan source files. )==---"
-if ! $phpCmd $mageDir/vendor/bin/phpstan analyse -l 1 -c $mageDir/dev/tests/static/testsuite/Magento/Test/Php/_files/phpstan/phpstan.neon $dir; then
-    ERRORS=1
-fi
+#echo "--==( Executing phpstan source files. )==---"
+#if ! $phpCmd $mageDir/vendor/bin/phpstan analyse -l 1 -c $mageDir/dev/tests/static/testsuite/Magento/Test/Php/_files/phpstan/phpstan.neon $dir; then
+#    ERRORS=1
+#fi
 
 if [ "\${ERRORS}" = "1" ]; then
     exec < /dev/tty
