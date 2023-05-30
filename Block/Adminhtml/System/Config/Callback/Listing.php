@@ -11,27 +11,31 @@ namespace Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
+use Resursbank\Core\Helper\Config;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 
 class Listing extends Field
 {
     /**
-     * @var CallbackHelper
-     */
-    public CallbackHelper $callbackHelper;
-
-    /**
      * @param Context $context
      * @param CallbackHelper $callbackHelper
+     * @param Config $config
+     * @param Scope $scope
      */
     public function __construct(
         Context $context,
-        CallbackHelper $callbackHelper
+        public CallbackHelper $callbackHelper,
+        private readonly Config $config,
+        private readonly Scope $scope
     ) {
-        $this->setTemplate('system/config/callback/listing.phtml');
-        $this->callbackHelper = $callbackHelper;
+        $template = $this->config->isMapiActive(
+            scopeCode: $this->scope->getId(),
+            scopeType: $this->scope->getType()
+        ) ? 'listing-mapi' : 'listing';
+        $this->setTemplate(template: "system/config/callback/$template.phtml");
 
-        parent::__construct($context);
+        parent::__construct(context: $context);
     }
 
     /**
