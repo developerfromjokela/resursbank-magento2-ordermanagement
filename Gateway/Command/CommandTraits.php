@@ -37,13 +37,13 @@ trait CommandTraits
             // Ecom wrongly specifies some arguments as int when they should
             // be floats.
             $connection->addOrderLine(
-                $item->getArtNo(),
-                $item->getDescription(),
-                $item->getUnitAmountWithoutVat(),
-                $item->getVatPct(),
-                $item->getUnitMeasure(),
-                $item->getType(),
-                $item->getQuantity()
+                articleNumberOrId: $item->getArtNo(),
+                description: $item->getDescription(),
+                unitAmountWithoutVat: $item->getUnitAmountWithoutVat(),
+                vatPct: $item->getVatPct(),
+                unitMeasure: $item->getUnitMeasure(),
+                articleType: $item->getType(),
+                quantity: $item->getQuantity()
             );
         }
     }
@@ -59,7 +59,7 @@ trait CommandTraits
         $payment = $data->getPayment();
 
         if (!$payment instanceof Payment) {
-            throw new PaymentDataException(__(
+            throw new PaymentDataException(phrase: __(
                 'Unexpected payment entity. Expected %1 but got %2.',
                 Payment::class,
                 get_class($data->getPayment())
