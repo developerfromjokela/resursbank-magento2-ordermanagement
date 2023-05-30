@@ -29,16 +29,12 @@ use stdClass;
 /**
  * @SuppressWarnings(PHPMD.CyclomaticComplexity)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @noinspection PhpClassHasTooManyDeclaredMembersInspection
  */
 class PaymentInformation implements ArgumentInterface
 {
     /**
-     * @var Data
-     */
-    private Data $checkoutHelper;
-
-    /**
-     * @var null|array<mixed>
+     * @var null|array
      */
     private ?array $paymentInfo = null;
 
@@ -48,88 +44,26 @@ class PaymentInformation implements ArgumentInterface
     private ?OrderInterface $order = null;
 
     /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
-     * @var Api
-     */
-    private Api $api;
-
-    /**
-     * @var PriceCurrencyInterface
-     */
-    private PriceCurrencyInterface $priceCurrency;
-
-    /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private StoreManagerInterface $storeManager;
-
-    /**
      * @param Data $checkoutHelper
-     * @param OrderRepositoryInterface $orderRepository
      * @param Api $api
      * @param PriceCurrencyInterface $priceCurrency
-     * @param PaymentMethods $paymentMethods
      * @param Log $log
-     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        Data $checkoutHelper,
-        OrderRepositoryInterface $orderRepository,
-        Api $api,
-        PriceCurrencyInterface $priceCurrency,
-        PaymentMethods $paymentMethods,
-        Log $log,
-        StoreManagerInterface $storeManager
+        private readonly Data $checkoutHelper,
+        private readonly Api $api,
+        private readonly PriceCurrencyInterface $priceCurrency,
+        private readonly Log $log
     ) {
-        $this->checkoutHelper = $checkoutHelper;
-        $this->orderRepository = $orderRepository;
-        $this->api = $api;
-        $this->priceCurrency = $priceCurrency;
-        $this->paymentMethods = $paymentMethods;
-        $this->log = $log;
-        $this->storeManager = $storeManager;
     }
 
     /**
      * @param OrderInterface $order
-     * @return OrderInterface
      */
     public function setOrder(
         OrderInterface $order
-    ): OrderInterface {
+    ): void {
         $this->order = $order;
-
-        return $this->order;
-    }
-
-    /**
-     * @param int|null $orderId
-     * @return OrderInterface|null
-     */
-    public function getOrder(
-        ?int $orderId = null
-    ): ?OrderInterface {
-        $result = $this->order;
-
-        if (is_int($orderId) && $orderId > 0) {
-            $result = $this->orderRepository->get($orderId);
-        }
-
-        return $result;
     }
 
     /**
@@ -140,26 +74,26 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getPaymentInformation(
         string $key = ''
-    ) {
+    ): mixed {
         $result = null;
 
         if ($this->paymentInfo === null &&
             $this->order instanceof OrderInterface &&
-            is_string($this->order->getIncrementId())
+            is_string(value: $this->order->getIncrementId())
         ) {
             try {
-                $paymentData = $this->api->getPayment($this->order);
+                $paymentData = $this->api->getPayment(order: $this->order);
                 $this->paymentInfo = $paymentData !== null ?
                     (array)$paymentData :
                     null;
             } catch (Exception $e) {
-                $this->log->exception($e);
+                $this->log->exception(error: $e);
             }
         }
 
         if (empty($key)) {
             $result = $this->paymentInfo;
-        } elseif (is_array($this->paymentInfo) &&
+        } elseif (is_array(value: $this->paymentInfo) &&
             isset($this->paymentInfo[$key])
         ) {
             $result = $this->paymentInfo[$key];
@@ -175,11 +109,11 @@ class PaymentInformation implements ArgumentInterface
     {
         $result = '';
 
-        $status = $this->getPaymentInformation('status');
+        $status = $this->getPaymentInformation(key: 'status');
 
-        if (is_string($status)) {
+        if (is_string(value: $status)) {
             $result = $status;
-        } elseif (is_array($status) && count($status)) {
+        } elseif (is_array(value: $status) && count($status)) {
             foreach ($status as $piece) {
                 $result.= !empty($result) ? (' | ' . __($piece)) : __($piece);
             }
@@ -197,7 +131,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getPaymentId(): string
     {
-        return $this->getPaymentInformation('id') ?? '';
+        return $this->getPaymentInformation(key: 'id') ?? '';
     }
 
     /**
@@ -207,8 +141,8 @@ class PaymentInformation implements ArgumentInterface
     {
         return (
             $this->formatPrice(
-                $this->convertPrice(
-                    $this->getPaymentInformation('totalAmount')
+                price: $this->convertPrice(
+                    price: $this->getPaymentInformation(key: 'totalAmount')
                 )
             ) ??
             ''
@@ -222,8 +156,8 @@ class PaymentInformation implements ArgumentInterface
     {
         return (
             $this->formatPrice(
-                $this->convertPrice(
-                    $this->getPaymentInformation('limit')
+                price: $this->convertPrice(
+                    price: $this->getPaymentInformation(key: 'limit')
                 )
             ) ??
             ''
@@ -235,7 +169,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function isFrozen(): bool
     {
-        return $this->getPaymentInformation('frozen') === true;
+        return $this->getPaymentInformation(key: 'frozen') === true;
     }
 
     /**
@@ -243,7 +177,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function isFraud(): bool
     {
-        return $this->getPaymentInformation('fraud') === true;
+        return $this->getPaymentInformation(key: 'fraud') === true;
     }
 
     /**
@@ -251,7 +185,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getPaymentMethodName(): string
     {
-        return $this->getPaymentInformation('paymentMethodName') ?? '';
+        return $this->getPaymentInformation(key: 'paymentMethodName') ?? '';
     }
 
     /**
@@ -264,13 +198,11 @@ class PaymentInformation implements ArgumentInterface
     public function getCustomerInformation(
         string $key = '',
         bool $address = false
-    ) {
-        $result = (array) $this->getPaymentInformation('customer');
+    ): mixed {
+        $result = (array) $this->getPaymentInformation(key: 'customer');
 
         if (!empty($address)) {
-            $result = (is_array($result) && isset($result['address'])) ?
-                (array) $result['address'] :
-                null;
+            $result = isset($result['address']) ? (array) $result['address'] : null;
         }
 
         if (!empty($key)) {
@@ -285,7 +217,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerName(): string
     {
-        return $this->getCustomerInformation('fullName', true);
+        return $this->getCustomerInformation(key: 'fullName', address: true);
     }
 
     /**
@@ -319,7 +251,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerTelephone(): string
     {
-        return $this->getCustomerInformation('phone') ?? '';
+        return $this->getCustomerInformation(key: 'phone') ?? '';
     }
 
     /**
@@ -327,7 +259,7 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerEmail(): string
     {
-        return $this->getCustomerInformation('email') ?? '';
+        return $this->getCustomerInformation(key: 'email') ?? '';
     }
 
     /**
@@ -335,7 +267,10 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerAddressRow1(): string
     {
-        return $this->getCustomerInformation('addressRow1', true) ?? '';
+        return $this->getCustomerInformation(
+            key: 'addressRow1',
+            address: true
+        ) ?? '';
     }
 
     /**
@@ -343,7 +278,10 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerAddressRow2(): string
     {
-        return $this->getCustomerInformation('addressRow2', true) ?? '';
+        return $this->getCustomerInformation(
+            key: 'addressRow2',
+            address: true
+        ) ?? '';
     }
 
     /**
@@ -351,7 +289,10 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerPostalCode(): string
     {
-        return $this->getCustomerInformation('postalCode', true) ?? '';
+        return $this->getCustomerInformation(
+            key: 'postalCode',
+            address: true
+        ) ?? '';
     }
 
     /**
@@ -359,7 +300,10 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerPostalArea(): string
     {
-        return $this->getCustomerInformation('postalArea', true) ?? '';
+        return $this->getCustomerInformation(
+            key: 'postalArea',
+            address: true
+        ) ?? '';
     }
 
     /**
@@ -367,25 +311,10 @@ class PaymentInformation implements ArgumentInterface
      */
     public function getCustomerCountry(): string
     {
-        return $this->getCustomerInformation('country', true) ?? '';
-    }
-
-    /**
-     * @param OrderInterface $order
-     * @return bool
-     */
-    public function isEnabled(
-        OrderInterface $order
-    ): bool {
-        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
-            throw new RuntimeException(
-                'Missing payment data on order ' . $order->getIncrementId()
-            );
-        }
-
-        return $this->paymentMethods->isResursBankMethod(
-            $order->getPayment()->getMethod()
-        );
+        return $this->getCustomerInformation(
+            key: 'country',
+            address: true
+        ) ?? '';
     }
 
     /**
@@ -400,13 +329,11 @@ class PaymentInformation implements ArgumentInterface
     public function formatPrice(
         float $price
     ): string {
-        $store = $this->getStore();
-
         return $this->priceCurrency->format(
-            $price,
-            false,
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            ($store !== null ? $store->getCode() : null)
+            amount: $price,
+            includeContainer: false,
+            precision: PriceCurrencyInterface::DEFAULT_PRECISION,
+            scope: $this->order->getStoreId()
         );
     }
 
@@ -419,30 +346,9 @@ class PaymentInformation implements ArgumentInterface
     public function convertPrice(
         string $price
     ): float {
-        return $this->checkoutHelper->convertPrice((float) $price, false);
-    }
-
-    /**
-     * Get store associated with current order.
-     *
-     * @return StoreInterface|null
-     */
-    private function getStore(): ?StoreInterface
-    {
-        $result = null;
-
-        try {
-            $order = $this->getOrder();
-
-            if (($order instanceof OrderInterface) &&
-                $order->getStoreId() !== null
-            ) {
-                $result = $this->storeManager->getStore($order->getStoreId());
-            }
-        } catch (Exception $e) {
-            $this->log->exception($e);
-        }
-
-        return $result;
+        return $this->checkoutHelper->convertPrice(
+            price: (float) $price,
+            format: false
+        );
     }
 }
