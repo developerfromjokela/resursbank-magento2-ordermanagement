@@ -163,8 +163,7 @@ class Cancel implements CommandInterface
 
         $payment = Repository::get(paymentId: $id);
 
-        if (
-            !$payment->canCancel() ||
+        if (!$payment->canCancel() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
         ) {
             return;

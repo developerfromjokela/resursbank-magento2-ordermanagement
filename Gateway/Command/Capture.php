@@ -144,7 +144,10 @@ class Capture implements CommandInterface
                 $this->paymentHistory->entryFromCmd(data: $data, event: History::EVENT_CAPTURE_CALLED);
 
                 $this->capture(
-                    commandSubject: $commandSubject, data: $data, connection: $connection, paymentId: $data->getOrder()->getOrderIncrementId()
+                    commandSubject: $commandSubject,
+                    data: $data,
+                    connection: $connection,
+                    paymentId: $data->getOrder()->getOrderIncrementId()
                 );
             }
         } catch (Throwable $e) {
@@ -248,8 +251,7 @@ class Capture implements CommandInterface
         $id = $this->orderHelper->getPaymentId(order: $order);
         $payment = Repository::get(paymentId: $id);
 
-        if (
-            !$payment->canCapture() ||
+        if (!$payment->canCapture() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
         ) {
             return;
