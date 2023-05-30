@@ -49,6 +49,8 @@ use TorneLIB\Exception\ExceptionHandler;
  */
 class Cancel implements CommandInterface
 {
+    use CommandTraits;
+
     /**
      * @param Log $log
      * @param ApiPayment $apiPayment
@@ -81,8 +83,7 @@ class Cancel implements CommandInterface
         array $commandSubject
     ): ?ResultInterface {
         // Resolve data from command subject.
-        $data = SubjectReader::readPayment(subject: $commandSubject);
-        $order = $this->orderRepo->get(id: $data->getOrder()->getId());
+        $order = $this->getOrder(commandSubject: $commandSubject);
 
         try {
             if ($this->config->isMapiActive(scopeCode: $order->getStoreId())) {

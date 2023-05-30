@@ -9,7 +9,11 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Gateway\Command;
 
 use Exception;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
+use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Model\Api\Payment\Item;
@@ -67,5 +71,18 @@ trait CommandTraits
         }
 
         return $payment;
+    }
+
+    /**
+     * @param array $commandSubject
+     * @return OrderInterface
+     * @throws InputException
+     * @throws NoSuchEntityException
+     */
+    public function getOrder(
+        array $commandSubject
+    ): OrderInterface {
+        $data = SubjectReader::readPayment(subject: $commandSubject);
+        return $this->orderRepo->get(id: $data->getOrder()->getId());
     }
 }
