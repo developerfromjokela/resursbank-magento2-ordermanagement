@@ -83,7 +83,8 @@ class Cancel implements CommandInterface
         array $commandSubject
     ): ?ResultInterface {
         // Resolve data from command subject.
-        $order = $this->getOrder(commandSubject: $commandSubject);
+        $data = SubjectReader::readPayment(subject: $commandSubject);
+        $order = $this->orderRepo->get(id: $data->getOrder()->getId());
 
         try {
             if ($this->config->isMapiActive(scopeCode: $order->getStoreId())) {

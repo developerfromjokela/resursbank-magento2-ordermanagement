@@ -72,17 +72,4 @@ trait CommandTraits
 
         return $payment;
     }
-
-    /**
-     * @param array $commandSubject
-     * @return OrderInterface
-     * @throws InputException
-     * @throws NoSuchEntityException
-     */
-    public function getOrder(
-        array $commandSubject
-    ): OrderInterface {
-        $data = SubjectReader::readPayment(subject: $commandSubject);
-        return $this->orderRepo->get(id: $data->getOrder()->getId());
-    }
 }

@@ -89,10 +89,8 @@ class Capture implements CommandInterface
     public function execute(
         array $commandSubject
     ): ?ResultInterface {
-        // Shortcut for improved readability.
-        $history = &$this->paymentHistory;
-
-        $order = $this->getOrder(commandSubject: $commandSubject);
+        $data = SubjectReader::readPayment(subject: $commandSubject);
+        $order = $this->orderRepo->get(id: $data->getOrder()->getId());
 
         try {
             if ($this->config->isMapiActive(scopeCode: $order->getStoreId())) {
@@ -103,10 +101,10 @@ class Capture implements CommandInterface
         } catch (Exception $e) {
             // Log error.
             $this->log->exception(error: $e);
-            $this->paymentHistory->entryFromCmd(data: $data, event: History::EVENT_CANCEL_FAILED);
+            $this->paymentHistory->entryFromCmd(data: $data, event: History::EVENT_CAPTURE_FAILED);
 
             // Pass safe error upstream.
-            throw new PaymentException(phrase: __('Failed to cancel payment.'));
+            throw new PaymentException(phrase: __('Failed to capture payment.'));
         }
 
         return null;
@@ -257,6 +255,6 @@ class Capture implements CommandInterface
             return;
         }
 
-        Repository::cancel(paymentId: $id);
+        Repository::capture(paymentId: $id);
     }
 }
