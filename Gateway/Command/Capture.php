@@ -59,12 +59,12 @@ class Capture implements CommandInterface
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param PaymentHistory $paymentHistory
-     * @param Api $api
      * @param Invoice $invoice
      * @param InvoiceConverter $invoiceConverter
      * @param OrderRepository $orderRepo
      * @param Config $config
      * @param Order $orderHelper
+     * @param Api $api
      */
     public function __construct(
         private readonly Log $log,
