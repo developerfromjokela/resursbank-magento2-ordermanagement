@@ -82,20 +82,19 @@ class Cancel implements CommandInterface
     public function execute(
         array $commandSubject
     ): ?ResultInterface {
-        // Resolve data from command subject.
-        $data = SubjectReader::readPayment(subject: $commandSubject);
-        $order = $this->orderRepo->get(id: $data->getOrder()->getId());
-
         try {
-            if ($this->config->isMapiActive(scopeCode: $order->getStoreId())) {
-                $this->mapi(order: $order);
+            if ($this->isMapiActive(commandSubject: $commandSubject)) {
+                $this->mapi(order: $this->getOrder(commandSubject: $commandSubject));
             } else {
-                $this->old(order: $order, commandSubject: $commandSubject);
+                $this->old(order: $this->getOrder(commandSubject: $commandSubject), commandSubject: $commandSubject);
             }
         } catch (Exception $e) {
             // Log error.
             $this->log->exception(error: $e);
-            $this->paymentHistory->entryFromCmd(data: $data, event: History::EVENT_CANCEL_FAILED);
+            $this->paymentHistory->entryFromCmd(
+                data: SubjectReader::readPayment(subject: $commandSubject),
+                event: History::EVENT_CANCEL_FAILED
+            );
 
             // Pass safe error upstream.
             throw new PaymentException(phrase: __('Failed to cancel payment.'));
@@ -146,21 +145,22 @@ class Cancel implements CommandInterface
     /**
      * @param OrderInterface $order
      * @return void
-     * @throws JsonException
-     * @throws ReflectionException
      * @throws ApiException
      * @throws AuthException
      * @throws ConfigException
      * @throws CurlException
-     * @throws ValidationException
      * @throws EmptyValueException
      * @throws IllegalTypeException
      * @throws IllegalValueException
+     * @throws InputException
+     * @throws JsonException
+     * @throws ReflectionException
+     * @throws ValidationException
      */
     private function mapi(
         OrderInterface $order
     ): void {
-        $id = $this->orderHelper->getPaymentId($order);
+        $id = $this->orderHelper->getPaymentId(order: $order);
 
         $payment = Repository::get(paymentId: $id);
 
