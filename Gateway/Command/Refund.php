@@ -88,14 +88,17 @@ class Refund implements CommandInterface
     ): ?ResultInterface {
         try {
             if ($this->isMapiActive(commandSubject: $commandSubject)) {
-                $this->mapi(order: $this->getOrder(commandSubject: $commandSubject));
+                $this->mapi(order: $this->getOrder(commandSubject: $commandSubject), commandSubject: $commandSubject);
             } else {
                 $this->old(order: $this->getOrder(commandSubject: $commandSubject), commandSubject: $commandSubject);
             }
         } catch (Exception $e) {
             // Log error.
             $this->log->exception(error: $e);
-            $this->paymentHistory->entryFromCmd(data: SubjectReader::readPayment(subject: $commandSubject), event: History::EVENT_REFUND_FAILED);
+            $this->paymentHistory->entryFromCmd(
+                data: SubjectReader::readPayment(subject: $commandSubject),
+                event: History::EVENT_REFUND_FAILED
+            );
 
             // Pass safe error upstream.
             throw new PaymentException(phrase: __('Failed to refund payment.'));
@@ -195,7 +198,7 @@ class Refund implements CommandInterface
     private function old(
         OrderInterface $order,
         array $commandSubject
-    ) {
+    ): void {
         if (!$this->api->paymentExists(order: $order)) {
             return;
         }
@@ -230,23 +233,29 @@ class Refund implements CommandInterface
 
     /**
      * @param OrderInterface $order
+     * @param array $commandSubject
      * @return void
-     * @throws JsonException
-     * @throws InputException
-     * @throws ReflectionException
      * @throws ApiException
      * @throws AuthException
      * @throws ConfigException
      * @throws CurlException
-     * @throws ValidationException
      * @throws EmptyValueException
      * @throws IllegalTypeException
      * @throws IllegalValueException
+     * @throws InputException
+     * @throws JsonException
+     * @throws PaymentDataException
+     * @throws ReflectionException
+     * @throws ValidationException
+     * @throws Exception
      */
-    private function mapi(OrderInterface $order): void
-    {
+    private function mapi(
+        OrderInterface $order,
+        array $commandSubject
+    ): void {
         $id = $this->orderHelper->getPaymentId(order: $order);
         $payment = Repository::get(paymentId: $id);
+        $data = SubjectReader::readPayment(subject: $commandSubject);
 
         if (!$payment->canRefund() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
@@ -254,6 +263,13 @@ class Refund implements CommandInterface
             return;
         }
 
-        Repository::refund(paymentId: $id);
+        Repository::refund(
+            paymentId: $id,
+            orderLines: $this->getOrderLines(
+                items: $this->creditmemoConverter->convert(
+                    entity: $this->getMemo(payment: $this->getPayment(data: $data))
+                )
+            )
+        );
     }
 }

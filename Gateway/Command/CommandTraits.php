@@ -16,7 +16,13 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
+use Resursbank\Core\Model\Api\Payment\Converter\Item\ItemInterface;
 use Resursbank\Core\Model\Api\Payment\Item;
+use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
+use Resursbank\Ecom\Exception\Validation\IllegalValueException;
+use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLine;
+use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLineCollection;
+use Resursbank\Ecom\Lib\Order\OrderLineType;
 use Resursbank\RBEcomPHP\ResursBank;
 use function get_class;
 
@@ -95,5 +101,36 @@ trait CommandTraits
     {
         $data = SubjectReader::readPayment(subject: $commandSubject);
         return $this->orderRepo->get(id: $data->getOrder()->getId());
+    }
+
+    /**
+     * getOrderLines renderer for capture and refund.
+     * @param mixed $items
+     * @return OrderLineCollection
+     * @throws IllegalTypeException
+     * @throws IllegalValueException '
+     */
+    public function getOrderLines(mixed $items): OrderLineCollection
+    {
+        $data = [];
+
+        /** @var ItemInterface $item */
+        foreach ($items as $item) {
+            $data[] = new OrderLine(
+                quantity: $item->getQuantity(),
+                quantityUnit: (string)__('rb-default-quantity-unit'),
+                vatRate: $item->getVatPct(),
+                totalAmountIncludingVat: $item->getTotalAmountInclVat(),
+                description: $item->getDescription(),
+                reference: $item->getArtNo(),
+                type: match ($item->getType()) {
+                    Item::TYPE_DISCOUNT => OrderLineType::DISCOUNT,
+                    Item::TYPE_SHIPPING => OrderLineType::SHIPPING,
+                    default => OrderLineType::NORMAL
+                }
+            );
+        }
+
+        return new OrderLineCollection(data: $data);
     }
 }

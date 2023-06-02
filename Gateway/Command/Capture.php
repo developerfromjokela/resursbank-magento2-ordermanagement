@@ -13,7 +13,6 @@ use JsonException;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\Command\ResultInterface;
@@ -28,8 +27,6 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
-use Resursbank\Core\Model\Api\Payment\Converter\Item\ItemInterface;
-use Resursbank\Core\Model\Api\Payment\Item;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -38,17 +35,14 @@ use Resursbank\Ecom\Exception\Validation\EmptyValueException;
 use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
 use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Exception\ValidationException;
-use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLine;
-use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLineCollection;
-use Resursbank\Ecom\Lib\Order\OrderLineType;
 use Resursbank\Ecom\Module\Payment\Enum\Status;
 use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
-use Resursbank\Ordermanagement\Model\Invoice;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\InvoiceConverter;
+use Resursbank\Ordermanagement\Model\Invoice;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use Throwable;
@@ -104,7 +98,10 @@ class Capture implements CommandInterface
         } catch (Exception $e) {
             // Log error.
             $this->log->exception(error: $e);
-            $this->paymentHistory->entryFromCmd(data: SubjectReader::readPayment(subject: $commandSubject), event: History::EVENT_CAPTURE_FAILED);
+            $this->paymentHistory->entryFromCmd(
+                data: SubjectReader::readPayment(subject: $commandSubject),
+                event: History::EVENT_CAPTURE_FAILED
+            );
 
             // Pass safe error upstream.
             throw new PaymentException(phrase: __('Failed to capture payment.'));
@@ -229,7 +226,7 @@ class Capture implements CommandInterface
             throw new PaymentDataException(__('Missing expected key amount.'));
         }
 
-        return (float) $data['amount'];
+        return (float)$data['amount'];
     }
 
     /**
@@ -246,6 +243,7 @@ class Capture implements CommandInterface
      * @throws JsonException
      * @throws ReflectionException
      * @throws ValidationException
+     * @throws Exception
      */
     private function mapi(OrderInterface $order): void
     {
@@ -259,7 +257,10 @@ class Capture implements CommandInterface
         }
 
         Repository::capture(
-            paymentId: $id
+            paymentId: $id,
+            orderLines: $this->getOrderLines(
+                items: $this->invoiceConverter->convert(entity: $this->invoice->getInvoice())
+            )
         );
     }
 }
