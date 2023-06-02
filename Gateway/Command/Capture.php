@@ -41,8 +41,8 @@ use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
-use Resursbank\Ordermanagement\Model\Invoice;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\InvoiceConverter;
+use Resursbank\Ordermanagement\Model\Invoice;
 use Resursbank\RBEcomPHP\ResursBank;
 use ResursException;
 use Throwable;
@@ -89,19 +89,19 @@ class Capture implements CommandInterface
     public function execute(
         array $commandSubject
     ): ?ResultInterface {
-        $data = SubjectReader::readPayment(subject: $commandSubject);
-        $order = $this->orderRepo->get(id: $data->getOrder()->getId());
-
         try {
-            if ($this->config->isMapiActive(scopeCode: $order->getStoreId())) {
-                $this->mapi(order: $order);
+            if ($this->isMapiActive(commandSubject: $commandSubject)) {
+                $this->mapi(order: $this->getOrder(commandSubject: $commandSubject));
             } else {
-                $this->old(order: $order, commandSubject: $commandSubject);
+                $this->old(order: $this->getOrder(commandSubject: $commandSubject), commandSubject: $commandSubject);
             }
         } catch (Exception $e) {
             // Log error.
             $this->log->exception(error: $e);
-            $this->paymentHistory->entryFromCmd(data: $data, event: History::EVENT_CAPTURE_FAILED);
+            $this->paymentHistory->entryFromCmd(
+                data: SubjectReader::readPayment(subject: $commandSubject),
+                event: History::EVENT_CAPTURE_FAILED
+            );
 
             // Pass safe error upstream.
             throw new PaymentException(phrase: __('Failed to capture payment.'));
@@ -226,23 +226,24 @@ class Capture implements CommandInterface
             throw new PaymentDataException(__('Missing expected key amount.'));
         }
 
-        return (float) $data['amount'];
+        return (float)$data['amount'];
     }
 
     /**
      * @param OrderInterface $order
      * @return void
-     * @throws JsonException
-     * @throws InputException
-     * @throws ReflectionException
      * @throws ApiException
      * @throws AuthException
      * @throws ConfigException
      * @throws CurlException
-     * @throws ValidationException
      * @throws EmptyValueException
      * @throws IllegalTypeException
      * @throws IllegalValueException
+     * @throws InputException
+     * @throws JsonException
+     * @throws ReflectionException
+     * @throws ValidationException
+     * @throws Exception
      */
     private function mapi(OrderInterface $order): void
     {
@@ -255,6 +256,11 @@ class Capture implements CommandInterface
             return;
         }
 
-        Repository::capture(paymentId: $id);
+        Repository::capture(
+            paymentId: $id,
+            orderLines: $this->getOrderLines(
+                items: $this->invoiceConverter->convert(entity: $this->invoice->getInvoice())
+            )
+        );
     }
 }
