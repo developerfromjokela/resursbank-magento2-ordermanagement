@@ -105,12 +105,12 @@ trait CommandTraits
 
     /**
      * getOrderLines renderer for capture and refund.
-     * @param mixed $items
+     * @param array $items
      * @return OrderLineCollection
      * @throws IllegalTypeException
      * @throws IllegalValueException '
      */
-    public function getOrderLines(mixed $items): OrderLineCollection
+    public function getOrderLines(array $items): OrderLineCollection
     {
         $data = [];
 
