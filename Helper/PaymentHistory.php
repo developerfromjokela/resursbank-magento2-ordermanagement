@@ -87,6 +87,9 @@ class PaymentHistory extends AbstractHelper
             ));
         }
 
+        $stateFrom = $order->getState();
+        $statusFrom = $order->getStatus();
+
         if ($this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
             $updatedOrder = $this->handleMapiPaymentStatus(order: $order);
         } else {
@@ -97,8 +100,8 @@ class PaymentHistory extends AbstractHelper
             ->setPaymentId(identifier: (int) $payment->getEntityId())
             ->setEvent(event: $event)
             ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK)
-            ->setStateFrom(state: $order->getState())
-            ->setStatusFrom(status: $order->getStatus());
+            ->setStateFrom(state: $stateFrom)
+            ->setStatusFrom(status: $statusFrom);
 
         // Set entry status /state based on actual data from order.
         $entry->setStateTo(state: $updatedOrder->getState());
