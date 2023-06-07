@@ -75,7 +75,8 @@ class PaymentHistory extends AbstractHelper
      */
     public function syncOrderStatus(
         OrderInterface $order,
-        string $event = ''
+        string $event = '',
+        string $extra = ''
     ): void {
         $entry = $this->paymentHistoryFactory->create();
         $payment = $order->getPayment();
@@ -106,6 +107,7 @@ class PaymentHistory extends AbstractHelper
         // Set entry status /state based on actual data from order.
         $entry->setStateTo(state: $updatedOrder->getState());
         $entry->setStatusTo(status: $updatedOrder->getStatus());
+        $entry->setExtra(extra: $extra);
 
         $this->paymentHistoryRepository->save(entry: $entry);
     }

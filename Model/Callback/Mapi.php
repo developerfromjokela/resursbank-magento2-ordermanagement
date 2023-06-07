@@ -11,6 +11,7 @@ namespace Resursbank\Ordermanagement\Model\Callback;
 
 use Resursbank\Core\Helper\Config;
 use Resursbank\Ecom\Exception\HttpException;
+use Resursbank\Ecom\Lib\Model\Callback\Authorization;
 use Resursbank\Ecom\Module\Callback\Http\AuthorizationController;
 use Resursbank\Ecom\Module\Callback\Repository;
 use Resursbank\Ecom\Lib\Model\Callback\CallbackInterface;
@@ -84,7 +85,8 @@ class Mapi implements MapiInterface
 
                     $this->paymentHistory->syncOrderStatus(
                         order: $order,
-                        event: PaymentHistoryInterface::EVENT_CALLBACK_AUTHORIZATION
+                        event: PaymentHistoryInterface::EVENT_CALLBACK_AUTHORIZATION,
+                        extra: $callback instanceof Authorization ? 'Callback status: ' . $callback->status->name : ''
                     );
                 }
             );
