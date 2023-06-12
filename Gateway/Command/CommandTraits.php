@@ -23,7 +23,9 @@ use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLine;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLineCollection;
 use Resursbank\Ecom\Lib\Order\OrderLineType;
+use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\RBEcomPHP\ResursBank;
+use Throwable;
 use function get_class;
 
 /**
@@ -32,8 +34,7 @@ use function get_class;
 trait CommandTraits
 {
     /**
-     * Use the addOrderLine method in ECom to add payload data while avoiding
-     * methods that override supplied data.
+     * Use the addOrderLine method in ECom to add payload data while avoiding methods that override supplied data.
      *
      * @param ResursBank $connection
      * @param array<Item> $data
@@ -59,6 +60,8 @@ trait CommandTraits
     }
 
     /**
+     * Get the payment.
+     *
      * @param PaymentDataObjectInterface $data
      * @return Payment
      * @throws PaymentDataException
@@ -72,7 +75,7 @@ trait CommandTraits
             throw new PaymentDataException(phrase: __(
                 'Unexpected payment entity. Expected %1 but got %2.',
                 Payment::class,
-                get_class($data->getPayment())
+                get_class(object: $data->getPayment())
             ));
         }
 
@@ -80,6 +83,8 @@ trait CommandTraits
     }
 
     /**
+     * Check if MAPI is activated to handle orders.
+     *
      * @param array $commandSubject
      * @return bool
      * @throws InputException
@@ -92,6 +97,8 @@ trait CommandTraits
     }
 
     /**
+     * Get the order.
+     *
      * @param array $commandSubject
      * @return OrderInterface
      * @throws InputException
@@ -104,7 +111,53 @@ trait CommandTraits
     }
 
     /**
-     * getOrderLines renderer for capture and refund.
+     * Search for legacy payments at Resurs.
+     *
+     * @param string $paymentId
+     * @return string
+     */
+    public function findPaymentIdForLegacyOrder(string $paymentId): string
+    {
+        try {
+            $result = Repository::search(
+                storeId: $this->config->getStore(
+                    scopeCode: $this->scope->getId(),
+                    scopeType: $this->scope->getType()
+                ),
+                orderReference: $paymentId
+            );
+            return $result->count() > 0 ? $result->getData()[0]->id : '';
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    /**
+     * Get the payment id depending on which flow the order has been created with.
+     *
+     * @param OrderInterface $order
+     * @return string
+     * @throws InputException
+     */
+    public function getPaymentId(OrderInterface $order): string
+    {
+        $id = $this->orderHelper->getPaymentId(order: $order);
+        $paymentMethod = $order->getPayment()->getMethod();
+
+        // Check if payment has been created with simplified by checking the name of the method.
+        if (str_starts_with(haystack: $paymentMethod, needle: 'resursbank_')) {
+            $searchLegacyPaymentId = $this->findPaymentIdForLegacyOrder(paymentId: $id);
+            if ($searchLegacyPaymentId !== '' && $id !== $searchLegacyPaymentId) {
+                $id = $searchLegacyPaymentId;
+            }
+        }
+
+        return $id;
+    }
+
+    /**
+     * OrderLine renderer for capture and refund.
+     *
      * @param array $items
      * @return OrderLineCollection
      * @throws IllegalTypeException

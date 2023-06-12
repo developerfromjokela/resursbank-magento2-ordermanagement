@@ -29,6 +29,7 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -64,6 +65,7 @@ class Refund implements CommandInterface
      * @param Config $config
      * @param Order $orderHelper
      * @param Api $api
+     * @param Scope $scope
      */
     public function __construct(
         private readonly Log $log,
@@ -73,11 +75,14 @@ class Refund implements CommandInterface
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
         private readonly Order $orderHelper,
-        private readonly Api $api
+        private readonly Api $api,
+        private readonly Scope $scope
     ) {
     }
 
     /**
+     * Execute the refund.
+     *
      * @param array $commandSubject
      * @return ResultInterface|null
      * @throws PaymentException
@@ -184,6 +189,8 @@ class Refund implements CommandInterface
     }
 
     /**
+     * Refund orders with the deprecated afterShop flow.
+     *
      * @param OrderInterface $order
      * @param array $commandSubject
      * @return void
@@ -232,6 +239,8 @@ class Refund implements CommandInterface
     }
 
     /**
+     * Refund orders with MAPI.
+     *
      * @param OrderInterface $order
      * @param array $commandSubject
      * @return void
@@ -253,7 +262,7 @@ class Refund implements CommandInterface
         OrderInterface $order,
         array $commandSubject
     ): void {
-        $id = $this->orderHelper->getPaymentId(order: $order);
+        $id = $this->getPaymentId(order: $order);
         $payment = Repository::get(paymentId: $id);
         $data = SubjectReader::readPayment(subject: $commandSubject);
 

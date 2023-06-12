@@ -27,6 +27,7 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -65,6 +66,8 @@ class Capture implements CommandInterface
      * @param Config $config
      * @param Order $orderHelper
      * @param Api $api
+     * @param Scope $scope
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         private readonly Log $log,
@@ -75,11 +78,14 @@ class Capture implements CommandInterface
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
         private readonly Order $orderHelper,
-        private readonly Api $api
+        private readonly Api $api,
+        private readonly Scope $scope
     ) {
     }
 
     /**
+     * Execute the capture.
+     *
      * @param array $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
@@ -111,6 +117,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Capturing orders with the deprecated afterShop flow.
+     *
      * @param OrderInterface $order
      * @param array $commandSubject
      * @return void
@@ -215,6 +223,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Get amount and return as float.
+     *
      * @param array $data
      * @return float
      * @throws PaymentDataException
@@ -230,6 +240,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Capturing orders with MAPI.
+     *
      * @param OrderInterface $order
      * @return void
      * @throws ApiException
@@ -247,7 +259,7 @@ class Capture implements CommandInterface
      */
     private function mapi(OrderInterface $order): void
     {
-        $id = $this->orderHelper->getPaymentId(order: $order);
+        $id = $this->getPaymentId(order: $order);
         $payment = Repository::get(paymentId: $id);
 
         if (!$payment->canCapture() ||

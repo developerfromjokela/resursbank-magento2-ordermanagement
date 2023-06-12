@@ -27,6 +27,7 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -59,6 +60,7 @@ class Cancel implements CommandInterface
      * @param OrderRepository $orderRepo
      * @param Config $config
      * @param Order $orderHelper
+     * @param Scope $scope
      */
     public function __construct(
         private readonly Log $log,
@@ -67,17 +69,18 @@ class Cancel implements CommandInterface
         private readonly Api $api,
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
-        private readonly Order $orderHelper
+        private readonly Order $orderHelper,
+        private readonly Scope $scope
     ) {
     }
 
     /**
+     * Execute cancel.
+     *
      * @param array $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
      * @throws PaymentException
-     * @throws InputException
-     * @throws NoSuchEntityException|LocalizedException
      */
     public function execute(
         array $commandSubject
@@ -104,6 +107,8 @@ class Cancel implements CommandInterface
     }
 
     /**
+     * Canceling orders with the deprecated afterShop flow.
+     *
      * @param OrderInterface $order
      * @param array $commandSubject
      * @return void
@@ -143,6 +148,8 @@ class Cancel implements CommandInterface
     }
 
     /**
+     * Canceling orders with MAPI.
+     *
      * @param OrderInterface $order
      * @return void
      * @throws ApiException
@@ -160,8 +167,7 @@ class Cancel implements CommandInterface
     private function mapi(
         OrderInterface $order
     ): void {
-        $id = $this->orderHelper->getPaymentId(order: $order);
-
+        $id = $this->getPaymentId(order: $order);
         $payment = Repository::get(paymentId: $id);
 
         if (!$payment->canCancel() ||

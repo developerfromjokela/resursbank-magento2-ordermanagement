@@ -25,6 +25,7 @@ use Resursbank\Core\Block\Adminhtml\Template;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -34,6 +35,7 @@ use Resursbank\Ecom\Exception\Validation\EmptyValueException;
 use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
 use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Exception\ValidationException;
+use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
 use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -73,7 +75,9 @@ class PaymentInformation extends Template
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentMethods $paymentMethods
      * @param Order $orderHelper
-     * @param mixed[] $data
+     * @param Scope $scope
+     * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Context $context,
@@ -85,6 +89,7 @@ class PaymentInformation extends Template
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PaymentMethods $paymentMethods,
         private readonly Order $orderHelper,
+        private readonly Scope $scope,
         array $data = []
     ) {
         parent::__construct(context: $context, data: $data);
@@ -116,6 +121,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get payment information widget.
+     *
      * @return string
      */
     public function getWidgetHtml(): string
@@ -132,6 +139,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get payment information css.
+     *
      * @return string
      */
     public function getWidgetCss(): string
@@ -169,10 +178,7 @@ class PaymentInformation extends Template
     }
 
     /**
-     * Uses the request to find the order id. Works if the request includes
-     * either an "order_id" number or "invoice_id" number.
-     *
-     * Returns 0 if an id could not be found.
+     * Get order id from request - if request includes "order_id" or "invoice_id" number. Returns 0 if not found.
      *
      * @return int
      */
@@ -225,6 +231,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get the payment information widget.
+     *
      * @return PaymentInformationWidget
      * @throws JsonException
      * @throws InputException
@@ -245,8 +253,24 @@ class PaymentInformation extends Template
             return $this->widget;
         }
 
+        $paymentId = $this->orderHelper->getPaymentId(order: $this->order);
+        $paymentMethod = $this->order->getPayment()->getMethod();
+
+        if (str_starts_with(haystack: $paymentMethod, needle: 'resursbank_')) {
+            $result = Repository::search(
+                storeId: $this->config->getStore(
+                    scopeCode: $this->scope->getId(),
+                    scopeType: $this->scope->getType()
+                ),
+                orderReference: $paymentId
+            );
+
+            if ($result->count() > 0) {
+                $paymentId = $result->getData()[0]->id;
+            }
+        }
         $this->widget = new PaymentInformationWidget(
-            paymentId: $this->orderHelper->getPaymentId(order: $this->order),
+            paymentId: $paymentId,
             currencySymbol: 'kr',
             currencyFormat: CurrencyFormat::SYMBOL_LAST
         );
