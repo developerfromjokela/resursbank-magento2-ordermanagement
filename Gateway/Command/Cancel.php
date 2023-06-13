@@ -27,7 +27,6 @@ use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Core\Helper\Order;
-use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -60,7 +59,6 @@ class Cancel implements CommandInterface
      * @param OrderRepository $orderRepo
      * @param Config $config
      * @param Order $orderHelper
-     * @param Scope $scope
      */
     public function __construct(
         private readonly Log $log,
@@ -69,8 +67,7 @@ class Cancel implements CommandInterface
         private readonly Api $api,
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
-        private readonly Order $orderHelper,
-        private readonly Scope $scope
+        private readonly Order $orderHelper
     ) {
     }
 
