@@ -13,17 +13,16 @@ use Exception;
 use JsonException;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Exception\InputException;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
-use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Helper\Order;
 use ReflectionException;
 use Resursbank\Core\Block\Adminhtml\Template;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Mapi;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
@@ -188,18 +187,18 @@ class PaymentInformation extends Template
 
         try {
             $request = $this->getRequest();
-            $orderId = (int) $request->getParam(key: 'order_id');
-            $invoiceId = (int) $request->getParam(key: 'invoice_id');
-            $creditmemoId = (int) $request->getParam(key: 'creditmemo_id');
+            $orderId = (int)$request->getParam(key: 'order_id');
+            $invoiceId = (int)$request->getParam(key: 'invoice_id');
+            $creditmemoId = (int)$request->getParam(key: 'creditmemo_id');
 
             if ($orderId !== 0) {
                 $result = $orderId;
             } elseif ($invoiceId !== 0) {
-                $result = (int) $this->invoiceRepo
+                $result = (int)$this->invoiceRepo
                     ->get(id: $invoiceId)
                     ->getOrderId();
             } elseif ($creditmemoId !== 0) {
-                $result = (int) $this->creditmemoRepo
+                $result = (int)$this->creditmemoRepo
                     ->get(id: $creditmemoId)
                     ->getOrderId();
             }
@@ -253,22 +252,13 @@ class PaymentInformation extends Template
             return $this->widget;
         }
 
-        $paymentId = $this->orderHelper->getPaymentId(order: $this->order);
-        $paymentMethod = $this->order->getPayment()->getMethod();
+        $paymentId = Mapi::getPaymentId(
+            order: $this->order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
 
-        if (str_starts_with(haystack: $paymentMethod, needle: 'resursbank_')) {
-            $result = Repository::search(
-                storeId: $this->config->getStore(
-                    scopeCode: $this->scope->getId(),
-                    scopeType: $this->scope->getType()
-                ),
-                orderReference: $paymentId
-            );
-
-            if ($result->count() > 0) {
-                $paymentId = $result->getData()[0]->id;
-            }
-        }
         $this->widget = new PaymentInformationWidget(
             paymentId: $paymentId,
             currencySymbol: 'kr',

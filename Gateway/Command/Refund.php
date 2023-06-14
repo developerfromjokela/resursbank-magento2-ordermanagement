@@ -28,6 +28,7 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
+use Resursbank\Core\Helper\Mapi;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
@@ -262,8 +263,12 @@ class Refund implements CommandInterface
         OrderInterface $order,
         array $commandSubject
     ): void {
-        $id = $this->getPaymentId(order: $order);
-        $payment = Repository::get(paymentId: $id);
+        $payment = Mapi::getMapiPayment(
+            order: $order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
         $data = SubjectReader::readPayment(subject: $commandSubject);
 
         if (!$payment->canRefund() ||
@@ -273,7 +278,12 @@ class Refund implements CommandInterface
         }
 
         Repository::refund(
-            paymentId: $id,
+            paymentId: Mapi::getPaymentId(
+                order: $order,
+                orderHelper: $this->orderHelper,
+                config: $this->config,
+                scope: $this->scope
+            ),
             orderLines: $this->getOrderLines(
                 items: $this->creditmemoConverter->convert(
                     entity: $this->getMemo(payment: $this->getPayment(data: $data))

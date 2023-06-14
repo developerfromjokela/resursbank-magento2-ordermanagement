@@ -26,7 +26,9 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
+use Resursbank\Core\Helper\Mapi;
 use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -59,6 +61,7 @@ class Cancel implements CommandInterface
      * @param OrderRepository $orderRepo
      * @param Config $config
      * @param Order $orderHelper
+     * @param Scope $scope
      */
     public function __construct(
         private readonly Log $log,
@@ -67,7 +70,8 @@ class Cancel implements CommandInterface
         private readonly Api $api,
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
-        private readonly Order $orderHelper
+        private readonly Order $orderHelper,
+        private readonly Scope $scope
     ) {
     }
 
@@ -164,8 +168,12 @@ class Cancel implements CommandInterface
     private function mapi(
         OrderInterface $order
     ): void {
-        $id = $this->getPaymentId(order: $order);
-        $payment = Repository::get(paymentId: $id);
+        $payment = Mapi::getMapiPayment(
+            order: $order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
 
         if (!$payment->canCancel() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
@@ -173,6 +181,13 @@ class Cancel implements CommandInterface
             return;
         }
 
-        Repository::cancel(paymentId: $id);
+        Repository::cancel(
+            paymentId: Mapi::getPaymentId(
+                order: $order,
+                orderHelper: $this->orderHelper,
+                config: $this->config,
+                scope: $this->scope
+            )
+        );
     }
 }

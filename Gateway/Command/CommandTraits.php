@@ -111,51 +111,6 @@ trait CommandTraits
     }
 
     /**
-     * Search for legacy payments at Resurs.
-     *
-     * @param string $paymentId
-     * @return string
-     */
-    public function findPaymentIdForLegacyOrder(string $paymentId): string
-    {
-        try {
-            $result = Repository::search(
-                storeId: $this->config->getStore(
-                    scopeCode: $this->scope->getId(),
-                    scopeType: $this->scope->getType()
-                ),
-                orderReference: $paymentId
-            );
-            return $result->count() > 0 ? $result->getData()[0]->id : '';
-        } catch (Throwable) {
-            return '';
-        }
-    }
-
-    /**
-     * Get the payment id depending on which flow the order has been created with.
-     *
-     * @param OrderInterface $order
-     * @return string
-     * @throws InputException
-     */
-    public function getPaymentId(OrderInterface $order): string
-    {
-        $id = $this->orderHelper->getPaymentId(order: $order);
-        $paymentMethod = $order->getPayment()->getMethod();
-
-        // Check if payment has been created with simplified by checking the name of the method.
-        if (str_starts_with(haystack: $paymentMethod, needle: 'resursbank_')) {
-            $searchLegacyPaymentId = $this->findPaymentIdForLegacyOrder(paymentId: $id);
-            if ($searchLegacyPaymentId !== '' && $id !== $searchLegacyPaymentId) {
-                $id = $searchLegacyPaymentId;
-            }
-        }
-
-        return $id;
-    }
-
-    /**
      * OrderLine renderer for capture and refund.
      *
      * @param array $items

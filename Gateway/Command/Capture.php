@@ -20,13 +20,14 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Api\Data\OrderInterface;
+use Resursbank\Core\Helper\Order;
 use Magento\Sales\Model\OrderRepository;
 use ReflectionException;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Mapi;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
@@ -251,16 +252,20 @@ class Capture implements CommandInterface
      * @throws EmptyValueException
      * @throws IllegalTypeException
      * @throws IllegalValueException
-     * @throws InputException
      * @throws JsonException
      * @throws ReflectionException
      * @throws ValidationException
+     * @throws InputException
      * @throws Exception
      */
     private function mapi(OrderInterface $order): void
     {
-        $id = $this->getPaymentId(order: $order);
-        $payment = Repository::get(paymentId: $id);
+        $payment = Mapi::getMapiPayment(
+            order: $order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
 
         if (!$payment->canCapture() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
@@ -269,7 +274,12 @@ class Capture implements CommandInterface
         }
 
         Repository::capture(
-            paymentId: $id,
+            paymentId: Mapi::getPaymentId(
+                order: $order,
+                orderHelper: $this->orderHelper,
+                config: $this->config,
+                scope: $this->scope
+            ),
             orderLines: $this->getOrderLines(
                 items: $this->invoiceConverter->convert(entity: $this->invoice->getInvoice())
             )
