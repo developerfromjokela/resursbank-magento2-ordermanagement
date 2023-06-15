@@ -20,13 +20,15 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Api\Data\OrderInterface;
+use Resursbank\Core\Helper\Order;
 use Magento\Sales\Model\OrderRepository;
 use ReflectionException;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Mapi;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -65,6 +67,8 @@ class Capture implements CommandInterface
      * @param Config $config
      * @param Order $orderHelper
      * @param Api $api
+     * @param Scope $scope
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         private readonly Log $log,
@@ -75,11 +79,14 @@ class Capture implements CommandInterface
         private readonly OrderRepository $orderRepo,
         private readonly Config $config,
         private readonly Order $orderHelper,
-        private readonly Api $api
+        private readonly Api $api,
+        private readonly Scope $scope
     ) {
     }
 
     /**
+     * Execute the capture.
+     *
      * @param array $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
@@ -111,6 +118,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Capturing orders with the deprecated afterShop flow.
+     *
      * @param OrderInterface $order
      * @param array $commandSubject
      * @return void
@@ -215,6 +224,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Get amount and return as float.
+     *
      * @param array $data
      * @return float
      * @throws PaymentDataException
@@ -230,6 +241,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Capturing orders with MAPI.
+     *
      * @param OrderInterface $order
      * @return void
      * @throws ApiException
@@ -239,16 +252,20 @@ class Capture implements CommandInterface
      * @throws EmptyValueException
      * @throws IllegalTypeException
      * @throws IllegalValueException
-     * @throws InputException
      * @throws JsonException
      * @throws ReflectionException
      * @throws ValidationException
+     * @throws InputException
      * @throws Exception
      */
     private function mapi(OrderInterface $order): void
     {
-        $id = $this->orderHelper->getPaymentId(order: $order);
-        $payment = Repository::get(paymentId: $id);
+        $payment = Mapi::getMapiPayment(
+            order: $order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
 
         if (!$payment->canCapture() ||
             $payment->status === Status::TASK_REDIRECTION_REQUIRED
@@ -257,7 +274,12 @@ class Capture implements CommandInterface
         }
 
         Repository::capture(
-            paymentId: $id,
+            paymentId: Mapi::getPaymentId(
+                order: $order,
+                orderHelper: $this->orderHelper,
+                config: $this->config,
+                scope: $this->scope
+            ),
             orderLines: $this->getOrderLines(
                 items: $this->invoiceConverter->convert(entity: $this->invoice->getInvoice())
             )

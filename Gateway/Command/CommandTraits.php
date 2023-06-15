@@ -23,7 +23,9 @@ use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLine;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLineCollection;
 use Resursbank\Ecom\Lib\Order\OrderLineType;
+use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\RBEcomPHP\ResursBank;
+use Throwable;
 use function get_class;
 
 /**
@@ -32,8 +34,7 @@ use function get_class;
 trait CommandTraits
 {
     /**
-     * Use the addOrderLine method in ECom to add payload data while avoiding
-     * methods that override supplied data.
+     * Use the addOrderLine method in ECom to add payload data while avoiding methods that override supplied data.
      *
      * @param ResursBank $connection
      * @param array<Item> $data
@@ -59,6 +60,8 @@ trait CommandTraits
     }
 
     /**
+     * Get the payment.
+     *
      * @param PaymentDataObjectInterface $data
      * @return Payment
      * @throws PaymentDataException
@@ -72,7 +75,7 @@ trait CommandTraits
             throw new PaymentDataException(phrase: __(
                 'Unexpected payment entity. Expected %1 but got %2.',
                 Payment::class,
-                get_class($data->getPayment())
+                get_class(object: $data->getPayment())
             ));
         }
 
@@ -80,6 +83,8 @@ trait CommandTraits
     }
 
     /**
+     * Check if MAPI is activated to handle orders.
+     *
      * @param array $commandSubject
      * @return bool
      * @throws InputException
@@ -92,6 +97,8 @@ trait CommandTraits
     }
 
     /**
+     * Get the order.
+     *
      * @param array $commandSubject
      * @return OrderInterface
      * @throws InputException
@@ -104,7 +111,8 @@ trait CommandTraits
     }
 
     /**
-     * getOrderLines renderer for capture and refund.
+     * OrderLine renderer for capture and refund.
+     *
      * @param array $items
      * @return OrderLineCollection
      * @throws IllegalTypeException

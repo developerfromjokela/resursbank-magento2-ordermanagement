@@ -13,18 +13,18 @@ use Exception;
 use JsonException;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Exception\InputException;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
-use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Helper\Order;
 use ReflectionException;
 use Resursbank\Core\Block\Adminhtml\Template;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Order;
+use Resursbank\Core\Helper\Mapi;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
@@ -34,6 +34,7 @@ use Resursbank\Ecom\Exception\Validation\EmptyValueException;
 use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
 use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Exception\ValidationException;
+use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
 use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -73,7 +74,9 @@ class PaymentInformation extends Template
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentMethods $paymentMethods
      * @param Order $orderHelper
-     * @param mixed[] $data
+     * @param Scope $scope
+     * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Context $context,
@@ -85,6 +88,7 @@ class PaymentInformation extends Template
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PaymentMethods $paymentMethods,
         private readonly Order $orderHelper,
+        private readonly Scope $scope,
         array $data = []
     ) {
         parent::__construct(context: $context, data: $data);
@@ -116,6 +120,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get payment information widget.
+     *
      * @return string
      */
     public function getWidgetHtml(): string
@@ -132,6 +138,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get payment information css.
+     *
      * @return string
      */
     public function getWidgetCss(): string
@@ -169,10 +177,7 @@ class PaymentInformation extends Template
     }
 
     /**
-     * Uses the request to find the order id. Works if the request includes
-     * either an "order_id" number or "invoice_id" number.
-     *
-     * Returns 0 if an id could not be found.
+     * Get order id from request - if request includes "order_id" or "invoice_id" number. Returns 0 if not found.
      *
      * @return int
      */
@@ -182,18 +187,18 @@ class PaymentInformation extends Template
 
         try {
             $request = $this->getRequest();
-            $orderId = (int) $request->getParam(key: 'order_id');
-            $invoiceId = (int) $request->getParam(key: 'invoice_id');
-            $creditmemoId = (int) $request->getParam(key: 'creditmemo_id');
+            $orderId = (int)$request->getParam(key: 'order_id');
+            $invoiceId = (int)$request->getParam(key: 'invoice_id');
+            $creditmemoId = (int)$request->getParam(key: 'creditmemo_id');
 
             if ($orderId !== 0) {
                 $result = $orderId;
             } elseif ($invoiceId !== 0) {
-                $result = (int) $this->invoiceRepo
+                $result = (int)$this->invoiceRepo
                     ->get(id: $invoiceId)
                     ->getOrderId();
             } elseif ($creditmemoId !== 0) {
-                $result = (int) $this->creditmemoRepo
+                $result = (int)$this->creditmemoRepo
                     ->get(id: $creditmemoId)
                     ->getOrderId();
             }
@@ -225,6 +230,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get the payment information widget.
+     *
      * @return PaymentInformationWidget
      * @throws JsonException
      * @throws InputException
@@ -245,8 +252,15 @@ class PaymentInformation extends Template
             return $this->widget;
         }
 
+        $paymentId = Mapi::getPaymentId(
+            order: $this->order,
+            orderHelper: $this->orderHelper,
+            config: $this->config,
+            scope: $this->scope
+        );
+
         $this->widget = new PaymentInformationWidget(
-            paymentId: $this->orderHelper->getPaymentId(order: $this->order),
+            paymentId: $paymentId,
             currencySymbol: 'kr',
             currencyFormat: CurrencyFormat::SYMBOL_LAST
         );
