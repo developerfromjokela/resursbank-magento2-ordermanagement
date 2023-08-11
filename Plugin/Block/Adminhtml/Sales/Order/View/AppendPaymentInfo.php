@@ -68,7 +68,9 @@ class AppendPaymentInfo
     ): string {
         try {
             if ($this->apiPayment->validateOrder($subject->getOrder())) {
-                $result = $this->paymentBlock->toHtml() . $result;
+                $result = $this->paymentBlock
+                        ->setNameInLayout('resursbank_payment_info')
+                        ->toHtml() . $result;
             }
         } catch (Exception $e) {
             $this->log->error($e->getMessage());
