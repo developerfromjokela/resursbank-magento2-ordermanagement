@@ -111,6 +111,17 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Checks if product should be omitted when crediting.
+     *
+     * @return bool
+     * @throws PaymentDataException
+     */
+    public function omit(): bool
+    {
+        return $this->isBundle() && $this->hasDynamicPrice();
+    }
+
+    /**
      * Checks if the product has dynamic pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *

@@ -1,7 +1,7 @@
 {
     "name": "resursbank/magento-ordermanagement",
     "type": "magento2-module",
-    "version": "1.8.3",
+    "version": "1.8.6",
     "description": "Resurs Bank - Order Management",
     "keywords": ["magento", "checkout", "resursbank", "order", "management"],
     "license": ["Apache-2.0"],

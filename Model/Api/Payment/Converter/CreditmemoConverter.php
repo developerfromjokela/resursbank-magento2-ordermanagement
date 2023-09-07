@@ -125,6 +125,10 @@ class CreditmemoConverter extends AbstractConverter
                         'product' => $product
                     ]);
 
+                    if ($item->omit()) {
+                        continue;
+                    }
+
                     $result[] = $item->getItem();
 
                     $this->addDiscountItem(
