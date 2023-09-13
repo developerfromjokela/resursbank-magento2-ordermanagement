@@ -31,16 +31,25 @@
                         <label>Test callbacks</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Test</frontend_model>
                         <config_path>resursbank/callbacks/test</config_path>
+                        <depends>
+                            <field id="*/resursbank_section/api/flow" separator=",">simplified,rco,mapi</field>
+                        </depends>
                     </field>
                     <field id="test_triggered_at" type="text" sortOrder="2" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Test last triggered at</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestTriggeredAt</frontend_model>
                         <config_path>resursbank/callbacks/test_triggered_at</config_path>
+                        <depends>
+                            <field id="*/resursbank_section/api/flow" separator=",">simplified,rco,mapi</field>
+                        </depends>
                     </field>
                     <field id="test_received_at" type="text" sortOrder="3" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Test last received at</label>
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\TestReceivedAt</frontend_model>
                         <config_path>resursbank/callbacks/test_received_at</config_path>
+                        <depends>
+                            <field id="*/resursbank_section/api/flow" separator=",">simplified,rco,mapi</field>
+                        </depends>
                     </field>
                     <field id="url_list" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing</frontend_model>
