@@ -82,7 +82,7 @@ class ProductItem extends AbstractItem
         $product = $this->getOrderItem();
 
         return $this->sanitizeUnitAmountWithoutVat(
-            $this->isBundle() && !$this->hasFixedPrice() ?
+            $this->isBundle() && $this->hasDynamicPrice() ?
                 0.0 :
                 (float) $product->getPriceInclTax() / (1 + ((float) $product->getTaxPercent() / 100))
         );
@@ -95,7 +95,7 @@ class ProductItem extends AbstractItem
     public function getVatPct(): int
     {
         $product = $this->getOrderItem();
-        $result = $this->isBundle() && !$this->hasFixedPrice() ?
+        $result = $this->isBundle() && $this->hasDynamicPrice() ?
             0.0 :
             (float) $product->getTaxPercent();
 
@@ -120,18 +120,6 @@ class ProductItem extends AbstractItem
     private function hasDynamicPrice(): bool
     {
         return $this->getOrderItem()->isChildrenCalculated();
-    }
-
-    /**
-     * Checks if the product has fixed pricing by its parent's product
-     * options. If a parent can't be found the product itself will be checked.
-     *
-     * @return bool
-     * @throws PaymentDataException
-     */
-    private function hasFixedPrice(): bool
-    {
-        return !$this->getOrderItem()->isChildrenCalculated();
     }
 
     /**
@@ -169,7 +157,7 @@ class ProductItem extends AbstractItem
      */
     public function getTotalAmountInclVat(): float
     {
-        $result = $this->isBundle() && !$this->hasFixedPrice() ?
+        $result = $this->isBundle() && $this->hasDynamicPrice() ?
             0.0 :
             (float) $this->product->getRowTotalInclTax();
         return round(

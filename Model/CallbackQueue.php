@@ -35,6 +35,9 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as CallbackQueueResourceModel;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class CallbackQueue extends AbstractModel implements CallbackQueueInterface
 {
     /** @var OrderInterface  */
@@ -72,6 +75,24 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         $this->_init(ResourceModel::class);
     }
 
+    /**
+     * @param Context $context
+     * @param Registry $registry
+     * @param OrderInterface $orderInterface
+     * @param TypeListInterface $cacheTypeList
+     * @param Scope $scope
+     * @param Log $log
+     * @param CallbackLog $callbackLog
+     * @param ConfigHelper $config
+     * @param CallbackHelper $callbackHelper
+     * @param CallbackQueueFactory $callbackQueueFactory
+     * @param CollectionFactory $cqCollectionFactory
+     * @param CallbackQueueResourceModel $cqResource
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
+     * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
         Context $context,
         Registry $registry,

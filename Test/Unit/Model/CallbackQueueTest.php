@@ -30,7 +30,8 @@ use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as CallbackQueueResourceModel;
 
 /**
- *
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class CallbackQueueTest extends TestCase
 {

@@ -28,7 +28,6 @@ use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
-use Magento\Framework\UrlInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
@@ -47,7 +46,6 @@ class Callback extends AbstractHelper
      * @param Api $api
      * @param Credentials $credentials
      * @param DeploymentConfig $deploymentConfig
-     * @param RequestInterface $request
      * @param Log $log
      * @param Scope $scope
      * @param StoreManagerInterface $storeManager
@@ -59,7 +57,6 @@ class Callback extends AbstractHelper
         private readonly Api $api,
         private readonly Credentials $credentials,
         private readonly DeploymentConfig $deploymentConfig,
-        private readonly RequestInterface $request,
         private readonly Log $log,
         private readonly Scope $scope,
         private readonly StoreManagerInterface $storeManager,

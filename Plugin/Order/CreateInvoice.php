@@ -25,6 +25,8 @@ use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 
 /**
  * Perform sale operation when order status changes to 'resursbank_finalized'.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class CreateInvoice
 {

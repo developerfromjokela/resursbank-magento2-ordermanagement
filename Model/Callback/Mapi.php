@@ -26,6 +26,8 @@ use Magento\Framework\Webapi\Exception as WebapiException;
 
 /**
  * MAPI callback integration.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Mapi implements MapiInterface
 {

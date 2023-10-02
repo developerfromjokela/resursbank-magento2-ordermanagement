@@ -11,7 +11,6 @@ namespace Resursbank\Ordermanagement\Observer;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Sales\Api\Data\InvoiceInterface;
 use Magento\Sales\Model\Order\Invoice as InvoiceModel;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -46,6 +45,8 @@ class TrackInvoice implements ObserverInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @param Observer $observer
      * @return void
      */

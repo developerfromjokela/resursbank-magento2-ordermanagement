@@ -12,13 +12,9 @@ use Resursbank\Core\Helper\AbstractLog;
 
 class CallbackLog extends AbstractLog
 {
-    /**
-     * @inheritDoc
-     */
+    /** @var string */
     protected string $loggerName = 'Resursbank Callbacks';
 
-    /**
-     * @inheritDoc
-     */
+    /** @var string */
     protected string $file = 'resursbank_ordermanagement_callbacks';
 }

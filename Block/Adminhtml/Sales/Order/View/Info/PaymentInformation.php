@@ -34,7 +34,6 @@ use Resursbank\Ecom\Exception\Validation\EmptyValueException;
 use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
 use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Exception\ValidationException;
-use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
 use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
 use Resursbank\Ordermanagement\Helper\Log;
@@ -51,6 +50,8 @@ use Throwable;
  * so that we wouldn't cause issues with third party extensions.
  *
  * See: Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class PaymentInformation extends Template
 {

@@ -14,7 +14,8 @@ use Resursbank\Ordermanagement\Model\CallbackFactory as CallbackFactory;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
 
-class CallbackQueue {
+class CallbackQueue
+{
     /** @var Log  */
     protected Log $logger;
 
@@ -39,7 +40,13 @@ class CallbackQueue {
         $this->callbackFactory = $callbackFactory;
     }
 
-    public function execute() {
+    /**
+     * Execute queue job.
+     *
+     * @return void
+     */
+    public function execute()
+    {
         $this->logger->info("Running CallbackQueue cron job");
 
         // NOTE: Two minute delay to mitigate potential race conditions.
@@ -59,7 +66,9 @@ class CallbackQueue {
 
             $callback = $this->callbackFactory->create();
 
-            if (!empty($queuedCallback->getType()) && in_array($queuedCallback->getType(), ['unfreeze', 'booked', 'update', 'test'])) {
+            if (!empty($queuedCallback->getType()) &&
+                in_array($queuedCallback->getType(), ['unfreeze', 'booked', 'update', 'test'])
+            ) {
                 $method = $queuedCallback->getType();
                 $callback->$method($queuedCallback->getPaymentId(), $queuedCallback->getDigest());
                 try {

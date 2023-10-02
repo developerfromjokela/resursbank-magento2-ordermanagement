@@ -16,7 +16,8 @@ use Resursbank\Core\Setup\Patch\Data\RemapConfigPaths as Core;
 class RemapConfigPaths extends Core
 {
     /**
-     * @inheridoc
+     * @inheritdoc
+     *
      * @return array<string, string>
      */
     protected function getKeys(): array

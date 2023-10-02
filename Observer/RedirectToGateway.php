@@ -66,6 +66,8 @@ class RedirectToGateway implements ObserverInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @param Observer $observer
      * @return void
      */
@@ -83,6 +85,8 @@ class RedirectToGateway implements ObserverInterface
     }
 
     /**
+     * Get payment object.
+     *
      * @param Observer $observer
      * @return OrderPaymentInterface
      * @throws InvalidDataException
@@ -111,6 +115,8 @@ class RedirectToGateway implements ObserverInterface
     }
 
     /**
+     * Save history entry.
+     *
      * @param int $paymentId
      * @return void
      * @throws AlreadyExistsException

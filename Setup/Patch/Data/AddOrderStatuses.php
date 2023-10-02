@@ -37,7 +37,7 @@ class AddOrderStatuses implements DataPatchInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function getDependencies(): array
     {
@@ -45,7 +45,7 @@ class AddOrderStatuses implements DataPatchInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getAliases(): array
     {
@@ -53,7 +53,7 @@ class AddOrderStatuses implements DataPatchInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      *
      * NOTE: We are utilising insertOnDuplicate specifically to avoid collisions
      * with order statuses supplied through our deprecated module.

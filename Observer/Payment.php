@@ -70,6 +70,8 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @param Observer $observer
      * @return void
      */
@@ -91,6 +93,8 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Get payment from order.
+     *
      * @param Observer $observer
      * @return OrderPaymentInterface
      * @throws InvalidDataException
@@ -119,6 +123,8 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Fetch book payment status.
+     *
      * The payment session will only be supplied when available (ie in events
      * dispatched after completing an API call).
      *
@@ -135,9 +141,11 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Saves a history entry.
+     *
      * @param int $paymentId
-     * @param string $eventName
      * @param string $paymentStatus
+     * @param string $eventName
      * @return void
      * @throws AlreadyExistsException
      * @throws InvalidDataException
@@ -166,6 +174,8 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Fetch payment history.
+     *
      * @param string $eventName
      * @return string
      */

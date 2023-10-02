@@ -39,6 +39,8 @@ class Config extends AbstractConfig
     public const RECEIVED_KEY = 'receivedAt';
 
     /**
+     * Checks if after shop functionality is enabled.
+     *
      * @param string $scopeCode
      * @param string $scopeType
      * @return bool
@@ -75,6 +77,8 @@ class Config extends AbstractConfig
     }
 
     /**
+     * Get when callback test was last triggered.
+     *
      * NOTE: scope code may be null (when entering the config there is no scope
      * provided, thus no code / type to collect from the request data).
      *
@@ -115,6 +119,8 @@ class Config extends AbstractConfig
     }
 
     /**
+     * Get last time a callback test response was received.
+     *
      * NOTE: scope code may be null (when entering the config there is no scope
      * provided, thus no code / type to collect from the request data).
      *
@@ -135,6 +141,8 @@ class Config extends AbstractConfig
     }
 
     /**
+     * Check if automatic invoicing is activated.
+     *
      * @param string $scopeCode
      * @param string $scopeType
      * @return bool

@@ -71,6 +71,8 @@ class Registration implements HttpGetActionInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @return ResultInterface
      */
     public function execute(): ResultInterface

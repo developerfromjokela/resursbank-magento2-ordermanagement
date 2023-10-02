@@ -35,6 +35,8 @@ use Throwable;
 
 /**
  * Handles payment history updates.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class PaymentHistory extends AbstractHelper
 {
@@ -68,10 +70,10 @@ class PaymentHistory extends AbstractHelper
      *
      * @param OrderInterface $order
      * @param string $event
+     * @param string $extra
      * @throws AlreadyExistsException
-     * @throws ResolveOrderStatusFailedException
      * @throws LocalizedException
-     * @throws Exception
+     * @throws ResolveOrderStatusFailedException
      */
     public function syncOrderStatus(
         OrderInterface $order,

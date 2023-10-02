@@ -213,6 +213,7 @@ class Callback implements CallbackInterface
      * @throws AlreadyExistsException
      * @throws LocalizedException
      * @throws Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     private function execute(
         string $type,
