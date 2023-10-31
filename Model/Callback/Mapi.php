@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model\Callback;
 
+use Magento\Framework\Webapi\Rest\Request;
 use Resursbank\Core\Helper\Config;
 use Resursbank\Ecom\Exception\HttpException;
 use Resursbank\Ecom\Lib\Model\Callback\Authorization;
@@ -26,13 +27,20 @@ use Magento\Framework\Webapi\Exception as WebapiException;
 
 /**
  * MAPI callback integration.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Mapi implements MapiInterface
 {
+    /** @var AuthorizationController $authorizationController */
+    public AuthorizationController $authorizationController;
+
     /**
      * @param Log $log
      * @param OrderHelper $orderHelper
      * @param PaymentHistory $paymentHistory
+     * @param CallbackQueue $callbackQueue
+     * @param Config $config
      */
     public function __construct(
         private readonly Log $log,
@@ -55,40 +63,7 @@ class Mapi implements MapiInterface
 
             $code = Repository::process(
                 callback: $controller->getRequestData(),
-                process: function (
-                    CallbackInterface $callback
-                ): void {
-                    $order = $this->orderHelper->getOrderFromPaymentId(
-                        paymentId: $callback->getPaymentId()
-                    );
-
-                    if ($order === null) {
-                        throw new HttpException(
-                            message: 'Order not found.',
-                            code: 503
-                        );
-                    }
-
-                    if ($this->orderHelper->getResursbankResult(order: $order) !== true) {
-                        throw new HttpException(
-                            message: 'Order not ready for callbacks yet.',
-                            code: 503
-                        );
-                    }
-
-                    if (!$this->config->isMapiActive(scopeCode: (string) $order->getStoreId())) {
-                        throw new HttpException(
-                            message: 'MAPI not activated.',
-                            code: 503
-                        );
-                    }
-
-                    $this->paymentHistory->syncOrderStatus(
-                        order: $order,
-                        event: PaymentHistoryInterface::EVENT_CALLBACK_AUTHORIZATION,
-                        extra: $callback instanceof Authorization ? 'Callback status: ' . $callback->status->name : ''
-                    );
-                }
+                process: $this->getCallbackFunction()
             );
         } catch (Throwable $error) {
             $code = 503;
@@ -127,5 +102,48 @@ class Mapi implements MapiInterface
                 httpCode: 503
             );
         }
+    }
+
+    /**
+     * Generate callback function used for processing.
+     *
+     * @return callable
+     */
+    public function getCallbackFunction(): callable
+    {
+        return function (
+            CallbackInterface $callback
+        ): void {
+            $order = $this->orderHelper->getOrderFromPaymentId(
+                paymentId: $callback->getPaymentId()
+            );
+
+            if ($order === null) {
+                throw new HttpException(
+                    message: 'Order not found.',
+                    code: 503
+                );
+            }
+
+            if ($this->orderHelper->getResursbankResult(order: $order) !== true) {
+                throw new HttpException(
+                    message: 'Order not ready for callbacks yet.',
+                    code: 503
+                );
+            }
+
+            if (!$this->config->isMapiActive(scopeCode: (string) $order->getStoreId())) {
+                throw new HttpException(
+                    message: 'MAPI not activated.',
+                    code: 503
+                );
+            }
+
+            $this->paymentHistory->syncOrderStatus(
+                order: $order,
+                event: PaymentHistoryInterface::EVENT_CALLBACK_AUTHORIZATION,
+                extra: $callback instanceof Authorization ? 'Callback status: ' . $callback->status->name : ''
+            );
+        };
     }
 }

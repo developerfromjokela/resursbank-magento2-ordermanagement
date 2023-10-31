@@ -35,6 +35,8 @@ use Throwable;
 
 /**
  * Handles payment history updates.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class PaymentHistory extends AbstractHelper
 {
@@ -68,10 +70,10 @@ class PaymentHistory extends AbstractHelper
      *
      * @param OrderInterface $order
      * @param string $event
+     * @param string $extra
      * @throws AlreadyExistsException
-     * @throws ResolveOrderStatusFailedException
      * @throws LocalizedException
-     * @throws Exception
+     * @throws ResolveOrderStatusFailedException
      */
     public function syncOrderStatus(
         OrderInterface $order,
@@ -91,11 +93,7 @@ class PaymentHistory extends AbstractHelper
         $stateFrom = $order->getState();
         $statusFrom = $order->getStatus();
 
-        if ($this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
-            $updatedOrder = $this->handleMapiPaymentStatus(order: $order);
-        } else {
-            $updatedOrder = $this->handleLegacyPaymentStatus(order: $order);
-        }
+        $updatedOrder = $this->handlePaymentStatus(order: $order);
 
         $entry
             ->setPaymentId(identifier: (int) $payment->getEntityId())
@@ -110,6 +108,22 @@ class PaymentHistory extends AbstractHelper
         $entry->setExtra(extra: $extra);
 
         $this->paymentHistoryRepository->save(entry: $entry);
+    }
+
+    /**
+     * Handles status changes on orders.
+     *
+     * @param OrderInterface $order
+     * @return OrderInterface
+     * @throws ResolveOrderStatusFailedException
+     */
+    public function handlePaymentStatus(OrderInterface $order): OrderInterface
+    {
+        if ($this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
+            return $this->handleMapiPaymentStatus(order: $order);
+        }
+
+        return $this->handleLegacyPaymentStatus(order: $order);
     }
 
     /**
