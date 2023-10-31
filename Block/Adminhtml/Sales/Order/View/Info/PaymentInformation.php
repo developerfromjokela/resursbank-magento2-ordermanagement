@@ -120,6 +120,18 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Get payment id from order.
+     *
+     * @param OrderInterface $order
+     * @return string
+     * @throws InputException
+     */
+    public function getPaymentId(OrderInterface $order): string
+    {
+        return $this->orderHelper->getPaymentId(order: $order);
+    }
+
+    /**
      * Get payment information widget.
      *
      * @return string
