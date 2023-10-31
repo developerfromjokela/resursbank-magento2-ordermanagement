@@ -10,33 +10,15 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
-use JsonException;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Exception\InputException;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Resursbank\Core\Helper\Order;
-use ReflectionException;
 use Resursbank\Core\Block\Adminhtml\Template;
-use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Mapi;
+use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
-use Resursbank\Core\Helper\Scope;
-use Resursbank\Ecom\Exception\ApiException;
-use Resursbank\Ecom\Exception\AuthException;
-use Resursbank\Ecom\Exception\ConfigException;
-use Resursbank\Ecom\Exception\CurlException;
-use Resursbank\Ecom\Exception\FilesystemException;
-use Resursbank\Ecom\Exception\Validation\EmptyValueException;
-use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
-use Resursbank\Ecom\Exception\Validation\IllegalValueException;
-use Resursbank\Ecom\Exception\ValidationException;
-use Resursbank\Ecom\Module\Payment\Repository;
-use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
-use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 use RuntimeException;
@@ -51,6 +33,8 @@ use Throwable;
  * so that we wouldn't cause issues with third party extensions.
  *
  * See: Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class PaymentInformation extends Template
 {
@@ -60,21 +44,14 @@ class PaymentInformation extends Template
     public OrderInterface $order;
 
     /**
-     * @var PaymentInformationWidget|null
-     */
-    private ?PaymentInformationWidget $widget = null;
-
-    /**
      * @param Context $context
      * @param ViewModel $viewModel
      * @param InvoiceRepositoryInterface $invoiceRepo
      * @param CreditmemoRepositoryInterface $creditmemoRepo
      * @param Log $log
-     * @param Config $config
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentMethods $paymentMethods
      * @param Order $orderHelper
-     * @param Scope $scope
      * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -83,12 +60,10 @@ class PaymentInformation extends Template
         ViewModel $viewModel,
         private readonly InvoiceRepositoryInterface $invoiceRepo,
         private readonly CreditmemoRepositoryInterface $creditmemoRepo,
-        private readonly Log $log,
-        private readonly Config $config,
+        public readonly Log $log,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PaymentMethods $paymentMethods,
-        private readonly Order $orderHelper,
-        private readonly Scope $scope,
+        public readonly Order $orderHelper,
         array $data = []
     ) {
         parent::__construct(context: $context, data: $data);
@@ -109,14 +84,7 @@ class PaymentInformation extends Template
             value: $this->getData(key: 'view_model')
         );
 
-        $template = $this->config->isMapiActive(
-            scopeCode: $this->order->getStoreId()
-        ) ? 'mapi' : 'deprecated';
-
-        $this->setTemplate(
-            template: 'Resursbank_Ordermanagement' .
-            "::sales/order/view/info/payment-information/$template.phtml"
-        );
+        $this->setTemplate(template: $this->getTemplate());
     }
 
     /**
@@ -134,37 +102,13 @@ class PaymentInformation extends Template
     /**
      * Get payment information widget.
      *
-     * @return string
-     */
-    public function getWidgetHtml(): string
-    {
-        $result = '';
-
-        try {
-            $result = $this->getWidget()->content;
-        } catch (Throwable $error) {
-            $this->log->exception(error: $error);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get payment information css.
+     * Allows us to overwrite template file based on configured API.
      *
      * @return string
      */
-    public function getWidgetCss(): string
+    public function getTemplate(): string
     {
-        $result = '';
-
-        try {
-            $result = $this->getWidget()->css;
-        } catch (Throwable $error) {
-            $this->log->exception(error: $error);
-        }
-
-        return $result;
+        return 'Resursbank_Ordermanagement::sales/order/view/info/payment-information.phtml';
     }
 
     /**
@@ -239,44 +183,5 @@ class PaymentInformation extends Template
         return $this->paymentMethods->isResursBankMethod(
             code: $order->getPayment()->getMethod()
         );
-    }
-
-    /**
-     * Get the payment information widget.
-     *
-     * @return PaymentInformationWidget
-     * @throws JsonException
-     * @throws InputException
-     * @throws ReflectionException
-     * @throws ApiException
-     * @throws AuthException
-     * @throws ConfigException
-     * @throws CurlException
-     * @throws FilesystemException
-     * @throws ValidationException
-     * @throws EmptyValueException
-     * @throws IllegalTypeException
-     * @throws IllegalValueException
-     */
-    private function getWidget(): PaymentInformationWidget
-    {
-        if ($this->widget !== null) {
-            return $this->widget;
-        }
-
-        $paymentId = Mapi::getPaymentId(
-            order: $this->order,
-            orderHelper: $this->orderHelper,
-            config: $this->config,
-            scope: $this->scope
-        );
-
-        $this->widget = new PaymentInformationWidget(
-            paymentId: $paymentId,
-            currencySymbol: 'kr',
-            currencyFormat: CurrencyFormat::SYMBOL_LAST
-        );
-
-        return $this->widget;
     }
 }
