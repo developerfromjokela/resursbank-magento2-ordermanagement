@@ -20,18 +20,11 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Resursbank\Core\Helper\Api;
-use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Scope;
-use Resursbank\Core\Helper\Order as OrderHelper;
-use Resursbank\Ecom\Lib\Model\Payment;
-use Resursbank\Ecom\Module\Payment\Enum\Status;
-use Resursbank\Ecom\Module\Payment\Repository as PaymentRepository;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
-use Throwable;
 
 /**
  * Handles payment history updates.
@@ -46,21 +39,13 @@ class PaymentHistory extends AbstractHelper
      * @param PaymentHistoryRepositoryInterface $paymentHistoryRepository
      * @param OrderRepositoryInterface $orderRepo
      * @param Api $api
-     * @param Scope $scope
-     * @param Config $config
-     * @param OrderHelper $orderHelper
-     * @param Log $logHelper
      */
     public function __construct(
         Context $context,
         private readonly PaymentHistoryFactory $paymentHistoryFactory,
         private readonly PaymentHistoryRepositoryInterface $paymentHistoryRepository,
         private readonly OrderRepositoryInterface $orderRepo,
-        private readonly Api $api,
-        private readonly Scope $scope,
-        private readonly Config $config,
-        private readonly OrderHelper $orderHelper,
-        private readonly Log $logHelper
+        private readonly Api $api
     ) {
         parent::__construct(context: $context);
     }
@@ -93,7 +78,7 @@ class PaymentHistory extends AbstractHelper
         $stateFrom = $order->getState();
         $statusFrom = $order->getStatus();
 
-        $updatedOrder = $this->handlePaymentStatus(order: $order);
+        $updatedOrder = $this->updateOrderStatus(order: $order);
 
         $entry
             ->setPaymentId(identifier: (int) $payment->getEntityId())
@@ -111,22 +96,6 @@ class PaymentHistory extends AbstractHelper
     }
 
     /**
-     * Handles status changes on orders.
-     *
-     * @param OrderInterface $order
-     * @return OrderInterface
-     * @throws ResolveOrderStatusFailedException
-     */
-    public function handlePaymentStatus(OrderInterface $order): OrderInterface
-    {
-        if ($this->config->isMapiActive(scopeCode: $this->scope->getId(), scopeType: $this->scope->getType())) {
-            return $this->handleMapiPaymentStatus(order: $order);
-        }
-
-        return $this->handleLegacyPaymentStatus(order: $order);
-    }
-
-    /**
      * Handle status changes for legacy API orders.
      *
      * @param OrderInterface $order
@@ -134,7 +103,7 @@ class PaymentHistory extends AbstractHelper
      * @throws ResolveOrderStatusFailedException
      * @throws Exception
      */
-    private function handleLegacyPaymentStatus(OrderInterface $order): OrderInterface
+    public function updateOrderStatus(OrderInterface $order): OrderInterface
     {
         $paymentStatus = $this->getPaymentStatus(order: $order);
         $orderStatus = $this->paymentStatusToOrderStatus(paymentStatus: $paymentStatus);
@@ -147,106 +116,6 @@ class PaymentHistory extends AbstractHelper
 
         // Reload order from database.
         return $this->orderRepo->get(id: $order->getId());
-    }
-
-    /**
-     * Handle status changes for MAPI orders.
-     *
-     * @param OrderInterface $order
-     * @return OrderInterface
-     */
-    private function handleMapiPaymentStatus(OrderInterface $order): OrderInterface
-    {
-        try {
-            $payment = PaymentRepository::get(paymentId: $this->orderHelper->getPaymentId(order: $order));
-        } catch (Throwable $error) {
-            $this->logHelper->error(text: $error->getMessage());
-            return $order;
-        }
-
-        if ($order->isCanceled()) {
-            return $order;
-        }
-
-        if ($payment->isCaptured()) {
-            $this->handleCapturedMapiPayment(order: $order);
-        } elseif ($payment->isFrozen()) {
-            $this->handleFrozenMapiPayment(order: $order);
-        } elseif ($payment->status === Status::REJECTED) {
-            $this->handleRejectedMapiPayment(order: $order, payment: $payment);
-        } elseif ($payment->status === Status::ACCEPTED) {
-            $this->handleAcceptedMapiPayment(order: $order);
-        }
-
-        return $this->orderRepo->get(id: $order->getId());
-    }
-
-    /**
-     * Handles captured payments.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleCapturedMapiPayment(OrderInterface $order): void
-    {
-        $order->setState(state: Order::STATE_PROCESSING);
-        $order->setStatus(status: ResursbankStatuses::FINALIZED);
-        $this->orderRepo->save(entity: $order);
-    }
-
-    /**
-     * Handles rejected payments.
-     *
-     * @param OrderInterface $order
-     * @param Payment $payment
-     * @return void
-     */
-    private function handleRejectedMapiPayment(
-        OrderInterface $order,
-        Payment $payment
-    ): void {
-        $this->orderHelper->cancelOrder(order: $order);
-        $order->setState(state: Order::STATE_CANCELED);
-
-        try {
-            if (PaymentRepository::getTaskStatusDetails(paymentId: $payment->id)->completed) {
-                $order->setStatus(status: OrderHelper::CREDIT_DENIED_CODE);
-            }
-        } catch (Throwable $error) {
-            $this->logHelper->error(
-                text: 'Fetching task status failed: ' . $error->getMessage()
-            );
-        }
-
-        $this->orderRepo->save(entity: $order);
-    }
-
-    /**
-     * Handles frozen payments.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleFrozenMapiPayment(
-        OrderInterface $order
-    ): void {
-        $order->setState(state: Order::STATE_PAYMENT_REVIEW);
-        $order->setStatus(status: Order::STATE_PAYMENT_REVIEW);
-        $this->orderRepo->save(entity: $order);
-    }
-
-    /**
-     * Handles accepted payments.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleAcceptedMapiPayment(
-        OrderInterface $order
-    ): void {
-        $order->setState(state: Order::STATE_PENDING_PAYMENT);
-        $order->setStatus(status: ResursbankStatuses::CONFIRMED);
-        $this->orderRepo->save(entity: $order);
     }
 
     /**
