@@ -26,7 +26,7 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Mapi;
+use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
@@ -168,7 +168,7 @@ class Cancel implements CommandInterface
     private function mapi(
         OrderInterface $order
     ): void {
-        $payment = Mapi::getMapiPayment(
+        $payment = Ecom::getMapiPayment(
             order: $order,
             orderHelper: $this->orderHelper,
             config: $this->config,
@@ -182,7 +182,7 @@ class Cancel implements CommandInterface
         }
 
         Repository::cancel(
-            paymentId: Mapi::getPaymentId(
+            paymentId: Ecom::getPaymentId(
                 order: $order,
                 orderHelper: $this->orderHelper,
                 config: $this->config,

@@ -27,7 +27,7 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Mapi;
+use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AuthException;
@@ -260,7 +260,7 @@ class Capture implements CommandInterface
      */
     private function mapi(OrderInterface $order): void
     {
-        $payment = Mapi::getMapiPayment(
+        $payment = Ecom::getMapiPayment(
             order: $order,
             orderHelper: $this->orderHelper,
             config: $this->config,
@@ -274,7 +274,7 @@ class Capture implements CommandInterface
         }
 
         Repository::capture(
-            paymentId: Mapi::getPaymentId(
+            paymentId: Ecom::getPaymentId(
                 order: $order,
                 orderHelper: $this->orderHelper,
                 config: $this->config,
