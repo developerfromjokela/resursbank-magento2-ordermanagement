@@ -9,22 +9,13 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
-use Magento\Framework\Exception\LocalizedException;
-use Resursbank\Core\Helper\Callback as CoreCallback;
-use Resursbank\Core\Helper\Config;
-use Resursbank\Ecom\Exception\CallbackException;
-use Resursbank\Ecom\Lib\Model\Callback\Enum\TestStatus;
-use Resursbank\Ecom\Module\Callback\Repository;
-use Throwable;
-
-use function constant;
-
 use Exception;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Exception\ValidatorException;
@@ -36,6 +27,9 @@ use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Api\Credentials;
 use Resursbank\Core\Helper\Scope;
 use stdClass;
+use Throwable;
+
+use function constant;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -51,8 +45,6 @@ class Callback extends AbstractHelper
      * @param Log $log
      * @param Scope $scope
      * @param StoreManagerInterface $storeManager
-     * @param Config $config
-     * @param CoreCallback $coreCallback
      */
     public function __construct(
         Context $context,
@@ -62,9 +54,7 @@ class Callback extends AbstractHelper
         private readonly RequestInterface $request,
         private readonly Log $log,
         private readonly Scope $scope,
-        private readonly StoreManagerInterface $storeManager,
-        private readonly Config $config,
-        private readonly CoreCallback $coreCallback
+        private readonly StoreManagerInterface $storeManager
     ) {
         parent::__construct(context: $context);
     }
@@ -153,34 +143,22 @@ class Callback extends AbstractHelper
             );
         }
 
-        if ($this->config->isMapiActive(scopeCode: $store->getCode())) {
-            $response = Repository::triggerTest(
-                url: $this->urlCallbackTemplate(type: 'testMapi')
-            );
+        $connection = $this->api->getConnection(
+            credentials: $this->credentials->resolveFromConfig(
+                scopeCode: $this->scope->getId(),
+                scopeType: $this->scope->getType()
+            )
+        );
 
-            if ($response->status !== TestStatus::OK) {
-                throw new CallbackException(
-                    message: 'Test callback failed with status ' . $response->status->value . " ($response->code)"
-                );
-            }
-        } else {
-            $connection = $this->api->getConnection(
-                credentials: $this->credentials->resolveFromConfig(
-                    scopeCode: $this->scope->getId(),
-                    scopeType: $this->scope->getType()
-                )
-            );
-
-            // NOTE: The three 's','a','d' values exist because the API expects five
-            // values.
-            $connection->triggerCallback(params: [
-                $this->scope->getId(),
-                $this->scope->getType(),
-                's',
-                'a',
-                'd'
-            ]);
-        }
+        // NOTE: The three 's','a','d' values exist because the API expects five
+        // values.
+        $connection->triggerCallback(params: [
+            $this->scope->getId(),
+            $this->scope->getType(),
+            's',
+            'a',
+            'd'
+        ]);
     }
 
     /**
@@ -216,18 +194,14 @@ class Callback extends AbstractHelper
             );
         }
 
-        $suffix = '';
+        $suffix = $type === 'test' ?
+            '/param1/a/param2/b/param3/c/param4/d/param5/e' :
+            '/paymentId/{paymentId}/digest/{digest}';
 
-        if (!$this->config->isMapiActive(scopeCode: $store->getCode())) {
-            $suffix = $type === 'test' ?
-                '/param1/a/param2/b/param3/c/param4/d/param5/e' :
-                '/paymentId/{paymentId}/digest/{digest}';
-        }
-
-        return $this->coreCallback->getUrl(
-            store: $store,
-            type: $type,
-            suffix: $suffix
-        );
+        /** @noinspection PhpRedundantOptionalArgumentInspection */
+        return $store->getBaseUrl(
+            type: UrlInterface::URL_TYPE_LINK,
+            secure: $this->request->isSecure()
+        ) . "rest/V1/resursbank_ordermanagement/order/$type$suffix";
     }
 }
