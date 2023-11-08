@@ -28,7 +28,7 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Config;
-use Resursbank\Core\Helper\Mapi;
+use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ecom\Exception\ApiException;
@@ -263,7 +263,7 @@ class Refund implements CommandInterface
         OrderInterface $order,
         array $commandSubject
     ): void {
-        $payment = Mapi::getMapiPayment(
+        $payment = Ecom::getMapiPayment(
             order: $order,
             orderHelper: $this->orderHelper,
             config: $this->config,
@@ -278,7 +278,7 @@ class Refund implements CommandInterface
         }
 
         Repository::refund(
-            paymentId: Mapi::getPaymentId(
+            paymentId: Ecom::getPaymentId(
                 order: $order,
                 orderHelper: $this->orderHelper,
                 config: $this->config,
