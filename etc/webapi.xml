@@ -39,20 +39,4 @@
             <resource ref="anonymous" />
         </resources>
     </route>
-
-    <!-- MAPI test callback.-->
-    <route url="/V1/resursbank_ordermanagement/order/testMapi" method="POST">
-        <service class="Resursbank\Ordermanagement\Api\MapiInterface" method="test"/>
-        <resources>
-            <resource ref="anonymous" />
-        </resources>
-    </route>
-
-    <!-- MAPI authorization callback.-->
-    <route url="/V1/resursbank_ordermanagement/order/authorization" method="POST">
-        <service class="Resursbank\Ordermanagement\Api\MapiInterface" method="authorization"/>
-        <resources>
-            <resource ref="anonymous" />
-        </resources>
-    </route>
 </routes>

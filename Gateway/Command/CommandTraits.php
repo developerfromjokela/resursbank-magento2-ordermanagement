@@ -15,6 +15,7 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order\Payment;
+use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Model\Api\Payment\Converter\Item\ItemInterface;
 use Resursbank\Core\Model\Api\Payment\Item;
@@ -23,9 +24,7 @@ use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLine;
 use Resursbank\Ecom\Lib\Model\Payment\Order\ActionLog\OrderLineCollection;
 use Resursbank\Ecom\Lib\Order\OrderLineType;
-use Resursbank\Ecom\Module\Payment\Repository;
 use Resursbank\RBEcomPHP\ResursBank;
-use Throwable;
 use function get_class;
 
 /**
@@ -83,31 +82,20 @@ trait CommandTraits
     }
 
     /**
-     * Check if MAPI is activated to handle orders.
-     *
-     * @param array $commandSubject
-     * @return bool
-     * @throws InputException
-     * @throws NoSuchEntityException
-     */
-    public function isMapiActive(
-        array $commandSubject
-    ): bool {
-        return $this->config->isMapiActive(scopeCode: ($this->getOrder(commandSubject: $commandSubject))->getStoreId());
-    }
-
-    /**
      * Get the order.
      *
      * @param array $commandSubject
+     * @param OrderRepository $orderRepo
      * @return OrderInterface
      * @throws InputException
      * @throws NoSuchEntityException
      */
-    public function getOrder(array $commandSubject): OrderInterface
-    {
+    public function getOrder(
+        array $commandSubject,
+        OrderRepository $orderRepo
+    ): OrderInterface {
         $data = SubjectReader::readPayment(subject: $commandSubject);
-        return $this->orderRepo->get(id: $data->getOrder()->getId());
+        return $orderRepo->get(id: $data->getOrder()->getId());
     }
 
     /**
