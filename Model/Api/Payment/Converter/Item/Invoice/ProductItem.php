@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Model\Api\Payment\Converter\Item\Invoice;
 
-use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Invoice\Item as InvoiceItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\StoreManagerInterface;
@@ -75,6 +74,7 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
      * @throws PaymentDataException
      */
     public function getUnitAmountWithoutVat(): float
@@ -90,6 +90,7 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
      * @throws PaymentDataException
      */
     public function getVatPct(): int
@@ -111,11 +112,14 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check for dynamic price.
+     *
      * Checks if the product has dynamic pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
      * @return bool
      * @throws PaymentDataException
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
     private function hasDynamicPrice(): bool
     {
@@ -123,6 +127,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check for fixed price.
+     *
      * Checks if the product has fixed pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
@@ -135,6 +141,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Fetch order item.
+     *
      * @return OrderItem
      * @throws PaymentDataException
      */
@@ -156,6 +164,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check if product is a bundle product.
+     *
      * @return bool
      * @throws PaymentDataException
      */
@@ -165,7 +175,10 @@ class ProductItem extends AbstractItem
     }
 
     /**
-     * @inheriDoc
+     * @inheritDoc
+     *
+     * @return float
+     * @throws PaymentDataException
      */
     public function getTotalAmountInclVat(): float
     {
@@ -176,5 +189,15 @@ class ProductItem extends AbstractItem
             num: $result,
             precision: 2
         );
+    }
+
+    /**
+     * Fetches the actual invoice item.
+     *
+     * @return InvoiceItem
+     */
+    public function getInvoiceItem(): InvoiceItem
+    {
+        return $this->product;
     }
 }
