@@ -79,6 +79,8 @@ class Capture implements CommandInterface
     }
 
     /**
+     * Execution entrypoint.
+     *
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
@@ -116,6 +118,16 @@ class Capture implements CommandInterface
         }
 
         return null;
+    }
+
+    /**
+     * Fetch invoice property.
+     *
+     * @return Invoice
+     */
+    public function getInvoice(): Invoice
+    {
+        return $this->invoice;
     }
 
     /**
@@ -167,8 +179,10 @@ class Capture implements CommandInterface
             $payment->setIsTransactionClosed(true);
         }
     }
-    
+
     /**
+     * Get amount to capture.
+     *
      * @param array<mixed> $data
      * @return float
      * @throws PaymentDataException
