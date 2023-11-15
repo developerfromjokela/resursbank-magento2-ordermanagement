@@ -117,7 +117,7 @@ class Refund implements CommandInterface
      * @return Creditmemo
      * @throws PaymentDataException
      */
-    private function getMemo(
+    public function getCreditmemo(
         Payment $payment
     ): Creditmemo {
         $memo = $payment->getCreditmemo();
@@ -158,7 +158,7 @@ class Refund implements CommandInterface
         $this->addOrderLines(
             $connection,
             $this->creditmemoConverter->convert(
-                $this->getMemo($this->getPayment($data))
+                $this->getCreditmemo($this->getPayment($data))
             )
         );
 
