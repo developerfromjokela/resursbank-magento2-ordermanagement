@@ -123,18 +123,21 @@ class PaymentHistory extends AbstractHelper
      *
      * @param PaymentDataObjectInterface $data
      * @param string $event
+     * @param string|null $extra
      * @throws AlreadyExistsException
      */
     public function entryFromCmd(
         PaymentDataObjectInterface $data,
-        string $event
+        string $event,
+        ?string $extra = null
     ): void {
         $entry = $this->paymentHistoryFactory->create();
 
         /** @phpstan-ignore-next-line */
         $entry->setPaymentId(identifier: (int) $data->getPayment()->getId())
             ->setEvent(event: $event)
-            ->setUser(user: PaymentHistoryInterface::USER_CLIENT);
+            ->setUser(user: PaymentHistoryInterface::USER_CLIENT)
+            ->setExtra(extra: $extra);
 
         $this->paymentHistoryRepository->save(entry: $entry);
     }
