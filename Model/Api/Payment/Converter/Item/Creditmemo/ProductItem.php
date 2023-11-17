@@ -50,6 +50,16 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Fetch the actual credit memo item.
+     *
+     * @return CreditmemoItem
+     */
+    public function getCreditmemoItem(): CreditmemoItem
+    {
+        return $this->product;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getArtNo(): string
@@ -59,6 +69,8 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
+     * @return string
      */
     public function getDescription(): string
     {
@@ -67,6 +79,8 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
+     * @return float
      */
     public function getQuantity(): float
     {
@@ -75,6 +89,7 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
      * @throws PaymentDataException
      */
     public function getUnitAmountWithoutVat(): float
@@ -90,6 +105,7 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
      * @throws PaymentDataException
      */
     public function getVatPct(): int
@@ -104,6 +120,8 @@ class ProductItem extends AbstractItem
 
     /**
      * @inheritDoc
+     *
+     * @return string
      */
     public function getType(): string
     {
@@ -122,6 +140,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check for dynamic price.
+     *
      * Checks if the product has dynamic pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
@@ -134,6 +154,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check for fixed price.
+     *
      * Checks if the product has fixed pricing by its parent's product
      * options. If a parent can't be found the product itself will be checked.
      *
@@ -146,6 +168,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Fetch order item from credit memo item.
+     *
      * @return OrderItem
      * @throws PaymentDataException
      */
@@ -167,6 +191,8 @@ class ProductItem extends AbstractItem
     }
 
     /**
+     * Check if product is a bundle.
+     *
      * @return bool
      * @throws PaymentDataException
      */
@@ -176,7 +202,7 @@ class ProductItem extends AbstractItem
     }
 
     /**
-     * @inheriDoc
+     * @inheritDoc
      */
     public function getTotalAmountInclVat(): float
     {
