@@ -32,6 +32,11 @@ class InvoiceConverter extends AbstractConverter
     private ProductItemFactory $productItemFactory;
 
     /**
+     * @var Invoice
+     */
+    private ?Invoice $invoice = null;
+
+    /**
      * @param Log $log
      * @param TaxItemResourceFactory $taxItemResourceFact
      * @param ShippingItemFactory $shippingItemFactory
@@ -56,6 +61,18 @@ class InvoiceConverter extends AbstractConverter
     }
 
     /**
+     * Get invoice or null if not set.
+     *
+     * @return Invoice|null
+     */
+    public function getInvoice(): Invoice|null
+    {
+        return $this->invoice;
+    }
+
+    /**
+     * Convert supplied entity to an array of PaymentItem instances.
+     *
      * Convert supplied entity to a collection of PaymentItem instances. These
      * objects can later be mutated into a simple array the API can interpret.
      *
@@ -66,6 +83,7 @@ class InvoiceConverter extends AbstractConverter
     public function convert(
         Invoice $entity
     ): array {
+        $this->invoice = $entity;
         $shippingMethod = $entity->getOrder()->getShippingMethod();
 
         return array_merge(
@@ -111,7 +129,9 @@ class InvoiceConverter extends AbstractConverter
 
                     $this->addDiscountItem(
                         amount: (float) $product->getDiscountAmount(),
-                        taxPercent: $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
+                        taxPercent:
+                            $product->getDiscountTaxCompensationAmount() > 0 ?
+                                $item->getItem()->getVatPct() : 0,
                         productQty: (float) $product->getQty(),
                         items: $discountItems
                     );
