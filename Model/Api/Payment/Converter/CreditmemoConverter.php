@@ -39,6 +39,11 @@ class CreditmemoConverter extends AbstractConverter
     private ItemFactory $itemFactory;
 
     /**
+     * @var Creditmemo
+     */
+    private ?Creditmemo $creditmemo = null;
+
+    /**
      * @param Log $log
      * @param TaxItemResourceFactory $taxItemResourceFact
      * @param ShippingItemFactory $shippingItemFactory
@@ -66,6 +71,18 @@ class CreditmemoConverter extends AbstractConverter
     }
 
     /**
+     * Get credit memo or null.
+     *
+     * @return Creditmemo|null
+     */
+    public function getCreditmemo(): ?Creditmemo
+    {
+        return $this->creditmemo;
+    }
+
+    /**
+     * Convert supplied entity to an array of PaymentItem instances.
+     *
      * Convert supplied entity to a collection of PaymentItem instances. These
      * objects can later be mutated into a simple array the API can interpret.
      *
@@ -76,6 +93,8 @@ class CreditmemoConverter extends AbstractConverter
     public function convert(
         Creditmemo $entity
     ): array {
+        $this->creditmemo = $entity;
+
         if ((float) $entity->getGrandTotal() < 0.0) {
             throw new LocalizedException(
                 __('Resurs Bank does not support negative credit memos.')
@@ -133,7 +152,9 @@ class CreditmemoConverter extends AbstractConverter
 
                     $this->addDiscountItem(
                         amount: (float) $product->getDiscountAmount(),
-                        taxPercent: $product->getDiscountTaxCompensationAmount() > 0 ? $item->getItem()->getVatPct() : 0,
+                        taxPercent:
+                        $product->getDiscountTaxCompensationAmount() > 0 ?
+                            $item->getItem()->getVatPct() : 0,
                         productQty: (float) $product->getQty(),
                         items: $discountItems
                     );
@@ -154,7 +175,7 @@ class CreditmemoConverter extends AbstractConverter
      * @return PaymentItem[]
      * @throws Exception
      */
-    protected function getAdjustmentFee(
+    public function getAdjustmentFee(
         Creditmemo $entity
     ): array {
         $result = [];
