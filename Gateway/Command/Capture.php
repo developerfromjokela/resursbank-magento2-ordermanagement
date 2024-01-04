@@ -108,7 +108,8 @@ class Capture implements CommandInterface
         $store = $this->storeManager->getStore(storeId: $order->getStoreId());
 
         if (!$this->configHelper->isAfterShopEnabled(
-            scopeCode: $store->getCode())
+            scopeCode: $store->getCode()
+        )
         ) {
             return null;
         }
