@@ -76,6 +76,8 @@ class Cancel implements CommandInterface
     }
 
     /**
+     * Execution entrypoint.
+     *
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException

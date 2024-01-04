@@ -61,6 +61,9 @@ class Refund implements CommandInterface
      * @param ApiPayment $apiPayment
      * @param PaymentHistory $paymentHistory
      * @param CreditmemoConverter $creditmemoConverter
+     * @param Config $configHelper
+     * @param StoreManagerInterface $storeManager
+     * @param OrderRepository $orderRepository
      */
     public function __construct(
         Log $log,
@@ -78,6 +81,8 @@ class Refund implements CommandInterface
     }
 
     /**
+     * Execution entrypoint.
+     *
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws PaymentException
@@ -101,7 +106,6 @@ class Refund implements CommandInterface
         ) {
             return null;
         }
-
 
         try {
             // Establish API connection.

@@ -68,6 +68,7 @@ class Capture implements CommandInterface
      * @param InvoiceConverter $invoiceConverter
      * @param Config $configHelper
      * @param StoreManagerInterface $storeManager
+     * @param OrderRepository $orderRepository
      */
     public function __construct(
         Log $log,
@@ -113,7 +114,6 @@ class Capture implements CommandInterface
         ) {
             return null;
         }
-
 
         try {
             // Establish API connection.
