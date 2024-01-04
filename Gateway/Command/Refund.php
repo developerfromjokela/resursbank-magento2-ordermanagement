@@ -16,11 +16,14 @@ use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
+use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use Resursbank\Ordermanagement\Model\Api\Payment\Converter\CreditmemoConverter;
@@ -63,7 +66,10 @@ class Refund implements CommandInterface
         Log $log,
         ApiPayment $apiPayment,
         PaymentHistory $paymentHistory,
-        CreditmemoConverter $creditmemoConverter
+        CreditmemoConverter $creditmemoConverter,
+        private readonly Config $configHelper,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly OrderRepository $orderRepository
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
@@ -85,7 +91,16 @@ class Refund implements CommandInterface
 
         // Resolve data from command subject.
         $data = SubjectReader::readPayment($commandSubject);
+        $order = $this->orderRepository->get(id: $data->getOrder()->getId());
         $paymentId = $data->getOrder()->getOrderIncrementId();
+        $store = $this->storeManager->getStore(storeId: $order->getStoreId());
+
+        if (!$this->configHelper->isAfterShopEnabled(
+            scopeCode: $store->getCode())
+        ) {
+            return null;
+        }
+
 
         try {
             // Establish API connection.
