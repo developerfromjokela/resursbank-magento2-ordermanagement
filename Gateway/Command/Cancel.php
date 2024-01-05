@@ -18,11 +18,13 @@ use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
+use Resursbank\Ordermanagement\Helper\Config;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -50,32 +52,32 @@ class Cancel implements CommandInterface
     private Api $api;
 
     /**
-     * @var OrderRepository
-     */
-    private OrderRepository $orderRepo;
-
-    /**
      * @param Log $log
      * @param ApiPayment $apiPayment
      * @param PaymentHistory $paymentHistory
      * @param Api $api
-     * @param OrderRepository $orderRepo
+     * @param OrderRepository $orderRepository
+     * @param Config $configHelper
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         PaymentHistory $paymentHistory,
         Api $api,
-        OrderRepository $orderRepo
+        private readonly OrderRepository $orderRepository,
+        private readonly Config $configHelper,
+        private readonly StoreManagerInterface $storeManager
     ) {
         $this->log = $log;
         $this->api = $api;
         $this->apiPayment = $apiPayment;
         $this->paymentHistory = $paymentHistory;
-        $this->orderRepo = $orderRepo;
     }
 
     /**
+     * Execution entrypoint.
+     *
      * @param array<mixed> $commandSubject
      * @return ResultInterface|null
      * @throws AlreadyExistsException
@@ -91,8 +93,16 @@ class Cancel implements CommandInterface
 
         // Resolve data from command subject.
         $data = SubjectReader::readPayment($commandSubject);
-        $order = $this->orderRepo->get($data->getOrder()->getId());
+        $order = $this->orderRepository->get($data->getOrder()->getId());
         $paymentId = $data->getOrder()->getOrderIncrementId();
+        $store = $this->storeManager->getStore(storeId: $order->getStoreId());
+
+        if (!$this->configHelper->isAfterShopEnabled(
+            scopeCode: $store->getCode()
+        )
+        ) {
+            return null;
+        }
 
         try {
             if ($this->api->paymentExists($order)) {

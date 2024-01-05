@@ -16,9 +16,12 @@ use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Sales\Model\OrderRepository;
+use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
+use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 use Resursbank\Ordermanagement\Model\Invoice;
@@ -63,13 +66,19 @@ class Capture implements CommandInterface
      * @param PaymentHistory $paymentHistory
      * @param Invoice $invoice
      * @param InvoiceConverter $invoiceConverter
+     * @param Config $configHelper
+     * @param StoreManagerInterface $storeManager
+     * @param OrderRepository $orderRepository
      */
     public function __construct(
         Log $log,
         ApiPayment $apiPayment,
         PaymentHistory $paymentHistory,
         Invoice $invoice,
-        InvoiceConverter $invoiceConverter
+        InvoiceConverter $invoiceConverter,
+        private readonly Config $configHelper,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly OrderRepository $orderRepository
     ) {
         $this->log = $log;
         $this->apiPayment = $apiPayment;
@@ -94,8 +103,17 @@ class Capture implements CommandInterface
         $history = &$this->paymentHistory;
 
         // Resolve data from command subject.
-        $data = SubjectReader::readPayment($commandSubject);
+        $data = SubjectReader::readPayment(subject: $commandSubject);
+        $order = $this->orderRepository->get(id: $data->getOrder()->getId());
         $paymentId = $data->getOrder()->getOrderIncrementId();
+        $store = $this->storeManager->getStore(storeId: $order->getStoreId());
+
+        if (!$this->configHelper->isAfterShopEnabled(
+            scopeCode: $store->getCode()
+        )
+        ) {
+            return null;
+        }
 
         try {
             // Establish API connection.
