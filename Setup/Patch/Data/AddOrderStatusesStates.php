@@ -16,7 +16,7 @@ use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
  * This patch adds state mapping for our custom order statuses and makes our
  * orders bearing our custom statuses visible on frontend.
  */
-class AddOrderStatuses implements DataPatchInterface
+class AddOrderStatusesStates implements DataPatchInterface
 {
     /**
      * @var ModuleDataSetupInterface
