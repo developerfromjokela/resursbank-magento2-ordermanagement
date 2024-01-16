@@ -47,3 +47,7 @@ Functionality to interact with payments at Resurs Bank.
 #### 1.8.3
 
 * Added saftey checks, ensuring code doesn't execute when not applicable to the payment method applied on an order.
+
+#### 1.8.7
+
+* Fixed order frontend visibility issue.
