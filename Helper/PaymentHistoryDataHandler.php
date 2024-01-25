@@ -261,7 +261,7 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             event: $this->convertEvent(event: $paymentHistory->getEvent()),
             user: $this->convertUser(user: $paymentHistory->getUser()),
             time: strtotime(datetime: $paymentHistory->getCreatedAt()),
-            result: $this->convertStatus(status: $paymentHistory->getResult()),
+            result: $this->convertResult(result: $paymentHistory->getResult()),
             extra: $paymentHistory->getExtra(),
             previousOrderStatus: $statusFrom,
             currentOrderStatus: $statusTo,
@@ -424,20 +424,16 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     }
 
     /**
-     * Resolve event status (type).
+     * Resolve event result..
      *
-     * @param string|null $status
+     * @param string|null $result
      * @return Result
      */
-    private function convertStatus(
-        ?string $status
+    private function convertResult(
+        ?string $result
     ): Result {
-        // Fallback to INFO for legacy events.
-        if ((string) $status === '') {
-            return Result::INFO;
-        }
-
-        return Result::from(value: $status);
+        return (string) $result !== '' ?
+            Result::from(value: $result) : Result::INFO;
     }
 
     /**
@@ -463,7 +459,8 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
         $data = trim(string: (string) $paymentHistory->getData(key: $property));
 
         $result = Translator::translate(phraseId: $label) . ': ';
-        $result .= $data !== '' ? $data : Translator::translate(phraseId: 'unchanged');
+        $result .= $data !== '' ?
+            $data : Translator::translate(phraseId: 'unchanged');
 
         return $result;
     }

@@ -10,9 +10,7 @@
             "state_to": true,
             "status_from": true,
             "status_to": true,
-            "created_at": true,
-            "is_ecom": true,
-            "status": true
+            "created_at": true
         },
         "constraint": {
             "PRIMARY": true,
