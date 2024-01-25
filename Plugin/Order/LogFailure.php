@@ -18,6 +18,7 @@ use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Core\ViewModel\Session\Checkout;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
@@ -28,51 +29,28 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 class LogFailure implements ArgumentInterface
 {
     /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var PaymentHistoryFactory
-     */
-    private PaymentHistoryFactory $phFactory;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private PaymentHistoryRepositoryInterface $phRepository;
-
-    /**
-     * @var OrderHelper
-     */
-    private OrderHelper $orderHelper;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
+     * Constructor.
+     *
      * @param Log $log
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param OrderHelper $orderHelper
+     * @param PaymentMethods $paymentMethods
+     * @param Checkout $checkout
      */
     public function __construct(
-        Log $log,
-        PaymentHistoryFactory $phFactory,
-        PaymentHistoryRepositoryInterface $phRepository,
-        OrderHelper $orderHelper,
-        PaymentMethods $paymentMethods
+        private readonly Log $log,
+        private readonly PaymentHistoryFactory $phFactory,
+        private readonly PaymentHistoryRepositoryInterface $phRepository,
+        private readonly OrderHelper $orderHelper,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly Checkout $checkout
     ) {
-        $this->log = $log;
-        $this->phFactory = $phFactory;
-        $this->phRepository = $phRepository;
-        $this->orderHelper = $orderHelper;
-        $this->paymentMethods = $paymentMethods;
     }
 
     /**
+     * Log failure event.
+     *
      * @param Failure $subject
      * @param ResultInterface $result
      * @return ResultInterface
@@ -84,14 +62,14 @@ class LogFailure implements ArgumentInterface
         ResultInterface $result
     ): ResultInterface {
         try {
-            $order = $this->orderHelper->resolveOrderFromRequest();
+            $order = $this->orderHelper->resolveOrderFromRequest(
+                lastRealOrder: $this->checkout->getLastRealOrder()
+            );
 
             if ($this->isEnabled($order)) {
                 $this->phRepository->save(
                     $this->createHistoryEntry(
-                        $this->getPaymentId(
-                            $this->orderHelper->resolveOrderFromRequest()
-                        )
+                        $this->getPaymentId($order)
                     )
                 );
             }
@@ -103,6 +81,8 @@ class LogFailure implements ArgumentInterface
     }
 
     /**
+     * Get payment id.
+     *
      * @param OrderInterface $order
      * @return int
      * @throws InvalidDataException
@@ -122,6 +102,8 @@ class LogFailure implements ArgumentInterface
     }
 
     /**
+     * Create history entry.
+     *
      * @param int $paymentId
      * @return PaymentHistoryInterface
      */

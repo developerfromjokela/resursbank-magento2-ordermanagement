@@ -17,6 +17,8 @@
         <column xsi:type="varchar" name="status_from" nullable="true" length="255" comment="What status the payment went from."/>
         <column xsi:type="varchar" name="status_to" nullable="true" length="255" comment="What status the payment went to."/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="varchar" name="result" length="255" nullable="true" comment="Type of event, e.g. success, failure, info."/>
+        <column xsi:type="varchar" name="user_reference" length="255" nullable="true" comment="Admin username or similar."/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>

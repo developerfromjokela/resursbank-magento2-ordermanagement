@@ -16,50 +16,31 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Core\Helper\Log;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Core\ViewModel\Session\Checkout;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
 class UpdateStatus implements ArgumentInterface
 {
     /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var Order
-     */
-    private Order $order;
-
-    /**
-     * @var PaymentHistory
-     */
-    private PaymentHistory $phHelper;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
      * @param Log $log
      * @param Order $order
      * @param PaymentHistory $phHelper
      * @param PaymentMethods $paymentMethods
+     * @param Checkout $checkout
      */
     public function __construct(
-        Log $log,
-        Order $order,
-        PaymentHistory $phHelper,
-        PaymentMethods $paymentMethods
+        private readonly Log $log,
+        private readonly Order $order,
+        private readonly PaymentHistory $phHelper,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly Checkout $checkout
     ) {
-        $this->log = $log;
-        $this->order = $order;
-        $this->phHelper = $phHelper;
-        $this->paymentMethods = $paymentMethods;
     }
 
     /**
+     * Log order success page reached,
+     *
      * @param Success $subject
      * @param ResultInterface $result
      * @return ResultInterface
@@ -71,11 +52,13 @@ class UpdateStatus implements ArgumentInterface
         ResultInterface $result
     ): ResultInterface {
         try {
-            $order = $this->order->resolveOrderFromRequest();
+            $order = $this->order->resolveOrderFromRequest(
+                lastRealOrder: $this->checkout->getLastRealOrder()
+            );
 
             if ($this->isEnabled($order)) {
                 $this->phHelper->syncOrderStatus(
-                    $this->order->resolveOrderFromRequest(),
+                    $order,
                     PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
                 );
             }

@@ -12,7 +12,11 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 
-class AddOrderStatuses implements DataPatchInterface
+/**
+ * This patch adds state mapping for our custom order statuses and makes our
+ * orders bearing our custom statuses visible on frontend.
+ */
+class AddOrderStatusesStates implements DataPatchInterface
 {
     /**
      * @var ModuleDataSetupInterface
@@ -61,21 +65,24 @@ class AddOrderStatuses implements DataPatchInterface
     /**
      * Apply patch.
      *
-     * NOTE: We are utilising insertOnDuplicate specifically to avoid collisions
-     * with order statuses supplied through our deprecated module.
-     *
      * @inheriDoc
      */
     public function apply(): self
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
+        $table = $this->moduleDataSetup->getTable(
+            tableName: 'sales_order_status_state'
+        );
+
         foreach ($this->resursbankStatuses->statuses() as $status) {
             $this->moduleDataSetup->getConnection()->insertOnDuplicate(
-                $this->moduleDataSetup->getTable('sales_order_status_state'),
-                [
+                table: $table,
+                data: [
                     'status' => $status['status'],
-                    'label' => $status['label']
+                    'state' => $status['state'],
+                    'is_default' => 0,
+                    'visible_on_front' => 1
                 ]
             );
         }

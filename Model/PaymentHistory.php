@@ -15,6 +15,8 @@ use Resursbank\Ordermanagement\Model\ResourceModel\PaymentHistory as ResourceMod
 class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
 {
     /**
+     * Constructor.
+     *
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      * @noinspection MagicMethodsValidityInspection
      * @noinspection PhpMissingParentCallCommonInspection
@@ -26,7 +28,6 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
 
     /**
      * @inheritDoc
-     * @noinspection PhpMissingParentCallCommonInspection
      */
     public function getId(): ?int
     {
@@ -195,6 +196,38 @@ class PaymentHistory extends AbstractModel implements PaymentHistoryInterface
     public function setCreatedAt(string $createdAt): PaymentHistoryInterface
     {
         return $this->setData(self::ENTITY_CREATED_AT, $createdAt);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResult(): string
+    {
+        return (string) $this->_getData(self::ENTITY_RESULT);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setResult(string $result): PaymentHistoryInterface
+    {
+        return $this->setData(self::ENTITY_RESULT, $result);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUserReference(): string
+    {
+        return (string) $this->_getData(self::ENTITY_USER_REFERENCE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setUserReference(string $userReference): PaymentHistoryInterface
+    {
+        return $this->setData(self::ENTITY_USER_REFERENCE, $userReference);
     }
 
     /**

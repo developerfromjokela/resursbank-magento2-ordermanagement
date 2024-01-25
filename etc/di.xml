@@ -94,4 +94,11 @@
             name="resursbank_ordermanagement_api"
             type="Resursbank\Ordermanagement\Plugin\Helper\Api" />
     </type>
+
+    <!-- Override Ecom initialization values. -->
+    <type name="Resursbank\Core\Helper\Ecom">
+        <plugin
+            name="resursbank_ordermanagement_ecom"
+            type="Resursbank\Ordermanagement\Plugin\Helper\Ecom" />
+    </type>
 </config>
