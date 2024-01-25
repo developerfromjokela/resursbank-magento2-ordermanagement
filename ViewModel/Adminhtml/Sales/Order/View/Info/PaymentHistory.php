@@ -75,10 +75,11 @@ class PaymentHistory implements ArgumentInterface
                     );
                 }
 
-                $criteria = $this->searchBuilder->addFilter(
-                    PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-                    $order->getPayment()->getEntityId()
-                )->create();
+                $criteria = $this->searchBuilder
+                    ->addFilter(
+                        PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+                        $order->getPayment()->getEntityId()
+                    )->create();
 
                 /** @var PaymentHistoryInterface[] $items */
                 $items = $this->repository
@@ -125,6 +126,8 @@ class PaymentHistory implements ArgumentInterface
     }
 
     /**
+     * Get table data from order.
+     *
      * Fetch payment history events relating to provided order and convert the
      * data to a presentational form.
      *
@@ -167,6 +170,8 @@ class PaymentHistory implements ArgumentInterface
     }
 
     /**
+     * Get order environment.
+     *
      * Get the environment that was selected in the Resurs Bank configuration
      * at the time when the order was placed.
      *
@@ -190,7 +195,10 @@ class PaymentHistory implements ArgumentInterface
     public function visible(
         Order $order
     ) : bool {
-        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
+        // resursbank_flow is not tracked for deprecated API flow options.
+        if ((string) $order->getData('resursbank_flow') !== '' ||
+            !($order->getPayment() instanceof OrderPaymentInterface)
+        ) {
             return false;
         }
 

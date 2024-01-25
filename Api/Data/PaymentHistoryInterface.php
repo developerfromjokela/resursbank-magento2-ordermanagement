@@ -66,6 +66,16 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const ENTITY_RESULT = 'result';
+
+    /**
+     * @var string
+     */
+    public const ENTITY_USER_REFERENCE = 'user_reference';
+
+    /**
+     * @var string
+     */
     public const EVENT_CALLBACK_UNFREEZE = 'callback_unfreeze';
 
     /**
@@ -373,6 +383,21 @@ interface PaymentHistoryInterface
      * @return PaymentHistoryInterface
      */
     public function setCreatedAt(string $createdAt): PaymentHistoryInterface;
+
+    /**
+     * Get value indicating whether an event was successful, failed etc.
+     *
+     * @return string
+     */
+    public function getResult(): string;
+
+    /**
+     * Set value indicating whether an event was successful, failed etc.
+     *
+     * @param string $result
+     * @return PaymentHistoryInterface
+     */
+    public function setResult(string $result): PaymentHistoryInterface;
 
     /**
      * Get the label for an event.

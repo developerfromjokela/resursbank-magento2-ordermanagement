@@ -17,6 +17,8 @@
         <column xsi:type="varchar" name="status_from" nullable="true" length="255" comment="What status the payment went from."/>
         <column xsi:type="varchar" name="status_to" nullable="true" length="255" comment="What status the payment went to."/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="varchar" name="result" length="255" nullable="true" comment="Event result, e.g. success, failure, info. Only used by Ecom widget."/>
+        <column xsi:type="varchar" name="user_reference" length="255" nullable="true" comment="Admin username or similar. Only used by Ecom widget."/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>

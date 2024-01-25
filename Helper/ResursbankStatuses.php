@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Resursbank\Ordermanagement\Helper;
 
+use Magento\Sales\Model\Order;
+
 class ResursbankStatuses
 {
     /**
@@ -60,19 +62,23 @@ class ResursbankStatuses
         return [
             [
                 'status' => self::PAYMENT_REVIEW,
-                'label' => self::PAYMENT_REVIEW_LABEL
+                'label' => self::PAYMENT_REVIEW_LABEL,
+                'state' => Order::STATE_PAYMENT_REVIEW
             ],
             [
                 'status' => self::CONFIRMED,
-                'label' => self::CONFIRMED_LABEL
+                'label' => self::CONFIRMED_LABEL,
+                'state' => Order::STATE_PENDING_PAYMENT
             ],
             [
                 'status' => self::FINALIZED,
-                'label' => self::FINALIZED_LABEL
+                'label' => self::FINALIZED_LABEL,
+                'state' => Order::STATE_PROCESSING
             ],
             [
                 'status' => self::CANCELLED,
-                'label' => self::CANCELLED_LABEL
+                'label' => self::CANCELLED_LABEL,
+                'state' => Order::STATE_CANCELED
             ]
         ];
     }
