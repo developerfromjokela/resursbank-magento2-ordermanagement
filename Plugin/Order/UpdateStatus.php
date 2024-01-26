@@ -20,6 +20,9 @@ use Resursbank\Core\ViewModel\Session\Checkout;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Helper\PaymentHistory;
 
+/**
+ * Create payment history entry indicating client reach order success page.
+ */
 class UpdateStatus implements ArgumentInterface
 {
     /**
@@ -56,14 +59,14 @@ class UpdateStatus implements ArgumentInterface
                 lastRealOrder: $this->checkout->getLastRealOrder()
             );
 
-            if ($this->isEnabled($order)) {
+            if ($this->isEnabled(order: $order)) {
                 $this->phHelper->syncOrderStatus(
-                    $order,
-                    PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
+                    order: $order,
+                    event: PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS
                 );
             }
         } catch (Exception $e) {
-            $this->log->exception($e);
+            $this->log->exception(error: $e);
         }
 
         return $result;
@@ -78,8 +81,9 @@ class UpdateStatus implements ArgumentInterface
     private function isEnabled(OrderInterface $order): bool
     {
         return (
-            $this->paymentMethods->isResursBankOrder($order) &&
-            $this->order->getResursbankResult($order) === null
+            $this->order->isLegacyFlow(order: $order) &&
+            $this->paymentMethods->isResursBankOrder(order: $order) &&
+            $this->order->getResursbankResult(order: $order) === null
         );
     }
 }
