@@ -66,15 +66,15 @@ class LogFailure implements ArgumentInterface
                 lastRealOrder: $this->checkout->getLastRealOrder()
             );
 
-            if ($this->isEnabled($order)) {
+            if ($this->isEnabled(order: $order)) {
                 $this->phRepository->save(
-                    $this->createHistoryEntry(
-                        $this->getPaymentId($order)
+                    entry: $this->createHistoryEntry(
+                        paymentId: $this->getPaymentId(order: $order)
                     )
                 );
             }
         } catch (Exception $e) {
-            $this->log->exception($e);
+            $this->log->exception(error: $e);
         }
 
         return $result;
@@ -92,7 +92,7 @@ class LogFailure implements ArgumentInterface
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new InvalidDataException(__(
+            throw new InvalidDataException(phrase: __(
                 'Payment does not exist for order ' .
                 $order->getIncrementId()
             ));
@@ -109,12 +109,11 @@ class LogFailure implements ArgumentInterface
      */
     private function createHistoryEntry(int $paymentId): PaymentHistoryInterface
     {
-        /* @noinspection PhpUndefinedMethodInspection */
         $entry = $this->phFactory->create();
         $entry
-            ->setPaymentId($paymentId)
-            ->setEvent(PaymentHistoryInterface::EVENT_REACHED_ORDER_FAILURE)
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+            ->setPaymentId(identifier: $paymentId)
+            ->setEvent(event: PaymentHistoryInterface::EVENT_REACHED_ORDER_FAILURE)
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK);
 
         return $entry;
     }
@@ -128,8 +127,9 @@ class LogFailure implements ArgumentInterface
     private function isEnabled(OrderInterface $order): bool
     {
         return (
-            $this->paymentMethods->isResursBankOrder($order) &&
-            $this->orderHelper->getResursbankResult($order) === null
+            $this->orderHelper->isLegacyFlow(order: $order) &&
+            $this->paymentMethods->isResursBankOrder(order: $order) &&
+            $this->orderHelper->getResursbankResult(order: $order) === null
         );
     }
 }
