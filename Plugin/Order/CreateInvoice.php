@@ -25,44 +25,10 @@ use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 
 /**
  * Perform sale operation when order status changes to 'resursbank_finalized'.
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class CreateInvoice
 {
-    /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var SaleOperation
-     */
-    private SaleOperation $saleOperation;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
-     * @var PaymentHistoryFactory
-     */
-    private PaymentHistoryFactory $phFactory;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private PaymentHistoryRepositoryInterface $phRepository;
-
-    /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private SearchCriteriaBuilder $searchBuilder;
-
     /**
      * @param Log $log
      * @param SaleOperation $saleOperation
@@ -73,24 +39,19 @@ class CreateInvoice
      * @param Config $config
      */
     public function __construct(
-        Log $log,
-        SaleOperation $saleOperation,
-        PaymentMethods $paymentMethods,
-        PaymentHistoryFactory $phFactory,
-        PaymentHistoryRepositoryInterface $phRepository,
-        SearchCriteriaBuilder $searchBuilder,
-        Config $config
+        private readonly Log $log,
+        private readonly SaleOperation $saleOperation,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly PaymentHistoryFactory $phFactory,
+        private readonly PaymentHistoryRepositoryInterface $phRepository,
+        private readonly SearchCriteriaBuilder $searchBuilder,
+        private readonly Config $config
     ) {
-        $this->log = $log;
-        $this->saleOperation = $saleOperation;
-        $this->paymentMethods = $paymentMethods;
-        $this->phFactory = $phFactory;
-        $this->phRepository = $phRepository;
-        $this->searchBuilder = $searchBuilder;
-        $this->config = $config;
     }
 
     /**
+     * Creates invoice if one should be created.
+     *
      * @param OrderInterface $order
      * @param OrderInterface $result
      * @return OrderInterface
@@ -100,27 +61,35 @@ class CreateInvoice
         OrderInterface $result
     ): OrderInterface {
         try {
-            if ($this->isEnabled($order) &&
+            if ($this->isEnabled(order: $order) &&
                 $order->getPayment() instanceof OrderPaymentInterface
             ) {
                 /** @noinspection NestedPositiveIfStatementsInspection */
                 /* Since there is a potential for race conditions in this plugin
                 we need the following validation to finish as quickly as
                 possible, for this reason it's not merged with its parent. */
-                if (!$this->hasCreatedInvoice($order->getPayment())) {
-                    $this->trackPaymentHistoryEvent($order->getPayment());
-                    $this->log->info('Invoicing ' . $order->getIncrementId());
-                    $this->saleOperation->execute($order->getPayment());
+                if (!$this->hasCreatedInvoice(payment: $order->getPayment())) {
+                    $this->trackPaymentHistoryEvent(
+                        payment: $order->getPayment()
+                    );
+                    $this->log->info(
+                        text: 'Invoicing ' . $order->getIncrementId()
+                    );
+                    $this->saleOperation->execute(
+                        payment: $order->getPayment()
+                    );
                 }
             }
         } catch (Exception $e) {
-            $this->log->exception($e);
+            $this->log->exception(error: $e);
         }
 
         return $result;
     }
 
     /**
+     * Track payment history event.
+     *
      * @param OrderPaymentInterface $payment
      * @return void
      * @throws AlreadyExistsException
@@ -130,10 +99,10 @@ class CreateInvoice
     ): void {
         $entry = $this->phFactory->create();
         $entry
-            ->setPaymentId((int) $payment->getEntityId())
-            ->setEvent(PaymentHistoryInterface::EVENT_INVOICE_CREATED)
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
-        $this->phRepository->save($entry);
+            ->setPaymentId(identifier: (int) $payment->getEntityId())
+            ->setEvent(event: PaymentHistoryInterface::EVENT_INVOICE_CREATED)
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK);
+        $this->phRepository->save(entry: $entry);
     }
 
     /**
@@ -147,34 +116,38 @@ class CreateInvoice
         OrderPaymentInterface $payment
     ): bool {
         $criteria = $this->searchBuilder->addFilter(
-            PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-            $payment->getEntityId()
+            field: PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+            value: $payment->getEntityId()
         )->addFilter(
-            PaymentHistoryInterface::ENTITY_EVENT,
-            PaymentHistoryInterface::EVENT_INVOICE_CREATED
+            field: PaymentHistoryInterface::ENTITY_EVENT,
+            value: PaymentHistoryInterface::EVENT_INVOICE_CREATED
         )->create();
 
         /** @var PaymentHistoryInterface[] $items */
         $items = $this->phRepository
-            ->getList($criteria)
+            ->getList(searchCriteria: $criteria)
             ->getItems();
 
         return count($items) > 0;
     }
 
     /**
+     * Check if auto invoice is enabled for order.
+     *
      * @param OrderInterface $order
      * @return bool
      */
-    private function isEnabled(
+    public function isEnabled(
         OrderInterface $order
     ): bool {
         return (
-            $this->config->isAutoInvoiceEnabled((string) $order->getStoreId()) &&
+            $this->config->isAutoInvoiceEnabled(
+                scopeCode: (string) $order->getStoreId()
+            ) &&
             $order->getStatus() === ResursbankStatuses::FINALIZED &&
             $order->getPayment() instanceof OrderPaymentInterface &&
             $this->paymentMethods->isResursBankMethod(
-                $order->getPayment()->getMethod()
+                code: $order->getPayment()->getMethod()
             ) &&
             (float) $order->getTotalInvoiced() === 0.0
         );

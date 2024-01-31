@@ -309,7 +309,7 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
      * @throws ReflectionException
      * @throws ValidationException
      */
-    private function syncOrder(
+    public function syncOrder(
         OrderInterface $order,
         Entry $entry
     ): void {
