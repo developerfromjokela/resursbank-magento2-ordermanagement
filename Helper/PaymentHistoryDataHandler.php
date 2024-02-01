@@ -321,6 +321,8 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             $this->handleProcessingPayment(order: $order);
         } elseif ($checkout->isCancelled()) {
             $this->handleCancelledPayment(order: $order);
+        } elseif ($checkout->isFailed()) {
+            $this->handleFailedPayment(order: $order);
         }
     }
 
@@ -333,7 +335,7 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     private function handleCapturedPayment(OrderInterface $order): void
     {
         $order->setState(state: OrderModel::STATE_PROCESSING);
-        $order->setStatus(status: ResursbankStatuses::FINALIZED);
+        $order->setStatus(status: 'processing');
         $this->orderRepository->save(entity: $order);
     }
 
@@ -346,7 +348,7 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     private function handleProcessingPayment(OrderInterface $order): void
     {
         $order->setState(state: OrderModel::STATE_PENDING_PAYMENT);
-        $order->setStatus(status: ResursbankStatuses::CONFIRMED);
+        $order->setStatus(status: 'pending');
         $this->orderRepository->save(entity: $order);
     }
 
@@ -358,8 +360,22 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
      */
     private function handleCancelledPayment(OrderInterface $order): void
     {
-        $this->orderHelper->cancelOrder(order: $order);
         $order->setState(state: OrderModel::STATE_CANCELED);
+        $order->setStatus(status: 'canceled');
+        $this->orderRepository->save(entity: $order);
+    }
+
+    /**
+     * Handle payment failed.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleFailedPayment(
+        OrderInterface $order
+    ): void {
+        $order->setState(state: OrderModel::STATE_CANCELED);
+        $order->setStatus(status: 'canceled');
         $this->orderRepository->save(entity: $order);
     }
 
