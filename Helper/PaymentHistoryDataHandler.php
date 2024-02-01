@@ -323,7 +323,22 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             $this->handleCancelledPayment(order: $order);
         } elseif ($checkout->isFailed()) {
             $this->handleFailedPayment(order: $order);
+        } elseif ($checkout->isFrozen()) {
+            $this->handleFrozenPayment(order: $order);
         }
+    }
+
+    /**
+     * Handle payment frozen.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleFrozenPayment(OrderInterface $order): void
+    {
+        $order->setState(state: OrderModel::STATE_PAYMENT_REVIEW);
+        $order->setStatus(status: OrderModel::STATE_PAYMENT_REVIEW);
+        $this->orderRepository->save(entity: $order);
     }
 
     /**
