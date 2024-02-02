@@ -74,8 +74,7 @@ class AddOrderStatuses implements DataPatchInterface
             $this->moduleDataSetup->getConnection()->insertOnDuplicate(
                 $this->moduleDataSetup->getTable('sales_order_status_state'),
                 [
-                    'status' => $status['status'],
-                    'label' => $status['label']
+                    'status' => $status['status']
                 ]
             );
         }
