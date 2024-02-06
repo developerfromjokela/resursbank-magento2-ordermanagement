@@ -22,6 +22,7 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
+use Resursbank\Ordermanagement\Helper\PaymentHistoryDataHandler;
 
 /**
  * Perform sale operation when order status changes to 'resursbank_finalized'.
@@ -38,6 +39,7 @@ class CreateInvoice
      * @param Config $config
      * @param OrderHelper $orderHelper
      * @param PaymentHistoryHelper $paymentHistoryHelper
+     * @param PaymentHistoryDataHandler $paymentHistoryDataHandler
      */
     public function __construct(
         private readonly Log $log,
@@ -47,7 +49,8 @@ class CreateInvoice
         private readonly PaymentHistoryRepositoryInterface $phRepository,
         private readonly Config $config,
         private readonly OrderHelper $orderHelper,
-        private readonly PaymentHistoryHelper $paymentHistoryHelper
+        private readonly PaymentHistoryHelper $paymentHistoryHelper,
+        private readonly PaymentHistoryDataHandler $paymentHistoryDataHandler
     ) {
     }
 
@@ -71,7 +74,7 @@ class CreateInvoice
                 we need the following validation to finish as quickly as
                 possible, for this reason it's not merged with its parent. */
                 if (!$this->paymentHistoryHelper->hasCreatedInvoice(
-                    payment: $order->getPayment()
+                    order: $order
                 )) {
                     $this->trackPaymentHistoryEvent(
                         payment: $order->getPayment()

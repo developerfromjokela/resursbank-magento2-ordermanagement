@@ -21,11 +21,16 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Resursbank\Core\Helper\Api;
+use Resursbank\Ecom\Exception\ConfigException;
+use Resursbank\Ecom\Lib\Model\PaymentHistory\Event;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
+use Resursbank\Ecom\Module\PaymentHistory\Repository
+    as PaymentHistoryRepository;
+use Resursbank\Core\Helper\Order as OrderHelper;
 
 /**
  * Handles payment history updates.
@@ -41,6 +46,7 @@ class PaymentHistory extends AbstractHelper
      * @param OrderRepositoryInterface $orderRepo
      * @param Api $api
      * @param SearchCriteriaBuilder $searchBuilder
+     * @param OrderHelper $orderHelper
      */
     public function __construct(
         Context $context,
@@ -48,7 +54,8 @@ class PaymentHistory extends AbstractHelper
         private readonly PaymentHistoryRepositoryInterface $paymentHistoryRepository,
         private readonly OrderRepositoryInterface $orderRepo,
         private readonly Api $api,
-        private readonly SearchCriteriaBuilder $searchBuilder
+        private readonly SearchCriteriaBuilder $searchBuilder,
+        private readonly OrderHelper $orderHelper
     ) {
         parent::__construct(context: $context);
     }
@@ -242,26 +249,19 @@ class PaymentHistory extends AbstractHelper
     /**
      * Check to see if an order already has been subject to invoice creation.
      *
-     * @param OrderPaymentInterface $payment
+     * @param OrderInterface $order
      * @return bool
      * @throws LocalizedException
+     * @throws ConfigException
      */
     public function hasCreatedInvoice(
-        OrderPaymentInterface $payment
+        OrderInterface $order
     ): bool {
-        $criteria = $this->searchBuilder->addFilter(
-            field: PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-            value: $payment->getEntityId()
-        )->addFilter(
-            field: PaymentHistoryInterface::ENTITY_EVENT,
-            value: PaymentHistoryInterface::EVENT_INVOICE_CREATED
-        )->create();
-
-        /** @var PaymentHistoryInterface[] $items */
-        $items = $this->paymentHistoryRepository
-            ->getList(searchCriteria: $criteria)
-            ->getItems();
-
-        return count($items) > 0;
+        return PaymentHistoryRepository::hasExecuted(
+            paymentId: $this->orderHelper->getPaymentId(
+                order: $order
+            ),
+            event: Event::INVOICE_CREATED
+        );
     }
 }
