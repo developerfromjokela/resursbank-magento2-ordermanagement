@@ -19,6 +19,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
@@ -39,13 +40,15 @@ class PaymentHistory extends AbstractHelper
      * @param PaymentHistoryRepositoryInterface $paymentHistoryRepository
      * @param OrderRepositoryInterface $orderRepo
      * @param Api $api
+     * @param SearchCriteriaBuilder $searchBuilder
      */
     public function __construct(
         Context $context,
         private readonly PaymentHistoryFactory $paymentHistoryFactory,
         private readonly PaymentHistoryRepositoryInterface $paymentHistoryRepository,
         private readonly OrderRepositoryInterface $orderRepo,
-        private readonly Api $api
+        private readonly Api $api,
+        private readonly SearchCriteriaBuilder $searchBuilder
     ) {
         parent::__construct(context: $context);
     }
@@ -234,5 +237,31 @@ class PaymentHistory extends AbstractHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Check to see if an order already has been subject to invoice creation.
+     *
+     * @param OrderPaymentInterface $payment
+     * @return bool
+     * @throws LocalizedException
+     */
+    public function hasCreatedInvoice(
+        OrderPaymentInterface $payment
+    ): bool {
+        $criteria = $this->searchBuilder->addFilter(
+            field: PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+            value: $payment->getEntityId()
+        )->addFilter(
+            field: PaymentHistoryInterface::ENTITY_EVENT,
+            value: PaymentHistoryInterface::EVENT_INVOICE_CREATED
+        )->create();
+
+        /** @var PaymentHistoryInterface[] $items */
+        $items = $this->paymentHistoryRepository
+            ->getList(searchCriteria: $criteria)
+            ->getItems();
+
+        return count($items) > 0;
     }
 }
