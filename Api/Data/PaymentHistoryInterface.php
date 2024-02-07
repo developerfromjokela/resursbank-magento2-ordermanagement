@@ -166,6 +166,11 @@ interface PaymentHistoryInterface
     /**
      * @var string
      */
+    public const EVENT_ORDER_CANCELED_CRON = 'order_canceled_cron';
+
+    /**
+     * @var string
+     */
     public const EVENT_INVOICE_CREATED = 'order_invoice_created';
 
     /**
@@ -210,6 +215,7 @@ interface PaymentHistoryInterface
         self::EVENT_REFUND_API_CALLED => 'Refund successful in Resurs\' system.',
         self::EVENT_REACHED_ORDER_SUCCESS => 'Client reached order success page.',
         self::EVENT_ORDER_CANCELED => 'Order canceled.',
+        self::EVENT_ORDER_CANCELED_CRON => 'Order canceled by cron job.',
         self::EVENT_GATEWAY_REDIRECTED_TO => 'Customer redirected to gateway.',
         self::EVENT_REACHED_ORDER_FAILURE => 'Client reached order failure page.',
         self::EVENT_PAYMENT_BOOK_SIGNED => 'Book signed payment API call initiated.',

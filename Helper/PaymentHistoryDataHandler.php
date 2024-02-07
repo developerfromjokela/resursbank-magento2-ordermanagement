@@ -427,6 +427,7 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             PaymentHistoryInterface::EVENT_REACHED_ORDER_SUCCESS => Event::REACHED_ORDER_SUCCESS_PAGE->value,
             PaymentHistoryInterface::EVENT_REACHED_ORDER_FAILURE=>  Event::REACHED_ORDER_FAILURE_PAGE->value,
             PaymentHistoryInterface::EVENT_ORDER_CANCELED =>  Event::ORDER_CANCELED->value,
+            PaymentHistoryInterface::EVENT_ORDER_CANCELED_CRON => Event::ORDER_CANCELED_CRON->value,
             PaymentHistoryInterface::EVENT_INVOICE_CREATED =>  Event::INVOICE_CREATED->value,
             PaymentHistoryInterface::EVENT_GATEWAY_REDIRECTED_TO =>  Event::REDIRECTED_TO_GATEWAY->value
         ];
