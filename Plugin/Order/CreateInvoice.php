@@ -9,9 +9,7 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Plugin\Order;
 
 use Exception;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\Config;
@@ -22,6 +20,9 @@ use Resursbank\Core\Helper\PaymentMethods;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
+use Resursbank\Core\Helper\Order as OrderHelper;
+use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
+use Resursbank\Ordermanagement\Helper\PaymentHistoryDataHandler;
 
 /**
  * Perform sale operation when order status changes to 'resursbank_finalized'.
@@ -35,8 +36,10 @@ class CreateInvoice
      * @param PaymentMethods $paymentMethods
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
-     * @param SearchCriteriaBuilder $searchBuilder
      * @param Config $config
+     * @param OrderHelper $orderHelper
+     * @param PaymentHistoryHelper $paymentHistoryHelper
+     * @param PaymentHistoryDataHandler $paymentHistoryDataHandler
      */
     public function __construct(
         private readonly Log $log,
@@ -44,8 +47,10 @@ class CreateInvoice
         private readonly PaymentMethods $paymentMethods,
         private readonly PaymentHistoryFactory $phFactory,
         private readonly PaymentHistoryRepositoryInterface $phRepository,
-        private readonly SearchCriteriaBuilder $searchBuilder,
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly OrderHelper $orderHelper,
+        private readonly PaymentHistoryHelper $paymentHistoryHelper,
+        private readonly PaymentHistoryDataHandler $paymentHistoryDataHandler
     ) {
     }
 
@@ -68,7 +73,9 @@ class CreateInvoice
                 /* Since there is a potential for race conditions in this plugin
                 we need the following validation to finish as quickly as
                 possible, for this reason it's not merged with its parent. */
-                if (!$this->hasCreatedInvoice(payment: $order->getPayment())) {
+                if (!$this->paymentHistoryHelper->hasCreatedInvoice(
+                    order: $order
+                )) {
                     $this->trackPaymentHistoryEvent(
                         payment: $order->getPayment()
                     );
@@ -106,32 +113,6 @@ class CreateInvoice
     }
 
     /**
-     * Check to see if an order has already been subject to invoice creation.
-     *
-     * @param OrderPaymentInterface $payment
-     * @return bool
-     * @throws LocalizedException
-     */
-    public function hasCreatedInvoice(
-        OrderPaymentInterface $payment
-    ): bool {
-        $criteria = $this->searchBuilder->addFilter(
-            field: PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-            value: $payment->getEntityId()
-        )->addFilter(
-            field: PaymentHistoryInterface::ENTITY_EVENT,
-            value: PaymentHistoryInterface::EVENT_INVOICE_CREATED
-        )->create();
-
-        /** @var PaymentHistoryInterface[] $items */
-        $items = $this->phRepository
-            ->getList(searchCriteria: $criteria)
-            ->getItems();
-
-        return count($items) > 0;
-    }
-
-    /**
      * Check if auto invoice is enabled for order.
      *
      * @param OrderInterface $order
@@ -141,6 +122,7 @@ class CreateInvoice
         OrderInterface $order
     ): bool {
         return (
+            $this->orderHelper->isLegacyFlow(order: $order) &&
             $this->config->isAutoInvoiceEnabled(
                 scopeCode: (string) $order->getStoreId()
             ) &&

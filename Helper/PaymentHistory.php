@@ -19,12 +19,18 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Resursbank\Core\Helper\Api;
+use Resursbank\Ecom\Exception\ConfigException;
+use Resursbank\Ecom\Lib\Model\PaymentHistory\Event;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Exception\ResolveOrderStatusFailedException;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
+use Resursbank\Ecom\Module\PaymentHistory\Repository
+    as PaymentHistoryRepository;
+use Resursbank\Core\Helper\Order as OrderHelper;
 
 /**
  * Handles payment history updates.
@@ -39,13 +45,17 @@ class PaymentHistory extends AbstractHelper
      * @param PaymentHistoryRepositoryInterface $paymentHistoryRepository
      * @param OrderRepositoryInterface $orderRepo
      * @param Api $api
+     * @param SearchCriteriaBuilder $searchBuilder
+     * @param OrderHelper $orderHelper
      */
     public function __construct(
         Context $context,
         private readonly PaymentHistoryFactory $paymentHistoryFactory,
         private readonly PaymentHistoryRepositoryInterface $paymentHistoryRepository,
         private readonly OrderRepositoryInterface $orderRepo,
-        private readonly Api $api
+        private readonly Api $api,
+        private readonly SearchCriteriaBuilder $searchBuilder,
+        private readonly OrderHelper $orderHelper
     ) {
         parent::__construct(context: $context);
     }
@@ -234,5 +244,24 @@ class PaymentHistory extends AbstractHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Check to see if an order already has been subject to invoice creation.
+     *
+     * @param OrderInterface $order
+     * @return bool
+     * @throws LocalizedException
+     * @throws ConfigException
+     */
+    public function hasCreatedInvoice(
+        OrderInterface $order
+    ): bool {
+        return PaymentHistoryRepository::hasExecuted(
+            paymentId: $this->orderHelper->getPaymentId(
+                order: $order
+            ),
+            event: Event::INVOICE_CREATED
+        );
     }
 }
