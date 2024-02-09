@@ -100,13 +100,8 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
 
             $this->syncOrder(order: $order, entry: $entry);
 
-            if ($order->getStatus() !== $status) {
-                $model->setStatusTo(status: $order->getStatus());
-            }
-
-            if ($order->getState() !== $state) {
-                $model->setStateTo(state: $order->getState());
-            }
+            $model->setStatusTo(status: $order->getStatus());
+            $model->setStateTo(state: $order->getState());
 
             if ($entry->user === User::ADMIN) {
                 $model->setUserReference(
@@ -474,10 +469,6 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     ): string {
         $data = trim(string: (string) $paymentHistory->getData(key: $property));
 
-        $result = Translator::translate(phraseId: $label) . ': ';
-        $result .= $data !== '' ?
-            $data : Translator::translate(phraseId: 'unchanged');
-
-        return $result;
+        return Translator::translate(phraseId: $label) . ": $data";
     }
 }
