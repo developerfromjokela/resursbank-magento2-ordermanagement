@@ -42,4 +42,4 @@
 "Refund Fee","Krediteringsavgift"
 "Resurs Bank does not support negative credit memos.","Resurs Bank accepterar inte negativa kreditnotor."
 "Automatically create invoices","Skapa fakturor automatiskt"
-"Automatically create invoice when an order obtains the status 'resursbank_finalized'.","Skapa automatiskt faktura när beställning erhåller status 'resursbank_finalized'."
+"Automatically create invoice for direct payment methods. Swish and Trustly.","Skapa automatiskt faktura för direktbetalningsbetalmetoder. Swish och Trustly."
