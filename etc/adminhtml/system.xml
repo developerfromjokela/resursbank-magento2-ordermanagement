@@ -26,7 +26,7 @@
                     </field>
                     <field id="auto_invoice" type="select" sortOrder="21" translate="label, comment" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Automatically create invoices</label>
-                        <comment>Automatically create invoice when an order obtains the status 'resursbank_finalized'.</comment>
+                        <comment>Automatically create invoice for direct payment methods. Swish and Trustly.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>resursbank/advanced/auto_invoice</config_path>
                     </field>
