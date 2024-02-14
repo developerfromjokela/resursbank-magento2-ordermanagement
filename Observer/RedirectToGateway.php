@@ -14,12 +14,14 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Exception\InvalidDataException;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
+use Throwable;
 use function constant;
 
 /**
@@ -28,41 +30,18 @@ use function constant;
 class RedirectToGateway implements ObserverInterface
 {
     /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private PaymentHistoryRepositoryInterface $phRepository;
-
-    /**
-     * @var PaymentHistoryFactory
-     */
-    private PaymentHistoryFactory $phFactory;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
      * @param PaymentMethods $paymentMethods
      */
     public function __construct(
-        PaymentHistoryRepositoryInterface $phRepository,
-        PaymentHistoryFactory $phFactory,
-        Log $log,
-        PaymentMethods $paymentMethods
+        private readonly PaymentHistoryRepositoryInterface $phRepository,
+        private readonly PaymentHistoryFactory $phFactory,
+        private readonly Log $log,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly OrderRepository $orderRepository
     ) {
-        $this->phRepository = $phRepository;
-        $this->phFactory = $phFactory;
-        $this->log = $log;
-        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -75,7 +54,7 @@ class RedirectToGateway implements ObserverInterface
             $payment = $this->getPayment($observer);
 
             if ($this->paymentMethods->isResursBankMethod($payment->getMethod())) {
-                $this->saveHistoryEntry((int) $payment->getEntityId());
+                $this->saveHistoryEntry($payment);
             }
         } catch (Exception $e) {
             $this->log->exception($e);
@@ -115,17 +94,28 @@ class RedirectToGateway implements ObserverInterface
      * @return void
      * @throws AlreadyExistsException
      */
-    public function saveHistoryEntry(int $paymentId): void
+    public function saveHistoryEntry(OrderPaymentInterface $payment): void
     {
         $entry = $this->phFactory->create();
         $entry
-            ->setPaymentId($paymentId)
+            ->setPaymentId((int) $payment->getEntityId())
             ->setEvent(constant(sprintf(
                 '%s::%s',
                 PaymentHistoryInterface::class,
                 'EVENT_GATEWAY_REDIRECTED_TO'
             )))
             ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+
+        try {
+            $order = $this->orderRepository->get((string)$payment->getParentId());
+
+            $entry->setStateFrom($order->getState());
+            $entry->setStateTo($order->getState());
+            $entry->setStatusFrom($order->getStatus());
+            $entry->setStatusTo($order->getStatus());
+        } catch (Throwable $error) {
+            $this->log->exception(error: $error);
+        }
 
         $this->phRepository->save($entry);
     }
