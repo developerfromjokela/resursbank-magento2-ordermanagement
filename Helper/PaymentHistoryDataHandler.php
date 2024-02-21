@@ -427,7 +427,11 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             PaymentHistoryInterface::EVENT_GATEWAY_REDIRECTED_TO =>  Event::REDIRECTED_TO_GATEWAY->value
         ];
 
-        return Event::from(value: $map[$event] ?? $event);
+        try {
+            return Event::from(value: $map[$event] ?? $event);
+        } catch (Throwable) {
+            return Event::LEGACY;
+        }
     }
 
     /**
