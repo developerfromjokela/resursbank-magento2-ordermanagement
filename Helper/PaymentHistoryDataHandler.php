@@ -251,18 +251,35 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             property: 'state_to'
         );
 
+        $extra = $this->getLegacyEventInfo(paymentHistory: $paymentHistory) .
+            $paymentHistory->getExtra();
+
         return new Entry(
             paymentId: $paymentId,
             event: $this->convertEvent(event: $paymentHistory->getEvent()),
             user: $this->convertUser(user: $paymentHistory->getUser()),
             time: strtotime(datetime: $paymentHistory->getCreatedAt()),
             result: $this->convertResult(result: $paymentHistory->getResult()),
-            extra: $paymentHistory->getExtra(),
+            extra: $extra,
             previousOrderStatus: $statusFrom,
             currentOrderStatus: $statusTo,
             reference: (string) $order->getIncrementId(),
             userReference: $paymentHistory->getUserReference()
         );
+    }
+
+    /**
+     * Fetch label if event is LEGACY.
+     *
+     * @param PaymentHistoryInterface $paymentHistory
+     * @return string
+     */
+    private function getLegacyEventInfo(PaymentHistoryInterface $paymentHistory): string
+    {
+        $event = $this->convertEvent(event: $paymentHistory->getEvent());
+        return  $event === Event::LEGACY ?
+            $paymentHistory->eventLabel(event: $paymentHistory->getEvent()) :
+            '';
     }
 
     /**
@@ -419,7 +436,11 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
             PaymentHistoryInterface::EVENT_GATEWAY_REDIRECTED_TO =>  Event::REDIRECTED_TO_GATEWAY->value
         ];
 
-        return Event::from(value: $map[$event] ?? $event);
+        try {
+            return Event::from(value: $map[$event] ?? $event);
+        } catch (Throwable) {
+            return Event::LEGACY;
+        }
     }
 
     /**
