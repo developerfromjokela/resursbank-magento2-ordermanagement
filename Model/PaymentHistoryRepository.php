@@ -72,8 +72,10 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
     public function save(
         PaymentHistoryInterface $entry
     ): PaymentHistoryInterface {
+        /* We use the deprecated commit method here to get around transaction
+           rollbacks that happen when an error happens during refunds. */
         /** @var PaymentHistory $entry */
-        $this->resourceModel->save($entry);
+        $this->resourceModel->save($entry)->commit();
 
         return $entry;
     }
