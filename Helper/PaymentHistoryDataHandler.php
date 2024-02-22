@@ -308,19 +308,37 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
         OrderInterface $order,
         Entry $entry
     ): void {
+        if (!in_array(
+            needle: $entry->event,
+            haystack: [Event::REACHED_ORDER_SUCCESS_PAGE, Event::CALLBACK_AUTHORIZATION])
+        ) {
+            return;
+        }
+
         $checkout = $this->getCheckout(entry: $entry);
 
-        if ($checkout->isCaptured()) {
-            $this->handleCapturedPayment(order: $order);
-        } elseif ($checkout->isProcessing()) {
-            $this->handleProcessingPayment(order: $order);
-        } elseif ($checkout->isCancelled()) {
+        if ($checkout->isCancelled()) {
             $this->handleCancelledPayment(order: $order);
         } elseif ($checkout->isFailed()) {
             $this->handleFailedPayment(order: $order);
         } elseif ($checkout->isFrozen()) {
             $this->handleFrozenPayment(order: $order);
+        } elseif ($checkout->isProcessing() || $checkout->isCaptured()) {
+            $this->handleProcessingPayment(order: $order);
         }
+    }
+
+    /**
+     * Handle processing payment.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function handleProcessingPayment(OrderInterface $order): void
+    {
+        $order->setState(state: OrderModel::STATE_NEW);
+        $order->setStatus(status: 'pending');
+        $this->orderRepository->save(entity: $order);
     }
 
     /**
@@ -333,32 +351,6 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     {
         $order->setState(state: OrderModel::STATE_PAYMENT_REVIEW);
         $order->setStatus(status: OrderModel::STATE_PAYMENT_REVIEW);
-        $this->orderRepository->save(entity: $order);
-    }
-
-    /**
-     * Handle payment captured.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleCapturedPayment(OrderInterface $order): void
-    {
-        $order->setState(state: OrderModel::STATE_PROCESSING);
-        $order->setStatus(status: 'processing');
-        $this->orderRepository->save(entity: $order);
-    }
-
-    /**
-     * Handle payment confirmed/processing.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleProcessingPayment(OrderInterface $order): void
-    {
-        $order->setState(state: OrderModel::STATE_PENDING_PAYMENT);
-        $order->setStatus(status: 'pending');
         $this->orderRepository->save(entity: $order);
     }
 
