@@ -148,6 +148,8 @@ class ApiPayment extends AbstractHelper
     }
 
     /**
+     * Perform validation of order.
+     *
      * @param OrderInterface $order
      * @return bool
      */
