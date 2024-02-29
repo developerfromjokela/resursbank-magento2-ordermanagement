@@ -41,6 +41,8 @@ class StopConfirmationEmail
     }
 
     /**
+     * Intercept save call.
+     *
      * @param Order $subject
      * @param Order $result
      * @return Order
@@ -53,7 +55,7 @@ class StopConfirmationEmail
         $method = $subject->getPayment() !== null ?
             $subject->getPayment()->getMethod() :
             '';
-        
+
         if ($this->orderHelper->isNew($subject) &&
             $this->paymentMethods->isResursBankMethod($method)
         ) {
