@@ -23,6 +23,8 @@ interface CallbackInterface
     public function unfreeze(string $paymentId, string $digest): void;
 
     /**
+     * Called when payment has been booked.
+     *
      * Payment has been booked by Resursbank. This means the payment has been
      * unfrozen and is preparing to be finalized.
      *
