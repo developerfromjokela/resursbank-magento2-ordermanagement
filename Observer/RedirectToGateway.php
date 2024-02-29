@@ -34,6 +34,7 @@ class RedirectToGateway implements ObserverInterface
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
      * @param PaymentMethods $paymentMethods
+     * @param OrderRepository $orderRepository
      */
     public function __construct(
         private readonly PaymentHistoryRepositoryInterface $phRepository,
@@ -45,23 +46,30 @@ class RedirectToGateway implements ObserverInterface
     }
 
     /**
+     * Entrypoint for observer logic.
+     *
      * @param Observer $observer
      * @return void
      */
     public function execute(Observer $observer): void
     {
         try {
-            $payment = $this->getPayment($observer);
+            $payment = $this->getPayment(observer: $observer);
 
-            if ($this->paymentMethods->isResursBankMethod($payment->getMethod())) {
-                $this->saveHistoryEntry($payment);
+            if ($this->paymentMethods->isResursBankMethod(
+                code: $payment->getMethod()
+            )
+            ) {
+                $this->saveHistoryEntry(payment: $payment);
             }
         } catch (Exception $e) {
-            $this->log->exception($e);
+            $this->log->exception(error: $e);
         }
     }
 
     /**
+     * Get payment using observer data.
+     *
      * @param Observer $observer
      * @return OrderPaymentInterface
      * @throws InvalidDataException
@@ -69,10 +77,10 @@ class RedirectToGateway implements ObserverInterface
     public function getPayment(Observer $observer): OrderPaymentInterface
     {
         /** @var OrderInterface $order */
-        $order = $observer->getData('order');
+        $order = $observer->getData(key: 'order');
 
         if (!($order instanceof OrderInterface)) {
-            throw new InvalidDataException(__(
+            throw new InvalidDataException(phrase: __(
                 'Order could not be retrieved from the observed subject\'s ' .
                 'data.'
             ));
@@ -81,8 +89,9 @@ class RedirectToGateway implements ObserverInterface
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new InvalidDataException(__(
-                'Payment does not exist for order ' . $order->getIncrementId()
+            throw new InvalidDataException(phrase: __(
+                'Payment does not exist for order ' .
+                $order->getIncrementId()
             ));
         }
 
@@ -90,7 +99,9 @@ class RedirectToGateway implements ObserverInterface
     }
 
     /**
-     * @param int $paymentId
+     * Saves a payment history entry.
+     *
+     * @param OrderPaymentInterface $payment
      * @return void
      * @throws AlreadyExistsException
      */
@@ -98,25 +109,27 @@ class RedirectToGateway implements ObserverInterface
     {
         $entry = $this->phFactory->create();
         $entry
-            ->setPaymentId((int) $payment->getEntityId())
-            ->setEvent(constant(sprintf(
+            ->setPaymentId(identifier: (int) $payment->getEntityId())
+            ->setEvent(event: constant(name: sprintf(
                 '%s::%s',
                 PaymentHistoryInterface::class,
                 'EVENT_GATEWAY_REDIRECTED_TO'
             )))
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK);
 
         try {
-            $order = $this->orderRepository->get((string)$payment->getParentId());
+            $order = $this->orderRepository->get(
+                id: (string)$payment->getParentId()
+            );
 
-            $entry->setStateFrom($order->getState());
-            $entry->setStateTo($order->getState());
-            $entry->setStatusFrom($order->getStatus());
-            $entry->setStatusTo($order->getStatus());
+            $entry->setStateFrom(state: $order->getState());
+            $entry->setStateTo(state: $order->getState());
+            $entry->setStatusFrom(status: $order->getStatus());
+            $entry->setStatusTo(status: $order->getStatus());
         } catch (Throwable $error) {
             $this->log->exception(error: $error);
         }
 
-        $this->phRepository->save($entry);
+        $this->phRepository->save(entry: $entry);
     }
 }
