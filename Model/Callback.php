@@ -159,9 +159,9 @@ class Callback implements CallbackInterface
         string $digest
     ): void {
         try {
-            $this->execute('unfreeze', $paymentId, $digest);
+            $this->execute(type: 'unfreeze', paymentId: $paymentId, digest: $digest);
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -173,14 +173,14 @@ class Callback implements CallbackInterface
         string $digest
     ): void {
         try {
-            $order = $this->execute('booked', $paymentId, $digest);
+            $order = $this->execute(type: 'booked', paymentId: $paymentId, digest: $digest);
 
             // Send order confirmation email if this is first BOOKED.
-            if (!$this->receivedCallback($order)) {
-                $this->orderSender->send($order);
+            if (!$this->receivedCallback(order: $order)) {
+                $this->orderSender->send(order: $order);
             }
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -192,9 +192,9 @@ class Callback implements CallbackInterface
         string $digest
     ): void {
         try {
-            $this->execute('update', $paymentId, $digest);
+            $this->execute(type: 'update', paymentId: $paymentId, digest: $digest);
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -213,6 +213,7 @@ class Callback implements CallbackInterface
      * @throws AlreadyExistsException
      * @throws LocalizedException
      * @throws Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     private function execute(
         string $type,
@@ -223,16 +224,16 @@ class Callback implements CallbackInterface
         // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
-                __('orderInterface not an instance of Order')
+                phrase: __('orderInterface not an instance of Order')
             );
         }
 
         /** @var Order $order */
-        $order = $this->orderInterface->loadByIncrementId($paymentId);
+        $order = $this->orderInterface->loadByIncrementId(incrementId: $paymentId);
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                __('Failed to locate order ' . $paymentId)
+                phrase: __('Failed to locate order ' . $paymentId)
             );
         }
 
@@ -240,30 +241,30 @@ class Callback implements CallbackInterface
 
         $entry = $this->phFactory->create();
         $entry
-            ->setPaymentId((int) $payment->getEntityId())
-            ->setEvent(constant(sprintf(
+            ->setPaymentId(identifier: (int) $payment->getEntityId())
+            ->setEvent(event: constant(name: sprintf(
                 '%s::%s',
                 PaymentHistoryInterface::class,
-                'EVENT_CALLBACK_' . strtoupper($type)
+                'EVENT_CALLBACK_' . strtoupper(string: $type)
             )))
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK);
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK);
 
-        $this->phRepository->save($entry);
+        $this->phRepository->save(entry: $entry);
 
-        $orderStatus = $this->phHelper->getPaymentStatus($order);
-        $newState = $this->phHelper->paymentStatusToOrderState($orderStatus);
+        $orderStatus = $this->phHelper->getPaymentStatus(order: $order);
+        $newState = $this->phHelper->paymentStatusToOrderState(paymentStatus: $orderStatus);
 
         if ($newState === Order::STATE_CANCELED) {
-            $this->orderHelper->setPendingPaymentState($order);
-            $this->orderHelper->cancelOrder($order);
+            $this->orderHelper->setPendingPaymentState(order: $order);
+            $this->orderHelper->cancelOrder(order: $order);
         }
 
         $this->phHelper->syncOrderStatus(
-            $order,
-            constant(sprintf(
+            order: $order,
+            event: constant(name: sprintf(
                 '%s::%s',
                 PaymentHistoryInterface::class,
-                'EVENT_CALLBACK_' . strtoupper($type) . '_COMPLETED'
+                'EVENT_CALLBACK_' . strtoupper(string: $type) . '_COMPLETED'
             ))
         );
 
@@ -281,21 +282,21 @@ class Callback implements CallbackInterface
     {
         if (!($order->getPayment() instanceof OrderPaymentInterface)) {
             throw new RuntimeException(
-                __('Missing payment data on order %1', $order->getId())
+                phrase: __('Missing payment data on order %1', $order->getId())
             );
         }
 
         $criteria = $this->searchBuilder->addFilter(
-            PaymentHistoryInterface::ENTITY_PAYMENT_ID,
-            $order->getPayment()->getEntityId()
+            field: PaymentHistoryInterface::ENTITY_PAYMENT_ID,
+            value: $order->getPayment()->getEntityId()
         )->addFilter(
-            PaymentHistoryInterface::ENTITY_EVENT,
-            PaymentHistoryInterface::EVENT_CALLBACK_BOOKED
+            field: PaymentHistoryInterface::ENTITY_EVENT,
+            value: PaymentHistoryInterface::EVENT_CALLBACK_BOOKED
         )->create();
 
         /** @var PaymentHistoryInterface[] $items */
         $items = $this->phRepository
-            ->getList($criteria)
+            ->getList(searchCriteria: $criteria)
             ->getItems();
 
         // NOTE: This needs to be 1.
@@ -303,6 +304,8 @@ class Callback implements CallbackInterface
     }
 
     /**
+     * Handle error.
+     *
      * @param Exception $exception
      * @return void
      * @throws Exception
@@ -310,10 +313,10 @@ class Callback implements CallbackInterface
     private function handleError(
         Exception $exception
     ): void {
-        $this->log->exception($exception);
+        $this->log->exception(error: $exception);
 
         if ($exception instanceof CallbackValidationException) {
-            throw new Exception($exception->getMessage());
+            throw new Exception(message: $exception->getMessage());
         }
     }
 }
