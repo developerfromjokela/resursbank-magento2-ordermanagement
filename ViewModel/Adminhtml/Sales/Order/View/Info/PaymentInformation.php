@@ -58,6 +58,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Set order property.
+     *
      * @param OrderInterface $order
      */
     public function setOrder(
@@ -103,6 +105,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get payment status.
+     *
      * @return string
      */
     public function getPaymentStatus(): string
@@ -127,6 +131,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get payment Id.
+     *
      * @return string
      */
     public function getPaymentId(): string
@@ -135,6 +141,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get payment total.
+     *
      * @return string
      */
     public function getPaymentTotal(): string
@@ -150,6 +158,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get payment limit.
+     *
      * @return string
      */
     public function getPaymentLimit(): string
@@ -165,6 +175,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Check if payment is frozen.
+     *
      * @return bool
      */
     public function isFrozen(): bool
@@ -173,6 +185,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Check if payment is flagged as fraud.
+     *
      * @return bool
      */
     public function isFraud(): bool
@@ -181,6 +195,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get payment method name.
+     *
      * @return string
      */
     public function getPaymentMethodName(): string
@@ -213,6 +229,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get full customer name.
+     *
      * @return string
      */
     public function getCustomerName(): string
@@ -247,6 +265,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get customer telephone number.
+     *
      * @return string
      */
     public function getCustomerTelephone(): string
@@ -255,6 +275,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get customer email address.
+     *
      * @return string
      */
     public function getCustomerEmail(): string
@@ -263,6 +285,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get first address row.
+     *
      * @return string
      */
     public function getCustomerAddressRow1(): string
@@ -274,6 +298,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get second address row.
+     *
      * @return string
      */
     public function getCustomerAddressRow2(): string
@@ -285,6 +311,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get customer post code.
+     *
      * @return string
      */
     public function getCustomerPostalCode(): string
@@ -296,6 +324,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get Customer postal area.
+     *
      * @return string
      */
     public function getCustomerPostalArea(): string
@@ -307,6 +337,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Get customer country.
+     *
      * @return string
      */
     public function getCustomerCountry(): string
@@ -318,6 +350,8 @@ class PaymentInformation implements ArgumentInterface
     }
 
     /**
+     * Performs currency formatting of a float value.
+     *
      * Formats a price to include decimals and the configured currency of the
      * store.
      *
