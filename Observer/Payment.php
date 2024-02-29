@@ -70,27 +70,31 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Observer execution entry point.
+     *
      * @param Observer $observer
      * @return void
      */
     public function execute(Observer $observer): void
     {
         try {
-            $orderPayment = $this->getOrderPayment($observer);
+            $orderPayment = $this->getOrderPayment(observer: $observer);
 
-            if ($this->paymentMethods->isResursBankMethod($orderPayment->getMethod())) {
+            if ($this->paymentMethods->isResursBankMethod(code: $orderPayment->getMethod())) {
                 $this->saveHistoryEntry(
-                    (int) $orderPayment->getEntityId(),
-                    $this->getBookPaymentStatus($observer),
-                    $observer->getEvent()->getName()
+                    paymentId: (int) $orderPayment->getEntityId(),
+                    paymentStatus: $this->getBookPaymentStatus(observer: $observer),
+                    eventName: $observer->getEvent()->getName()
                 );
             }
         } catch (Exception $e) {
-            $this->log->exception($e);
+            $this->log->exception(error: $e);
         }
     }
 
     /**
+     * Get payment data from order.
+     *
      * @param Observer $observer
      * @return OrderPaymentInterface
      * @throws InvalidDataException
@@ -98,10 +102,10 @@ class Payment implements ObserverInterface
     private function getOrderPayment(Observer $observer): OrderPaymentInterface
     {
         /** @var OrderInterface $order */
-        $order = $observer->getData('order');
+        $order = $observer->getData(key: 'order');
 
         if (!($order instanceof OrderInterface)) {
-            throw new InvalidDataException(__(
+            throw new InvalidDataException(phrase: __(
                 'Order could not be retrieved from the observed subject\'s ' .
                 'data.'
             ));
@@ -110,7 +114,7 @@ class Payment implements ObserverInterface
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new InvalidDataException(__(
+            throw new InvalidDataException(phrase: __(
                 'Payment does not exist for order ' . $order->getIncrementId()
             ));
         }
@@ -119,6 +123,8 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Get book payment status.
+     *
      * The payment session will only be supplied when available (ie in events
      * dispatched after completing an API call).
      *
@@ -127,7 +133,7 @@ class Payment implements ObserverInterface
      */
     private function getBookPaymentStatus(Observer $observer): string
     {
-        $session = $observer->getData('paymentSession');
+        $session = $observer->getData(key: 'paymentSession');
 
         return ($session instanceof ApiPayment) ?
             $session->getBookPaymentStatus() :
@@ -135,9 +141,11 @@ class Payment implements ObserverInterface
     }
 
     /**
+     * Save history entry.
+     *
      * @param int $paymentId
-     * @param string $eventName
      * @param string $paymentStatus
+     * @param string $eventName
      * @return void
      * @throws AlreadyExistsException
      * @throws InvalidDataException
@@ -148,42 +156,37 @@ class Payment implements ObserverInterface
         string $eventName
     ): void {
         $entry = $this->phFactory->create();
-        $phEventName = $this->getPaymentHistoryEvent($eventName);
+        $phEventName = $this->getPaymentHistoryEvent(eventName: $eventName);
 
         if ($phEventName === '') {
-            throw new InvalidDataException(__(sprintf(
+            throw new InvalidDataException(phrase: __(sprintf(
                 'No payment history event name found with observed event %s',
                 $eventName
             )));
         }
 
-        $entry->setPaymentId($paymentId)
-            ->setEvent($this->getPaymentHistoryEvent($eventName))
-            ->setUser(PaymentHistoryInterface::USER_RESURS_BANK)
-            ->setExtra($paymentStatus);
+        $entry->setPaymentId(identifier: $paymentId)
+            ->setEvent(event: $this->getPaymentHistoryEvent(
+                eventName: $eventName
+            ))
+            ->setUser(user: PaymentHistoryInterface::USER_RESURS_BANK)
+            ->setExtra(extra: $paymentStatus);
 
-        $this->phRepository->save($entry);
+        $this->phRepository->save(entry: $entry);
     }
 
     /**
+     * Get payment history event.
+     *
      * @param string $eventName
      * @return string
      */
     private function getPaymentHistoryEvent(string $eventName): string
     {
-        switch ($eventName) {
-            case 'resursbank_book_signed_payment_before':
-                $result = PaymentHistoryInterface::EVENT_PAYMENT_BOOK_SIGNED;
-                break;
-
-            case 'resursbank_book_signed_payment_after':
-                $result = PaymentHistoryInterface::EVENT_PAYMENT_BOOK_SIGNED_COMPLETED;
-                break;
-
-            default:
-                $result = '';
-        }
-
-        return $result;
+        return match ($eventName) {
+            'resursbank_book_signed_payment_before' => PaymentHistoryInterface::EVENT_PAYMENT_BOOK_SIGNED,
+            'resursbank_book_signed_payment_after' => PaymentHistoryInterface::EVENT_PAYMENT_BOOK_SIGNED_COMPLETED,
+            default => '',
+        };
     }
 }
