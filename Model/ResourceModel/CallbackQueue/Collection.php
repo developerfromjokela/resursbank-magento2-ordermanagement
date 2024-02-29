@@ -24,6 +24,7 @@ class Collection extends AbstractCollection
     {
         $this->_init(
             Model::class,
-            Resource::class);
+            Resource::class
+        );
     }
 }

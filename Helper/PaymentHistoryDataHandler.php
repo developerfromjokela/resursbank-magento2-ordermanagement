@@ -327,7 +327,8 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     ): void {
         if (!in_array(
             needle: $entry->event,
-            haystack: [Event::REACHED_ORDER_SUCCESS_PAGE, Event::CALLBACK_AUTHORIZATION])
+            haystack: [Event::REACHED_ORDER_SUCCESS_PAGE, Event::CALLBACK_AUTHORIZATION]
+        )
         ) {
             return;
         }

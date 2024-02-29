@@ -14,7 +14,8 @@ use Resursbank\Ordermanagement\Model\CallbackFactory as CallbackFactory;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
 
-class CallbackQueue {
+class CallbackQueue
+{
     /** @var Log  */
     protected Log $logger;
 
@@ -39,7 +40,8 @@ class CallbackQueue {
         $this->callbackFactory = $callbackFactory;
     }
 
-    public function execute() {
+    public function execute()
+    {
         $this->logger->info("Running CallbackQueue cron job");
 
         // NOTE: Two minute delay to mitigate potential race conditions.

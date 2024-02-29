@@ -29,9 +29,6 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as CallbackQueueResourceModel;
 
-/**
- *
- */
 class CallbackQueueTest extends TestCase
 {
     /** @var CallbackQueue */
