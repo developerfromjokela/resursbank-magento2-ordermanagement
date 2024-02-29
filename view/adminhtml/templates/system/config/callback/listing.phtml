@@ -29,11 +29,11 @@ use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing;
     </div>
 <?php else: ?>
     <p class="error-message">
-<?= $escaper->escapeHtml(__(
-    'No registered callbacks found. Update callbacks, if ' .
-    'you don\'t get a list of &quot;Registered ' .
-    'Callbacks&quot;, please verify that the provided ' .
-    'username and password are accurate.'
-)) ?>
+    <?= $escaper->escapeHtml(__(
+        'No registered callbacks found. Update callbacks, if ' .
+        'you don\'t get a list of &quot;Registered ' .
+        'Callbacks&quot;, please verify that the provided ' .
+        'username and password are accurate.'
+    )) ?>
     </p>
 <?php endif; ?>
