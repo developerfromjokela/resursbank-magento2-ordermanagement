@@ -25,6 +25,8 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 
 /**
  * Create payment history entry indicating client reach order failure page.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class LogFailure implements ArgumentInterface
 {

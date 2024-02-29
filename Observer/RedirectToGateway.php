@@ -26,6 +26,8 @@ use function constant;
 
 /**
  * Create payment history entry before the customer is redirected to gateway.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class RedirectToGateway implements ObserverInterface
 {
