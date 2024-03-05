@@ -26,12 +26,12 @@ use Magento\Sales\Model\Order\Invoice as InvoiceModel;
  */
 class Invoice
 {
-    /**
-     * @var null|InvoiceModel
-     */
+    /** @var InvoiceModel|null  */
     private ?InvoiceModel $invoice = null;
 
     /**
+     * Set invoice property.
+     *
      * @param InvoiceModel $invoice
      * @return void
      */
@@ -41,6 +41,8 @@ class Invoice
     }
 
     /**
+     * Get invoice property.
+     *
      * @return InvoiceModel|null
      */
     public function getInvoice(): ?InvoiceModel

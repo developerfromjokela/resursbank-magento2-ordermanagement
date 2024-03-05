@@ -47,8 +47,11 @@ class CallbackQueueTest extends WebapiAbstract
         ];
         $serviceInfo = [
             'rest' => [
-                'resourcePath' => '/V1/resursbank_ordermanagement/order/test/param1/'.$params['param1'].'/param2/'
-                    .$params['param2'].'/param3/'.$params['param3'].'/param4/'.$params['param4'].'/param5/'.$params['param5'],
+                'resourcePath' =>
+                    '/V1/resursbank_ordermanagement/order/test/param1/'.
+                    $params['param1'].'/param2/' . $params['param2'].'/param3/'
+                    . $params['param3'] . '/param4/' . $params['param4'] .
+                    '/param5/'.$params['param5'],
                 'httpMethod' => Request::HTTP_METHOD_GET
             ],
         ];
@@ -116,7 +119,7 @@ class CallbackQueueTest extends WebapiAbstract
      */
     private function callApi(string $endpoint, string $method, array $parameters): array
     {
-        $resourcePath = '/V1/resursbank_ordermanagement/order/'.$endpoint; //.'/paymentId/'.$paymentId.'/digest/'.$digest;
+        $resourcePath = '/V1/resursbank_ordermanagement/order/'.$endpoint;
         foreach ($parameters as $name => $value) {
             $resourcePath .= '/'.$name.'/'.$value;
         }

@@ -30,7 +30,8 @@ use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as CallbackQueueResourceModel;
 
 /**
- *
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class CallbackQueueTest extends TestCase
 {
@@ -79,6 +80,7 @@ class CallbackQueueTest extends TestCase
     /** @var AbstractDb|MockObject  */
     private $resourceCollectionMock;
 
+    /** @var array */
     private array $data = [
         CallbackQueueInterface::ENTITY_ID => 1,
         CallbackQueueInterface::ENTITY_CREATED_AT => '2022-03-22 12:01:01',

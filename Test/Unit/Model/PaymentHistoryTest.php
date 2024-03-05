@@ -49,6 +49,7 @@ class PaymentHistoryTest extends TestCase
      */
     private $resourceCollectionMock;
 
+    /** @var array|int[] */
     private array $data = [
         PaymentHistoryInterface::ENTITY_ID => 1,
         PaymentHistoryInterface::ENTITY_PAYMENT_ID => 10012,

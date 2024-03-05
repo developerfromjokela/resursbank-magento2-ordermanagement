@@ -31,6 +31,7 @@ class Ecom
      * @param Subject $subject
      * @param DataHandlerInterface $result
      * @return DataHandlerInterface
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterGetPaymentHistoryDataHandler(
         Subject $subject,

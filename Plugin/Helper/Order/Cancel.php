@@ -51,6 +51,7 @@ class Cancel
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
+     * @param PaymentMethods $paymentMethods
      */
     public function __construct(
         PaymentHistoryRepositoryInterface $phRepository,
@@ -65,6 +66,8 @@ class Cancel
     }
 
     /**
+     * Intercept call to cancelOrder.
+     *
      * @param Subject $subject
      * @param OrderInterface $result
      * @return OrderInterface

@@ -11,12 +11,13 @@ namespace Resursbank\Ordermanagement\Setup\Patch\Data;
 use Resursbank\Core\Setup\Patch\Data\RemapConfigPaths as Core;
 
 /**
- * @inheridoc
+ * @inheritDoc
  */
 class RemapConfigPaths extends Core
 {
     /**
-     * @inheridoc
+     * @inheritDoc
+     *
      * @return array<string, string>
      */
     protected function getKeys(): array

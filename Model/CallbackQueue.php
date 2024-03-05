@@ -18,7 +18,7 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
 use Magento\Framework\Webapi\Exception as WebapiException;
-use Magento\Framework\Model\AbstractModel as AbstractModel;
+use Magento\Framework\Model\AbstractModel;
 use Magento\Sales\Model\Order;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -26,8 +26,8 @@ use Resursbank\Ordermanagement\Api\CallbackQueueInterface;
 use Resursbank\Ordermanagement\Exception\CallbackValidationException;
 use Resursbank\Ordermanagement\Exception\OrderNotFoundException;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
-use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\Collection as Collection;
-use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
+use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\Collection;
+use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory;
 use Resursbank\Core\Helper\Scope;
 use Resursbank\Ordermanagement\Helper\Config as ConfigHelper;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
@@ -35,6 +35,11 @@ use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\CallbackLog;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as CallbackQueueResourceModel;
 
+/**
+ * Callback queue model.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class CallbackQueue extends AbstractModel implements CallbackQueueInterface
 {
     /** @var OrderInterface  */
@@ -67,11 +72,35 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     /** @var CallbackQueueResourceModel  */
     private CallbackQueueResourceModel $cqResource;
 
+    /**
+     * Init method for Magento model.
+     *
+     * @return void
+     * @noinspection MagicMethodsValidityInspection
+     */
     protected function _construct(): void
     {
-        $this->_init(ResourceModel::class);
+        $this->_init(resourceModel: ResourceModel::class);
     }
 
+    /**
+     * @param Context $context
+     * @param Registry $registry
+     * @param OrderInterface $orderInterface
+     * @param TypeListInterface $cacheTypeList
+     * @param Scope $scope
+     * @param Log $log
+     * @param CallbackLog $callbackLog
+     * @param ConfigHelper $config
+     * @param CallbackHelper $callbackHelper
+     * @param CallbackQueueFactory $callbackQueueFactory
+     * @param CollectionFactory $cqCollectionFactory
+     * @param CallbackQueueResourceModel $cqResource
+     * @param AbstractResource|null $resource
+     * @param AbstractDb|null $resourceCollection
+     * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
         Context $context,
         Registry $registry,
@@ -99,7 +128,13 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         $this->callbackQueueFactory = $callbackQueueFactory;
         $this->cqCollectionFactory = $cqCollectionFactory;
         $this->cqResource = $cqResource;
-        parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+        parent::__construct(
+            context: $context,
+            registry: $registry,
+            resource: $resource,
+            resourceCollection: $resourceCollection,
+            data: $data
+        );
     }
 
     /**
@@ -108,12 +143,12 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     public function unfreeze(string $paymentId, string $digest): void
     {
         try {
-            $this->checkRequest($paymentId, $digest);
-            $this->addToQueue('unfreeze', $paymentId, $digest);
+            $this->checkRequest(paymentId: $paymentId, digest: $digest);
+            $this->addToQueue(type: 'unfreeze', paymentId: $paymentId, digest: $digest);
         } catch (OrderNotFoundException $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -123,12 +158,12 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     public function booked(string $paymentId, string $digest): void
     {
         try {
-            $this->checkRequest($paymentId, $digest);
-            $this->addToQueue('booked', $paymentId, $digest);
+            $this->checkRequest(paymentId: $paymentId, digest: $digest);
+            $this->addToQueue(type: 'booked', paymentId: $paymentId, digest: $digest);
         } catch (OrderNotFoundException $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -138,12 +173,12 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     public function update(string $paymentId, string $digest): void
     {
         try {
-            $this->checkRequest($paymentId, $digest);
-            $this->addToQueue('update', $paymentId, $digest);
+            $this->checkRequest(paymentId: $paymentId, digest: $digest);
+            $this->addToQueue(type: 'update', paymentId: $paymentId, digest: $digest);
         } catch (OrderNotFoundException $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -153,17 +188,17 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     public function test(string $param1, string $param2, string $param3, string $param4, string $param5): void
     {
         try {
-            $this->logIncoming('test', '', '');
+            $this->logIncoming(type: 'test', paymentId: '', digest: '');
 
             $this->config->setCallbackTestReceivedAt(
-                (int) $this->scope->getId(),
-                $this->scope->getType()
+                scopeId: (int) $this->scope->getId(),
+                scopeType: $this->scope->getType()
             );
 
             // Clear the config cache so this value show up.
-            $this->cacheTypeList->cleanType('config');
+            $this->cacheTypeList->cleanType(typeCode: 'config');
         } catch (Exception $e) {
-            $this->handleError($e);
+            $this->handleError(exception: $e);
         }
     }
 
@@ -183,21 +218,21 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
-                __('orderInterface not an instance of Order')
+                phrase: __('orderInterface not an instance of Order')
             );
         }
 
         /** @var Order $order */
-        $order = $this->orderInterface->loadByIncrementId($paymentId);
+        $order = $this->orderInterface->loadByIncrementId(incrementId: $paymentId);
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                __('Failed to locate order ' . $paymentId)
+                phrase: __('Failed to locate order ' . $paymentId)
             );
         }
 
-        $this->validate($paymentId, $digest);
-        $this->logIncoming('unfreeze', $paymentId, $digest);
+        $this->validate(paymentId: $paymentId, digest: $digest);
+        $this->logIncoming(type: 'unfreeze', paymentId: $paymentId, digest: $digest);
     }
 
     /**
@@ -214,17 +249,19 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         string $digest
     ): void {
         $ourDigest = strtoupper(
-            sha1($paymentId . $this->callbackHelper->salt())
+            string: sha1(string: $paymentId . $this->callbackHelper->salt())
         );
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(
-                __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
+                phrase: __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
             );
         }
     }
 
     /**
+     * Handle error.
+     *
      * @param Exception $exception
      * @return void
      * @throws WebapiException
@@ -232,19 +269,19 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     private function handleError(
         Exception $exception
     ): void {
-        $this->log->exception($exception);
+        $this->log->exception(error: $exception);
 
         if ($exception instanceof CallbackValidationException) {
             throw new WebapiException(
-                __($exception->getMessage()),
-                0,
-                WebapiException::HTTP_NOT_ACCEPTABLE
+                phrase: __($exception->getMessage()),
+                code: 0,
+                httpCode: WebapiException::HTTP_NOT_ACCEPTABLE
             );
         } elseif ($exception instanceof OrderNotFoundException) {
             throw new WebapiException(
-                __($exception->getMessage()),
-                0,
-                410
+                phrase: __($exception->getMessage()),
+                code: 0,
+                httpCode: 410
             );
         }
     }
@@ -261,11 +298,11 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
     private function addToQueue(string $type, string $paymentId, string $digest): void
     {
         $item = $this->callbackQueueFactory->create();
-        $item->setData('type', $type);
-        $item->setData('payment_id', $paymentId);
-        $item->setData('digest', $digest);
+        $item->setData(key: 'type', value: $type);
+        $item->setData(key: 'payment_id', value: $paymentId);
+        $item->setData(key: 'digest', value: $digest);
 
-        $this->cqResource->save($item);
+        $this->cqResource->save(object: $item);
     }
 
     /**
@@ -279,9 +316,9 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         /** @var Collection $callbacks */
         return $this->cqCollectionFactory
             ->create()
-            ->setPageSize($count)
-            ->setCurPage(1)
-            ->setOrder('id', 'ASC')
+            ->setPageSize(size: $count)
+            ->setCurPage(page: 1)
+            ->setOrder(field: 'id', direction: 'ASC')
             ->load();
     }
 
@@ -298,7 +335,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         string $digest
     ): void {
         $this->callbackLog->info(
-            "[$type] - PaymentId: $paymentId. Digest: $digest"
+            text: "[$type] - PaymentId: $paymentId. Digest: $digest"
         );
     }
 }

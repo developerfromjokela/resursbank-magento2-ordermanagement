@@ -16,12 +16,13 @@ class Collection extends AbstractCollection
 {
     /**
      * Initialize collection model.
+     *
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      * @noinspection MagicMethodsValidityInspection
      * @noinspection PhpMissingParentCallCommonInspection
      */
     protected function _construct(): void
     {
-        $this->_init(Model::class, Resource::class);
+        $this->_init(model: Model::class, resourceModel: Resource::class);
     }
 }

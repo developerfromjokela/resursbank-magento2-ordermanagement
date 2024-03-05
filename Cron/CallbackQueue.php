@@ -10,11 +10,16 @@ namespace ResursBank\Ordermanagement\Cron;
 
 use Exception;
 use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\Model\CallbackFactory as CallbackFactory;
+use Resursbank\Ordermanagement\Model\CallbackFactory;
 use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue as ResourceModel;
-use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory as CollectionFactory;
+use Resursbank\Ordermanagement\Model\ResourceModel\CallbackQueue\CollectionFactory;
+use function in_array;
 
-class CallbackQueue {
+/**
+ * Handles callback queue processing.
+ */
+class CallbackQueue
+{
     /** @var Log  */
     protected Log $logger;
 
@@ -27,6 +32,12 @@ class CallbackQueue {
     /** @var CallbackFactory  */
     private CallbackFactory $callbackFactory;
 
+    /**
+     * @param Log $logger
+     * @param CollectionFactory $collectionFactory
+     * @param ResourceModel $resourceModel
+     * @param CallbackFactory $callbackFactory
+     */
     public function __construct(
         Log $logger,
         CollectionFactory $collectionFactory,
@@ -39,33 +50,43 @@ class CallbackQueue {
         $this->callbackFactory = $callbackFactory;
     }
 
-    public function execute() {
-        $this->logger->info("Running CallbackQueue cron job");
+    /**
+     * Cron job entry point.
+     *
+     * @return void
+     */
+    public function execute(): void
+    {
+        $this->logger->info(text: 'Running CallbackQueue cron job');
 
         // NOTE: Two minute delay to mitigate potential race conditions.
         $queuedCallbacks = $this->collectionFactory
             ->create()
-            ->setPageSize(10)
-            ->setCurPage(1)
-            ->setOrder('id', 'ASC')
+            ->setPageSize(size: 10)
+            ->setCurPage(page: 1)
+            ->setOrder(field: 'id', direction: 'ASC')
             ->addFieldToFilter(
-                'created_at',
-                ['to' => date('Y-m-d H:i:s', time()-120)]
+                field: 'created_at',
+                condition: ['to' => date(format: 'Y-m-d H:i:s', timestamp: time()-120)]
             )
             ->load();
 
         foreach ($queuedCallbacks as $queuedCallback) {
-            $this->logger->info("Handling queued callback...");
+            $this->logger->info(text: 'Handling queued callback...');
 
             $callback = $this->callbackFactory->create();
 
-            if (!empty($queuedCallback->getType()) && in_array($queuedCallback->getType(), ['unfreeze', 'booked', 'update', 'test'])) {
+            if (!empty($queuedCallback->getType()) && in_array(
+                needle: $queuedCallback->getType(),
+                haystack: ['unfreeze', 'booked', 'update', 'test']
+            )
+            ) {
                 $method = $queuedCallback->getType();
                 $callback->$method($queuedCallback->getPaymentId(), $queuedCallback->getDigest());
                 try {
-                    $this->resourceModel->delete($queuedCallback);
+                    $this->resourceModel->delete(object: $queuedCallback);
                 } catch (Exception $e) {
-                    $this->logger->exception($e);
+                    $this->logger->exception(error: $e);
                 }
             }
         }
