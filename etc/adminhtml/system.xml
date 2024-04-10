@@ -32,6 +32,9 @@
                     </field>
                 </group>
                 <group id="callbacks" sortOrder="4" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <depends>
+                        <field id="*/resursbank_section/api/flow" separator=",">simplified,rco,rcoplus</field>
+                    </depends>
                     <label>Callback Settings</label>
                     <field id="test" type="button" sortOrder="1" translate="label" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Test callbacks</label>
