@@ -20,7 +20,7 @@ $widget = $block->getEcomWidget();
 
 <?php if ($widget !== null): ?>
     <?=
-    /* @noEscape  */
+    /* @noEscape */
     $secureRenderer->renderTag(
         tagName: 'style',
         attributes: [],
@@ -29,12 +29,15 @@ $widget = $block->getEcomWidget();
     )
     ?>
     <div id="rb-pi-container">
-        <?= $widget->content ?>
+        <?=
+            /* @noEscape */
+            $widget->content
+        ?>
     </div>
 <?php else: ?>
     <div class="field-group">
         <p class="error-message">
-            <?= $escaper->escapeHtml(data: __('Payment information could not be retrieved from Resurs Bank.'))  ?>
+            <?= $escaper->escapeHtml(data: __('rb-payment-information-widget-failed-rendering'))  ?>
         </p>
     </div>
 <?php endif; ?>
