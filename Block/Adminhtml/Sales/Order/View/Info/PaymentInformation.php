@@ -11,14 +11,18 @@ namespace Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
 use Magento\Backend\Block\Template\Context;
+use Magento\Framework\Exception\InputException;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Resursbank\Core\Block\Adminhtml\Template;
+use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
+use Resursbank\Ecom\Module\Rco\Widget\PaymentInformation as PaymentInformationWidget;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 use RuntimeException;
@@ -52,6 +56,7 @@ class PaymentInformation extends Template
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentMethods $paymentMethods
      * @param Order $orderHelper
+     * @param Ecom $ecom
      * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -64,6 +69,7 @@ class PaymentInformation extends Template
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PaymentMethods $paymentMethods,
         public readonly Order $orderHelper,
+        private readonly Ecom $ecom,
         array $data = []
     ) {
         parent::__construct(context: $context, data: $data);
@@ -100,15 +106,33 @@ class PaymentInformation extends Template
     }
 
     /**
-     * Get payment information widget.
-     *
-     * Allows us to overwrite template file based on configured API.
+     * Resolve template file based on whether we can utilize Ecom.
      *
      * @return string
      */
     public function getTemplate(): string
     {
-        return 'Resursbank_Ordermanagement::sales/order/view/info/payment-information.phtml';
+        return $this->ecom->canConnect(scopeCode: $this->order->getStoreId()) ?
+            'Resursbank_Ordermanagement::sales/order/view/info/payment-information/ecom.phtml' :
+            'Resursbank_Ordermanagement::sales/order/view/info/payment-information/deprecated.phtml';
+    }
+
+    /**
+     * @return PaymentInformationWidget|null
+     */
+    public function getEcomWidget(): ?PaymentInformationWidget
+    {
+        try {
+            return new PaymentInformationWidget(
+                paymentId: $this->getPaymentId(order: $this->order),
+                currencySymbol: 'kr',
+                currencyFormat: CurrencyFormat::SYMBOL_LAST
+            );
+        } catch (Throwable $error) {
+            $this->log->exception(error: $error);
+        }
+
+        return null;
     }
 
     /**

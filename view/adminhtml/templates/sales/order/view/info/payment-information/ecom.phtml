@@ -1,0 +1,40 @@
+<?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation;
+
+/** @var PaymentInformation $block */
+/** @var Escaper $escaper */
+/** @var SecureHtmlRenderer $secureRenderer */
+
+$widget = $block->getEcomWidget();
+
+?>
+
+<?php if ($widget !== null): ?>
+    <?=
+    /* @noEscape  */
+    $secureRenderer->renderTag(
+        tagName: 'style',
+        attributes: [],
+        content: $widget->css,
+        textContent: true
+    )
+    ?>
+    <div id="rb-pi-container">
+        <?= $widget->content ?>
+    </div>
+<?php else: ?>
+    <div class="field-group">
+        <p class="error-message">
+            <?= $escaper->escapeHtml(data: __('Payment information could not be retrieved from Resurs Bank.'))  ?>
+        </p>
+    </div>
+<?php endif; ?>
