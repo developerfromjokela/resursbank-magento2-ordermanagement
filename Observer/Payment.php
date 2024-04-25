@@ -15,6 +15,7 @@ use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Exception\InvalidDataException;
+use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Core\Model\Api\Payment as ApiPayment;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
@@ -32,41 +33,19 @@ use function sprintf;
 class Payment implements ObserverInterface
 {
     /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * @var PaymentHistoryRepositoryInterface
-     */
-    private PaymentHistoryRepositoryInterface $phRepository;
-
-    /**
-     * @var PaymentHistoryFactory
-     */
-    private PaymentHistoryFactory $phFactory;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
      * @param PaymentHistoryRepositoryInterface $phRepository
      * @param PaymentHistoryFactory $phFactory
      * @param Log $log
      * @param PaymentMethods $paymentMethods
+     * @param Order $order
      */
     public function __construct(
-        PaymentHistoryRepositoryInterface $phRepository,
-        PaymentHistoryFactory $phFactory,
-        Log $log,
-        PaymentMethods $paymentMethods
+        private readonly PaymentHistoryRepositoryInterface $phRepository,
+        private readonly PaymentHistoryFactory $phFactory,
+        private readonly Log $log,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly Order $order
     ) {
-        $this->phRepository = $phRepository;
-        $this->phFactory = $phFactory;
-        $this->log = $log;
-        $this->paymentMethods = $paymentMethods;
     }
 
     /**
@@ -80,7 +59,12 @@ class Payment implements ObserverInterface
         try {
             $orderPayment = $this->getOrderPayment(observer: $observer);
 
-            if ($this->paymentMethods->isResursBankMethod(code: $orderPayment->getMethod())) {
+            if (
+                $this->order->isLegacyFlow(order: $orderPayment->getOrder()) &&
+                $this->paymentMethods->isResursBankMethod(
+                    code: $orderPayment->getMethod()
+                )
+            ) {
                 $this->saveHistoryEntry(
                     paymentId: (int) $orderPayment->getEntityId(),
                     paymentStatus: $this->getBookPaymentStatus(observer: $observer),

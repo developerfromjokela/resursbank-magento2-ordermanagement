@@ -19,6 +19,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Resursbank\Core\Exception\PaymentDataException;
 use Resursbank\Core\Helper\Api;
+use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
 use Magento\Sales\Model\OrderRepository;
 use Resursbank\Ordermanagement\Helper\Admin as AdminHelper;
@@ -30,52 +31,23 @@ use Resursbank\RBEcomPHP\ResursBank;
 class ApiPayment extends AbstractHelper
 {
     /**
-     * @var Api
-     */
-    private Api $api;
-
-    /**
-     * @var AdminHelper
-     */
-    private AdminHelper $adminHelper;
-
-    /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var PaymentMethods
-     */
-    private PaymentMethods $paymentMethods;
-
-    /**
-     * @var OrderRepository
-     */
-    private OrderRepository $orderRepository;
-
-    /**
      * @param Context $context
      * @param AdminHelper $adminHelper
      * @param Api $api
      * @param Config $config
      * @param PaymentMethods $paymentMethods
      * @param OrderRepository $orderRepository
+     * @param Order $order
      */
     public function __construct(
         Context $context,
-        AdminHelper $adminHelper,
-        Api $api,
-        Config $config,
-        PaymentMethods $paymentMethods,
-        OrderRepository $orderRepository
+        private readonly AdminHelper $adminHelper,
+        private readonly Api $api,
+        private readonly Config $config,
+        private readonly PaymentMethods $paymentMethods,
+        private readonly OrderRepository $orderRepository,
+        private readonly Order $order
     ) {
-        $this->adminHelper = $adminHelper;
-        $this->api = $api;
-        $this->config = $config;
-        $this->paymentMethods = $paymentMethods;
-        $this->orderRepository = $orderRepository;
-
         parent::__construct($context);
     }
 
@@ -104,6 +76,7 @@ class ApiPayment extends AbstractHelper
         $order = $this->orderRepository->get($paymentData->getOrder()->getId());
 
         $connection = (
+            $this->order->isLegacyFlow($order) &&
             $this->validateOrder($order) &&
             $this->isAfterShopEnabled($order)
         ) ?
