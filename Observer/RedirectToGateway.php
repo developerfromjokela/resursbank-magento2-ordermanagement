@@ -16,6 +16,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\OrderRepository;
 use Resursbank\Core\Exception\InvalidDataException;
+use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Api\PaymentHistoryRepositoryInterface;
@@ -25,7 +26,7 @@ use Throwable;
 use function constant;
 
 /**
- * Create payment history entry before the customer is redirected to gateway.
+ * Create payment history entry before the customer is sent to gateway.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -37,13 +38,15 @@ class RedirectToGateway implements ObserverInterface
      * @param Log $log
      * @param PaymentMethods $paymentMethods
      * @param OrderRepository $orderRepository
+     * @param Order $order
      */
     public function __construct(
         private readonly PaymentHistoryRepositoryInterface $phRepository,
         private readonly PaymentHistoryFactory $phFactory,
         private readonly Log $log,
         private readonly PaymentMethods $paymentMethods,
-        private readonly OrderRepository $orderRepository
+        private readonly OrderRepository $orderRepository,
+        private readonly Order $order
     ) {
     }
 
@@ -58,9 +61,10 @@ class RedirectToGateway implements ObserverInterface
         try {
             $payment = $this->getPayment(observer: $observer);
 
-            if ($this->paymentMethods->isResursBankMethod(
-                code: $payment->getMethod()
-            )
+            if ($this->order->isLegacyFlow(order: $payment->getOrder()) &&
+                $this->paymentMethods->isResursBankMethod(
+                    code: $payment->getMethod()
+                )
             ) {
                 $this->saveHistoryEntry(payment: $payment);
             }
