@@ -25,10 +25,11 @@ use Resursbank\Ordermanagement\Model\PaymentHistoryFactory;
 use function sprintf;
 
 /**
- * Create payment history entry before and after the payment session has been
- * created.
+ * Create payment history entry before & after payment session has been created.
  *
  * Create payment history entry before and after the payment has been booked.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Payment implements ObserverInterface
 {
@@ -59,8 +60,7 @@ class Payment implements ObserverInterface
         try {
             $orderPayment = $this->getOrderPayment(observer: $observer);
 
-            if (
-                $this->order->isLegacyFlow(order: $orderPayment->getOrder()) &&
+            if ($this->order->isLegacyFlow(order: $orderPayment->getOrder()) &&
                 $this->paymentMethods->isResursBankMethod(
                     code: $orderPayment->getMethod()
                 )

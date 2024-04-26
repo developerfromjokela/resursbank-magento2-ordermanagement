@@ -70,8 +70,8 @@ class ApiPayment extends AbstractHelper
          * lacks a lot of specifications we require in our business logic for
          * API calls. Because of this, we load the order from the database
          * directly. This is expensive, but for now there is no alternative.
-         * This should have a negligible impact on Aftershop calls made from the
-         * administration panel when handling the order.
+         * This should have a negligible impact on after-shop calls made from
+         * the administration panel when handling the order.
          */
         $order = $this->orderRepository->get($paymentData->getOrder()->getId());
 

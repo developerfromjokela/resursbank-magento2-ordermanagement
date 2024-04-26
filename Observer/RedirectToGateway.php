@@ -26,7 +26,7 @@ use Throwable;
 use function constant;
 
 /**
- * Create payment history entry before the customer is redirected to gateway.
+ * Create payment history entry before the customer is sent to gateway.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -61,8 +61,7 @@ class RedirectToGateway implements ObserverInterface
         try {
             $payment = $this->getPayment(observer: $observer);
 
-            if (
-                $this->order->isLegacyFlow(order: $payment->getOrder()) &&
+            if ($this->order->isLegacyFlow(order: $payment->getOrder()) &&
                 $this->paymentMethods->isResursBankMethod(
                     code: $payment->getMethod()
                 )
