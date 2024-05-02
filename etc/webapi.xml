@@ -39,4 +39,21 @@
             <resource ref="anonymous" />
         </resources>
     </route>
+
+    <!-- Ecom Test callback.-->
+    <route url="/V1/resursbank_ordermanagement/order/test" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\Ecom\CallbackInterface" method="test"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <!-- Ecom Authorization callback.-->
+    <route url="/V1/resursbank_ordermanagement/order/authorization" method="POST">
+        <service class="Resursbank\Ordermanagement\Api\Ecom\CallbackInterface" method="authorization"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>
+

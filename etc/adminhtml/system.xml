@@ -67,6 +67,13 @@
                             <field id="*/resursbank_section/api/flow" separator=",">simplified,rco</field>
                         </depends>
                     </field>
+                    <field id="callback_list" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom\CallbackList</frontend_model>
+                        <config_path>resursbank/api/callback_list</config_path>
+                        <depends>
+                            <field id="*/resursbank_section/api/flow">rcoplus,mapi</field>
+                        </depends>
+                    </field>
                 </group>
             </group>
         </section>
