@@ -31,7 +31,6 @@ use Resursbank\Ecom\Module\PaymentHistory\Repository as EcomPaymentHistoryReposi
 use Resursbank\Ecom\Module\Callback\Http\AuthorizationController;
 use Resursbank\Ecom\Module\Callback\Repository;
 use Resursbank\Core\Helper\Config as CoreConfig;
-use Resursbank\Core\Helper\Scope as ScopeHelper;
 use Resursbank\Core\Helper\Ecom;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Model\CallbackQueue;
@@ -42,6 +41,8 @@ use Resursbank\Core\Helper\Order as OrderHelper;
 use Resursbank\Ordermanagement\Helper\PaymentHistory as PaymentHistoryHelper;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\InventoryReservations\Model\ReservationBuilder;
+use Magento\InventoryReservations\Model\ResourceModel\SaveMultiple;
 use Throwable;
 
 /**
@@ -57,7 +58,6 @@ class Callback implements CallbackInterface
      * @param CallbackQueue $callbackQueue
      * @param OrderSender $orderSender
      * @param CoreConfig $coreConfigHelper
-     * @param ScopeHelper $scopeHelper
      * @param OrderRepositoryInterface $orderRepository
      * @param DateTime $dateTime
      * @param OrdermanagementConfig $ordermanagementConfig
@@ -67,6 +67,8 @@ class Callback implements CallbackInterface
      * @param StoreManagerInterface $storeManager
      * @param Ecom $ecomHelper
      * @param RequestInterface $request
+     * @param ReservationBuilder $reservationBuilder
+     * @param SaveMultiple $saveMultiple
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -75,7 +77,6 @@ class Callback implements CallbackInterface
         private readonly CallbackQueue $callbackQueue,
         private readonly OrderSender $orderSender,
         private readonly CoreConfig $coreConfigHelper,
-        private readonly ScopeHelper $scopeHelper,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly DateTime $dateTime,
         private readonly OrdermanagementConfig $ordermanagementConfig,
@@ -84,7 +85,9 @@ class Callback implements CallbackInterface
         private readonly SaleOperation $saleOperation,
         private readonly StoreManagerInterface $storeManager,
         private readonly Ecom $ecomHelper,
-        private readonly RequestInterface $request
+        private readonly RequestInterface $request,
+        private readonly ReservationBuilder $reservationBuilder,
+        private readonly SaveMultiple $saveMultiple
     ) {
     }
 
@@ -186,13 +189,16 @@ class Callback implements CallbackInterface
                 );
             }
 
+            $storeId = $order->getStoreId();
+
             // Handle rejected orders.
             if ($callback->status === Status::REJECTED &&
-                $order->getState() === Order::STATE_PENDING_PAYMENT &&
+                $order->getState() === Order::STATE_CANCELED &&
                 $this->coreConfigHelper->isReuseErroneouslyCreatedOrdersEnabled(
-                    scopeCode: $this->scopeHelper->getId()
+                    scopeCode: $storeId
                 )
             ) {
+                $this->cleanUpInventoryReservation(order: $order);
                 $this->orderRepository->delete(entity: $order);
             }
 
@@ -279,6 +285,39 @@ class Callback implements CallbackInterface
             }
         } catch (Throwable $error) {
             $this->log->exception(error: $error);
+        }
+    }
+
+    /**
+     * Attempt to manually correct the inventory reservation state.
+     *
+     * @param OrderInterface $order
+     * @return void
+     * @throws JsonException
+     * @throws ValidationException
+     */
+    private function cleanUpInventoryReservation(OrderInterface $order): void
+    {
+        $incrementId = $order->getIncrementId();
+        /** @var Magento\Sales\Model\Order\Item $item */
+        foreach ($order->getAllVisibleItems() as $item) {
+            if ($item->getQtyOrdered()) {
+                $reservation = $this->reservationBuilder
+                    ->setSku(sku: $item->getSku())
+                    ->setQuantity(quantity: (float)$item->getQtyOrdered())
+                    ->setStockId(stockId: 1)
+                    ->setMetadata(metadata: json_encode(
+                        value: [
+                            'event_type' => 'order_place_failed',
+                            'object_type' => 'order',
+                            'object_id' => '',
+                            'object_increment_id' => $incrementId
+                        ],
+                        flags: JSON_THROW_ON_ERROR
+                    ))
+                    ->build();
+                $this->saveMultiple->execute(reservations: [$reservation]);
+            }
         }
     }
 
