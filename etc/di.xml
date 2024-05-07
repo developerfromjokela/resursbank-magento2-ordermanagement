@@ -64,6 +64,12 @@
         type="Magento\Directory\Model\PriceCurrency"
     />
 
+    <!-- Ecom callbacks -->
+    <preference
+        for="Resursbank\Ordermanagement\Api\Ecom\CallbackInterface"
+        type="Resursbank\Ordermanagement\Model\Ecom\Callback"
+    />
+
     <!-- Prevent order confirmation email from being sent upon order creation. -->
     <type name="Magento\Sales\Model\Order">
         <plugin
