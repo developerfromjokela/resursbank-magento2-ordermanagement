@@ -28,11 +28,6 @@ use function is_string;
 class OrderConverter extends AbstractConverter
 {
     /**
-     * @var OrderInterface|null
-     */
-    private ?OrderInterface $order = null;
-
-    /**
      * @param Log $log
      * @param TaxItemResourceFactory $taxItemResourceFact
      * @param ShippingItemFactory $shippingItemFactory
@@ -55,16 +50,6 @@ class OrderConverter extends AbstractConverter
     }
 
     /**
-     * Get order or null if not set.
-     *
-     * @return OrderInterface|null
-     */
-    public function getOrder(): OrderInterface|null
-    {
-        return $this->order;
-    }
-
-    /**
      * Convert supplied entity to an array of PaymentItem instances.
      *
      * Convert supplied entity to a collection of PaymentItem instances. These
@@ -77,7 +62,6 @@ class OrderConverter extends AbstractConverter
     public function convert(
         OrderInterface $entity
     ): array {
-        $this->order = $entity;
         $shippingMethod = $entity->getShippingMethod();
 
         return array_merge(

@@ -67,12 +67,10 @@ class ProductItem extends AbstractItem
      */
     public function getUnitAmountWithoutVat(): float
     {
-        $product = $this->getOrderItem();
-
         return $this->sanitizeUnitAmountWithoutVat(
             $this->isBundle() && !$this->hasFixedPrice() ?
                 0.0 :
-                (float) $product->getPriceInclTax() / (1 + ((float) $product->getTaxPercent() / 100))
+                (float) $this->product->getPriceInclTax() / (1 + ((float) $this->product->getTaxPercent() / 100))
         );
     }
 
@@ -81,10 +79,9 @@ class ProductItem extends AbstractItem
      */
     public function getVatPct(): int
     {
-        $product = $this->getOrderItem();
         $result = $this->isBundle() && !$this->hasFixedPrice() ?
             0.0 :
-            (float) $product->getTaxPercent();
+            (float) $this->product->getTaxPercent();
 
         return (int) round($result);
     }
@@ -108,7 +105,7 @@ class ProductItem extends AbstractItem
      */
     private function hasDynamicPrice(): bool
     {
-        return $this->getOrderItem()->isChildrenCalculated();
+        return $this->product->isChildrenCalculated();
     }
 
     /**
@@ -121,7 +118,7 @@ class ProductItem extends AbstractItem
      */
     private function hasFixedPrice(): bool
     {
-        return !$this->getOrderItem()->isChildrenCalculated();
+        return !$this->product->isChildrenCalculated();
     }
 
     /**
@@ -131,7 +128,7 @@ class ProductItem extends AbstractItem
      */
     public function isBundle(): bool
     {
-        return $this->getOrderItem()->getProductType() === 'bundle';
+        return $this->product->getProductType() === 'bundle';
     }
 
     /**
@@ -148,15 +145,5 @@ class ProductItem extends AbstractItem
             num: $result,
             precision: 2
         );
-    }
-
-    /**
-     * Fetches the actual order item.
-     *
-     * @return OrderItemInterface
-     */
-    public function getOrderItem(): OrderItemInterface
-    {
-        return $this->product;
     }
 }
