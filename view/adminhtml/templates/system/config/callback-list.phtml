@@ -7,26 +7,30 @@
 declare(strict_types=1);
 
 use Magento\Framework\Escaper;
-use Resursbank\Ecom\Lib\Model\Callback\Enum\CallbackType;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom\CallbackList;
 
 /**
  * @var CallbackList $block
+ * @var SecureHtmlRenderer $secureRenderer
  * @var Escaper $escaper
  */
+
+$widget = $block->getWidget();
 ?>
 
-<div style="max-width: 600px; overflow-x: scroll;">
-    <p style="font-weight: bold;">[AUTHORIZATION]</p>
-    <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0;">
-        <?= $escaper->escapeHtml(
-            data: $block->getCallbackUrl(type: strtolower(string: CallbackType::AUTHORIZATION->value))
-        ) ?>
-    </p>
-    <p style="font-weight: bold;">[MANAGEMENT]</p>
-    <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0;">
-        <?= $escaper->escapeHtml(
-            data: $block->getCallbackUrl(type: strtolower(string: CallbackType::MANAGEMENT->value))
-        ) ?>
-    </p>
-</div>
+<?php if ($widget !== null): ?>
+    <?=
+    /* @noEscape */
+    $secureRenderer->renderTag(
+        tagName: 'style',
+        attributes: [],
+        content: $widget->css,
+        textContent: true
+    )
+    ?>
+
+    <?=
+        $escaper->escapeHtml(data: $widget->content, allowedTags: ['div', 'p'])
+    ?>
+<?php endif; ?>
