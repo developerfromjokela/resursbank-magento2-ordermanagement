@@ -71,7 +71,7 @@
                         <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom\CallbackList</frontend_model>
                         <config_path>resursbank/api/callback_list</config_path>
                         <depends>
-                            <field id="*/resursbank_section/api/flow">rcoplus,mapi</field>
+                            <field id="*/resursbank_section/api/flow" separator=",">rcoplus,mapi</field>
                         </depends>
                     </field>
                 </group>
