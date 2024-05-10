@@ -80,6 +80,10 @@ class PaymentInformation extends Template
             return;
         }
 
+        if ($this->ecom->canConnect(scopeCode: $order->getStoreId())) {
+            $this->ecom->connectAftershop(entity: $order);
+        }
+
         $this->order = $order;
 
         $viewModel->setOrder(order: $this->order);
