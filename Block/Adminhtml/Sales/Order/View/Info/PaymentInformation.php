@@ -22,7 +22,7 @@ use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
 use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
-use Resursbank\Ecom\Module\Rco\Widget\PaymentInformation as PaymentInformationWidget;
+use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 use RuntimeException;
@@ -118,6 +118,8 @@ class PaymentInformation extends Template
     }
 
     /**
+     * Resolve Ecom widget.
+     *
      * @return PaymentInformationWidget|null
      */
     public function getEcomWidget(): ?PaymentInformationWidget
@@ -138,9 +140,11 @@ class PaymentInformation extends Template
     /**
      * Resolve order.
      *
+     * Made public to be utilised by plugins.
+     *
      * @return OrderInterface|null
      */
-    private function getOrder(): ?OrderInterface
+    public function getOrder(): ?OrderInterface
     {
         $result = null;
         $id = $this->getOrderIdFromRequest();
