@@ -9,19 +9,18 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Model\Ecom;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Item;
 use Magento\Sales\Model\Order\Payment\Operations\SaleOperation;
 use Magento\Framework\App\RequestInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Ecom\Exception\ConfigException;
 use Resursbank\Ecom\Exception\HttpException;
-use Resursbank\Ecom\Lib\Api\Scope;
 use Resursbank\Ecom\Lib\Model\Callback\Authorization;
 use Resursbank\Ecom\Lib\Model\Callback\Enum\Status;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\Entry;
@@ -64,9 +63,6 @@ class Callback implements CallbackInterface
      * @param PaymentMethods $paymentMethods
      * @param PaymentHistoryHelper $paymentHistoryHelper
      * @param SaleOperation $saleOperation
-     * @param StoreManagerInterface $storeManager
-     * @param Ecom $ecomHelper
-     * @param RequestInterface $request
      * @param ReservationBuilder $reservationBuilder
      * @param SaveMultiple $saveMultiple
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -83,9 +79,6 @@ class Callback implements CallbackInterface
         private readonly PaymentMethods $paymentMethods,
         private readonly PaymentHistoryHelper $paymentHistoryHelper,
         private readonly SaleOperation $saleOperation,
-        private readonly StoreManagerInterface $storeManager,
-        private readonly Ecom $ecomHelper,
-        private readonly RequestInterface $request,
         private readonly ReservationBuilder $reservationBuilder,
         private readonly SaveMultiple $saveMultiple
     ) {
@@ -99,33 +92,34 @@ class Callback implements CallbackInterface
     public function authorization(): void
     {
         try {
-            $this->setStore();
+            $callback = (new AuthorizationController())->getRequestData();
 
-            $controller = new AuthorizationController();
-            $order = $this->orderHelper->getOrderFromPaymentId(
-                paymentId: $controller->getRequestData()->getCheckoutId()
-            );
+            $id = $this->getId(callback: $callback);
+
+            if ($id === '') {
+                throw new HttpException(
+                    __('rb-callback-error-no-resource-id')->getText()
+                );
+            }
+
+            $order = $this->orderHelper->getOrderFromPaymentId(paymentId: $id);
 
             if ($order === null) {
                 throw new HttpException(
-                    message: 'Order not found.',
+                    message: __('rb-callback-error-order-not-found'),
                     code: 503
                 );
             }
 
-            if (!$this->isReadyForCallback(
-                order: $order,
-                checkoutId: $controller->getRequestData()->checkoutId
-            )
-            ) {
+            if (!$this->isReadyForCallback(order: $order, callback: $callback)) {
                 throw new HttpException(
-                    message: 'Order not ready for callback',
+                    message: __('rb-called-error-order-not-ready')->getText(),
                     code: 503
                 );
             }
 
             $code = Repository::process(
-                callback: $controller->getRequestData(),
+                callback: $callback,
                 process: $this->getCallbackFunction()
             );
         } catch (Throwable $error) {
@@ -135,7 +129,7 @@ class Callback implements CallbackInterface
 
         if ($code > 299) {
             throw new WebapiException(
-                phrase: __('Failed to process authorization callback.'),
+                phrase: __('rb-callback-error-failed-processing-authorization'),
                 httpCode: $code
             );
         }
@@ -179,7 +173,7 @@ class Callback implements CallbackInterface
             Authorization $callback
         ): void {
             $order = $this->orderHelper->getOrderFromPaymentId(
-                paymentId: $callback->getCheckoutId()
+                paymentId: $this->getId(callback: $callback)
             );
 
             if ($order === null) {
@@ -205,7 +199,7 @@ class Callback implements CallbackInterface
             if ($callback->status !== Status::REJECTED &&
                 $order instanceof Order &&
                 !EcomPaymentHistoryRepository::hasExecuted(
-                    paymentId: $callback->getCheckoutId(),
+                    paymentId: $this->getId(callback: $callback),
                     event: Event::CALLBACK_COMPLETED
                 )
             ) {
@@ -219,33 +213,16 @@ class Callback implements CallbackInterface
     }
 
     /**
-     * Set the current store and connect to the API using that store's config.
-     *
-     * @return void
-     * @throws NoSuchEntityException
-     */
-    private function setStore(): void
-    {
-        $storeId = $this->request->getParam(key: 'store_id');
-        $this->storeManager->setCurrentStore(store: $storeId);
-        $this->ecomHelper->connect(
-            scopeCode: $this->storeManager->getStore()->getCode(),
-            scopeType: ScopeInterface::SCOPE_STORES,
-            scope: Scope::CHECKOUT_PLUS_API
-        );
-    }
-
-    /**
      * Checks if the order is ready for callbacks.
      *
      * @param OrderInterface $order
-     * @param string $checkoutId
+     * @param Authorization $callback
      * @return bool
      * @throws ConfigException
      */
     private function isReadyForCallback(
         OrderInterface $order,
-        string $checkoutId
+        Authorization $callback
     ): bool {
         $createdAt = $order->getCreatedAt();
         $createdAtTimestamp = strtotime(datetime: $createdAt);
@@ -253,7 +230,7 @@ class Callback implements CallbackInterface
         $timeoutReached = $currentTime > $createdAtTimestamp + 60;
 
         return EcomPaymentHistoryRepository::hasExecuted(
-            paymentId: $checkoutId,
+            paymentId: $this->getId(callback: $callback),
             event: Event::REACHED_ORDER_SUCCESS_PAGE
         ) || $timeoutReached;
     }
@@ -274,7 +251,7 @@ class Callback implements CallbackInterface
             if ($callback->status === Status::CAPTURED && $this->isAutomaticInvoiceEnabled(order: $order)) {
                 EcomPaymentHistoryRepository::write(
                     entry: new Entry(
-                        paymentId: $callback->checkoutId,
+                        paymentId: $this->getId(callback: $callback),
                         event: Event::INVOICE_CREATED,
                         user: User::RESURSBANK
                     )
@@ -293,13 +270,13 @@ class Callback implements CallbackInterface
      *
      * @param OrderInterface $order
      * @return void
-     * @throws JsonException
+     * @throws \JsonException
      * @throws ValidationException
      */
     private function cleanUpInventoryReservation(OrderInterface $order): void
     {
         $incrementId = $order->getIncrementId();
-        /** @var Magento\Sales\Model\Order\Item $item */
+        /** @var Item $item */
         foreach ($order->getAllVisibleItems() as $item) {
             if ($item->getQtyOrdered()) {
                 $reservation = $this->reservationBuilder
@@ -342,5 +319,17 @@ class Callback implements CallbackInterface
             (float) $order->getTotalInvoiced() === 0.0 &&
             !$this->paymentHistoryHelper->hasCreatedInvoice(order: $order)
         );
+    }
+
+    /**
+     * Resolve checkout/payment id from callback.
+     *
+     * @param Authorization $callback
+     * @return string
+     */
+    private function getId(
+        Authorization $callback
+    ): string {
+        return $callback->checkoutId ?? $callback->paymentId;
     }
 }
