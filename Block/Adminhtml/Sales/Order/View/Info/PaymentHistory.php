@@ -33,6 +33,8 @@ use Throwable;
  * This block implements the widget for deprecated and modern API:s alike.
  * Methods utilised exclusively by deprecated API:s are marked in their
  * docblocks.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class PaymentHistory extends EcomWidget
 {
@@ -53,6 +55,7 @@ class PaymentHistory extends EcomWidget
      * @param PaymentHistoryRepositoryInterface $repository
      * @param SearchCriteriaBuilder $searchBuilder
      * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Context $context,

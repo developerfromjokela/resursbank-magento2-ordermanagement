@@ -10,12 +10,10 @@ namespace Resursbank\Ordermanagement\Plugin\Block\Adminhtml\Sales\Order\View;
 
 use Exception;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\View\LayoutInterface;
 use Magento\Sales\Block\Adminhtml\Order\View\Info;
-use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\EcomWidget;
+use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation;
 
 /**
  * Prepends payment information from Resurs Bank to the top of the order /
@@ -28,12 +26,12 @@ class AppendPaymentInfo
     /**
      * @param Log $log
      * @param ApiPayment $apiPayment
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         private readonly Log $log,
         private readonly ApiPayment $apiPayment,
-        private readonly ObjectManagerInterface $objectManager,
-        private readonly LayoutInterface $layout
+        private readonly ObjectManagerInterface $objectManager
     ) {
     }
 
@@ -51,18 +49,7 @@ class AppendPaymentInfo
     ): string {
         try {
             if ($this->apiPayment->validateOrder($subject->getOrder())) {
-                //$block = $this->layout->getBlock('resursbank.payment.information');
-                $block = $this->objectManager->create(\Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation::class);
-/*
-                $block = $this->objectManager->create(
-                    EcomWidget::class, [
-                        'viewModel' => $this->objectManager->create(
-                            type: PaymentInformation::class
-                        ),
-                        'templateDir' => 'payment-information'
-                    ]
-                );*/
-
+                $block = $this->objectManager->create(PaymentInformation::class);
                 $result = $block->toHtml() . $result;
             }
         } catch (Exception $e) {

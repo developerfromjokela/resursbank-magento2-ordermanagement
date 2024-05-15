@@ -11,16 +11,13 @@ namespace Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
 use Magento\Backend\Block\Template\Context;
-use Magento\Checkout\Helper\Data;
 use Magento\Framework\Exception\InputException;
-use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Resursbank\Core\Block\Adminhtml\Template;
-use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
 use Resursbank\Core\Helper\PaymentMethods;
@@ -28,6 +25,11 @@ use Resursbank\Ordermanagement\Helper\Log;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Basic Ecom widget functionality for order view.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 abstract class EcomWidget extends Template
 {
     /**
@@ -37,6 +39,7 @@ abstract class EcomWidget extends Template
 
     /**
      * @param Context $context
+     * @param string $templateDir
      * @param InvoiceRepositoryInterface $invoiceRepo
      * @param CreditmemoRepositoryInterface $creditmemoRepo
      * @param Log $log
@@ -44,9 +47,6 @@ abstract class EcomWidget extends Template
      * @param PaymentMethods $paymentMethods
      * @param Order $orderHelper
      * @param Ecom $ecom
-     * @param Data $checkoutHelper
-     * @param Api $api
-     * @param PriceCurrencyInterface $priceCurrency
      * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */

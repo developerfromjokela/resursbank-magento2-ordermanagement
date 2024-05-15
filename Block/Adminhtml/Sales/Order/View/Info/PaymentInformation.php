@@ -30,13 +30,30 @@ use function is_array;
 use function is_string;
 
 /**
+ * Implementation of payment information widget for order/invoice view.
+ *
  * @SuppressWarnings(PHPMD.CyclomaticComplexity)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @noinspection PhpClassHasTooManyDeclaredMembersInspection
  */
 class PaymentInformation extends EcomWidget
 {
-
+    /**
+     * @param Context $context
+     * @param InvoiceRepositoryInterface $invoiceRepo
+     * @param CreditmemoRepositoryInterface $creditmemoRepo
+     * @param Log $log
+     * @param OrderRepositoryInterface $orderRepository
+     * @param PaymentMethods $paymentMethods
+     * @param Order $orderHelper
+     * @param Ecom $ecom
+     * @param Data $checkoutHelper
+     * @param Api $api
+     * @param PriceCurrencyInterface $priceCurrency
+     * @param array $data
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
         Context $context,
         InvoiceRepositoryInterface $invoiceRepo,
@@ -401,7 +418,6 @@ class PaymentInformation extends EcomWidget
     /**
      * Get Ecom widget.
      *
-     * @param OrderInterface $order
      * @return Widget|null
      */
     public function getWidget(): ?Widget
@@ -417,10 +433,5 @@ class PaymentInformation extends EcomWidget
         }
 
         return null;
-    }
-
-    public function getTemplateDir(): string
-    {
-        return 'payment-information';
     }
 }
