@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Interceptor for SupportInfo block -->
+    <type name="Resursbank\Core\Block\Adminhtml\System\Config\SupportInfo">
+        <plugin
+            name="resursbank_ordermanagement_core_block_adminhtml_system_config_supportinfo"
+            type="Resursbank\Ordermanagement\Plugin\Core\Block\Adminhtml\System\Config\SupportInfo"
+        />
+    </type>
+</config>
