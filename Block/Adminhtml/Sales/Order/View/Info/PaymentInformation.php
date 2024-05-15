@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright © Resurs Bank AB. All rights reserved.
  * See LICENSE for license details.
@@ -11,126 +10,405 @@ namespace Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info;
 
 use Exception;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Exception\InputException;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
-use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Resursbank\Core\Block\Adminhtml\Template;
 use Resursbank\Core\Helper\Ecom;
 use Resursbank\Core\Helper\Order;
-use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as Widget;
 use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
-use Resursbank\Ecom\Module\Payment\Widget\PaymentInformation as PaymentInformationWidget;
-use Resursbank\Ordermanagement\Helper\Log;
-use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
-use RuntimeException;
 use Throwable;
+use Magento\Checkout\Helper\Data;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Resursbank\Core\Helper\Api;
+use Resursbank\Core\Helper\PaymentMethods;
+use Resursbank\Ordermanagement\Helper\Log;
+use stdClass;
+
+use function is_array;
+use function is_string;
 
 /**
- * Injects custom HTML containing payment information on order/invoice view.
- *
- * The normal way would be to inject a block through an XML file, but in this
- * case it's proven difficult. It seems we would need to overwrite a core
- * PHTML template to make it work, so we settled using a block + plugin approach
- * so that we wouldn't cause issues with third party extensions.
- *
- * See: Plugin\Block\Adminhtml\Sales\Order\View\AppendPaymentInfo
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @noinspection PhpClassHasTooManyDeclaredMembersInspection
  */
-class PaymentInformation extends Template
+class PaymentInformation extends EcomWidget
 {
-    /**
-     * @var OrderInterface
-     */
-    public OrderInterface $order;
 
-    /**
-     * @param Context $context
-     * @param ViewModel $viewModel
-     * @param InvoiceRepositoryInterface $invoiceRepo
-     * @param CreditmemoRepositoryInterface $creditmemoRepo
-     * @param Log $log
-     * @param OrderRepositoryInterface $orderRepository
-     * @param PaymentMethods $paymentMethods
-     * @param Order $orderHelper
-     * @param Ecom $ecom
-     * @param array $data
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
-     */
     public function __construct(
         Context $context,
-        ViewModel $viewModel,
-        private readonly InvoiceRepositoryInterface $invoiceRepo,
-        private readonly CreditmemoRepositoryInterface $creditmemoRepo,
-        public readonly Log $log,
-        private readonly OrderRepositoryInterface $orderRepository,
-        private readonly PaymentMethods $paymentMethods,
-        public readonly Order $orderHelper,
-        private readonly Ecom $ecom,
+        InvoiceRepositoryInterface $invoiceRepo,
+        CreditmemoRepositoryInterface $creditmemoRepo,
+        Log $log,
+        OrderRepositoryInterface $orderRepository,
+        PaymentMethods $paymentMethods,
+        Order $orderHelper,
+        Ecom $ecom,
+        private readonly Data $checkoutHelper,
+        private readonly Api $api,
+        private readonly PriceCurrencyInterface $priceCurrency,
         array $data = []
     ) {
-        parent::__construct(context: $context, data: $data);
-
-        $order = $this->getOrder();
-
-        if ($order === null || !$this->isEnabled(order: $order)) {
-            return;
-        }
-
-        if ($this->ecom->canConnect(scopeCode: $order->getStoreId())) {
-            $this->ecom->connectAftershop(entity: $order);
-        }
-
-        $this->order = $order;
-
-        $viewModel->setOrder(order: $this->order);
-
-        $this->setData(key: 'view_model', value: $viewModel);
-        $this->assign(
-            key: 'view_model',
-            value: $this->getData(key: 'view_model')
+        parent::__construct(
+            context: $context,
+            templateDir: 'payment-information',
+            invoiceRepo: $invoiceRepo,
+            creditmemoRepo: $creditmemoRepo,
+            log: $log,
+            orderRepository: $orderRepository,
+            paymentMethods: $paymentMethods,
+            orderHelper: $orderHelper,
+            ecom: $ecom,
+            data: $data
         );
-
-        $this->setTemplate(template: $this->getTemplate());
     }
 
     /**
-     * Get payment id from order.
+     * @var null|array
+     */
+    private ?array $paymentInfo = null;
+
+    /**
+     * Set order property.
      *
      * @param OrderInterface $order
-     * @return string
-     * @throws InputException
      */
-    public function getPaymentId(OrderInterface $order): string
-    {
-        return $this->orderHelper->getPaymentId(order: $order);
+    public function setOrder(
+        OrderInterface $order
+    ): void {
+        $this->order = $order;
     }
 
     /**
-     * Resolve template file based on whether we can utilize Ecom.
+     * Retrieve payment information from Resurs Bank.
      *
-     * @return string
+     * @param string $key
+     * @return mixed|null|stdClass
      */
-    public function getTemplate(): string
-    {
-        return $this->ecom->canConnect(scopeCode: $this->order->getStoreId()) ?
-            'Resursbank_Ordermanagement::sales/order/view/info/payment-information/ecom.phtml' :
-            'Resursbank_Ordermanagement::sales/order/view/info/payment-information/deprecated.phtml';
+    public function getPaymentInformation(
+        string $key = ''
+    ): mixed {
+        $result = null;
+
+        if ($this->paymentInfo === null &&
+            is_string(value: $this->order->getIncrementId())
+        ) {
+            try {
+                $paymentData = $this->api->getPayment(order: $this->order);
+                $this->paymentInfo = $paymentData !== null ?
+                    (array)$paymentData :
+                    null;
+            } catch (Exception $e) {
+                $this->log->exception(error: $e);
+            }
+        }
+
+        if (empty($key)) {
+            $result = $this->paymentInfo;
+        } elseif (is_array(value: $this->paymentInfo) &&
+            isset($this->paymentInfo[$key])
+        ) {
+            $result = $this->paymentInfo[$key];
+        }
+
+        return $result;
     }
 
     /**
-     * Resolve Ecom widget.
+     * Get payment status.
      *
-     * @return PaymentInformationWidget|null
+     * @return string
      */
-    public function getEcomWidget(): ?PaymentInformationWidget
+    public function getPaymentStatus(): string
+    {
+        $result = '';
+
+        $status = $this->getPaymentInformation(key: 'status');
+
+        if (is_string(value: $status)) {
+            $result = $status;
+        } elseif (is_array(value: $status) && count($status)) {
+            foreach ($status as $piece) {
+                $result.= !empty($result) ? (' | ' . __($piece)) : __($piece);
+            }
+        }
+
+        if (empty($result)) {
+            $result = 'PENDING';
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get payment Id.
+     *
+     * @return string
+     */
+    public function getPaymentInfoId(): string
+    {
+        return $this->getPaymentInformation(key: 'id') ?? '';
+    }
+
+    /**
+     * Get payment total.
+     *
+     * @return string
+     */
+    public function getPaymentTotal(): string
+    {
+        return (
+            $this->formatPrice(
+                price: $this->convertPrice(
+                    price: $this->getPaymentInformation(key: 'totalAmount')
+                )
+            ) ??
+            ''
+        );
+    }
+
+    /**
+     * Get payment limit.
+     *
+     * @return string
+     */
+    public function getPaymentLimit(): string
+    {
+        return (
+            $this->formatPrice(
+                price: $this->convertPrice(
+                    price: $this->getPaymentInformation(key: 'limit')
+                )
+            ) ??
+            ''
+        );
+    }
+
+    /**
+     * Check if payment is frozen.
+     *
+     * @return bool
+     */
+    public function isFrozen(): bool
+    {
+        return $this->getPaymentInformation(key: 'frozen') === true;
+    }
+
+    /**
+     * Check if payment is flagged as fraud.
+     *
+     * @return bool
+     */
+    public function isFraud(): bool
+    {
+        return $this->getPaymentInformation(key: 'fraud') === true;
+    }
+
+    /**
+     * Get payment method name.
+     *
+     * @return string
+     */
+    public function getPaymentMethodName(): string
+    {
+        return $this->getPaymentInformation(key: 'paymentMethodName') ?? '';
+    }
+
+    /**
+     * Retrieve customer information from Resurs Bank payment.
+     *
+     * @param string $key
+     * @param bool $address
+     * @return mixed
+     */
+    public function getCustomerInformation(
+        string $key = '',
+        bool $address = false
+    ): mixed {
+        $result = (array) $this->getPaymentInformation(key: 'customer');
+
+        if (!empty($address)) {
+            $result = isset($result['address']) ? (array) $result['address'] : null;
+        }
+
+        if (!empty($key)) {
+            $result = $result[$key] ?? null;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get full customer name.
+     *
+     * @return string
+     */
+    public function getCustomerName(): string
+    {
+        return $this->getCustomerInformation(key: 'fullName', address: true);
+    }
+
+    /**
+     * Returns the customer address as an ordered array.
+     *
+     * @return string[]
+     */
+    public function getCustomerAddress(): array
+    {
+        $street = $this->getCustomerAddressRow1();
+        $street2 = $this->getCustomerAddressRow2();
+        $postal = $this->getCustomerPostalCode();
+        $city = $this->getCustomerPostalArea();
+        $country = $this->getCustomerCountry();
+
+        $result = [];
+        $result[] = $street;
+
+        if ($street2) {
+            $result[] = $street2;
+        }
+
+        $result[] = $city;
+        $result[] = "{$country} - {$postal}";
+
+        return $result;
+    }
+
+    /**
+     * Get customer telephone number.
+     *
+     * @return string
+     */
+    public function getCustomerTelephone(): string
+    {
+        return $this->getCustomerInformation(key: 'phone') ?? '';
+    }
+
+    /**
+     * Get customer email address.
+     *
+     * @return string
+     */
+    public function getCustomerEmail(): string
+    {
+        return $this->getCustomerInformation(key: 'email') ?? '';
+    }
+
+    /**
+     * Get first address row.
+     *
+     * @return string
+     */
+    public function getCustomerAddressRow1(): string
+    {
+        return $this->getCustomerInformation(
+            key: 'addressRow1',
+            address: true
+        ) ?? '';
+    }
+
+    /**
+     * Get second address row.
+     *
+     * @return string
+     */
+    public function getCustomerAddressRow2(): string
+    {
+        return $this->getCustomerInformation(
+            key: 'addressRow2',
+            address: true
+        ) ?? '';
+    }
+
+    /**
+     * Get customer post code.
+     *
+     * @return string
+     */
+    public function getCustomerPostalCode(): string
+    {
+        return $this->getCustomerInformation(
+            key: 'postalCode',
+            address: true
+        ) ?? '';
+    }
+
+    /**
+     * Get Customer postal area.
+     *
+     * @return string
+     */
+    public function getCustomerPostalArea(): string
+    {
+        return $this->getCustomerInformation(
+            key: 'postalArea',
+            address: true
+        ) ?? '';
+    }
+
+    /**
+     * Get customer country.
+     *
+     * @return string
+     */
+    public function getCustomerCountry(): string
+    {
+        return $this->getCustomerInformation(
+            key: 'country',
+            address: true
+        ) ?? '';
+    }
+
+    /**
+     * Performs currency formatting of a float value.
+     *
+     * Formats a price to include decimals and the configured currency of the
+     * store.
+     *
+     * Example: 123.53 => "123.53,00 kr"
+     *
+     * @param float $price
+     * @return string
+     */
+    public function formatPrice(
+        float $price
+    ): string {
+        return $this->priceCurrency->format(
+            amount: $price,
+            includeContainer: false,
+            precision: PriceCurrencyInterface::DEFAULT_PRECISION,
+            scope: $this->order->getStoreId()
+        );
+    }
+
+    /**
+     * Converts a string price to a float.
+     *
+     * @param string $price
+     * @return float
+     */
+    public function convertPrice(
+        string $price
+    ): float {
+        return $this->checkoutHelper->convertPrice(
+            price: (float) $price,
+            format: false
+        );
+    }
+
+    /**
+     * Get Ecom widget.
+     *
+     * @param OrderInterface $order
+     * @return Widget|null
+     */
+    public function getWidget(): ?Widget
     {
         try {
-            return new PaymentInformationWidget(
-                paymentId: $this->getPaymentId(order: $this->order),
+            return new Widget(
+                paymentId: $this->orderHelper->getPaymentId(order: $this->order),
                 currencySymbol: 'kr',
                 currencyFormat: CurrencyFormat::SYMBOL_LAST
             );
@@ -141,79 +419,8 @@ class PaymentInformation extends Template
         return null;
     }
 
-    /**
-     * Resolve order.
-     *
-     * Made public to be utilised by plugins.
-     *
-     * @return OrderInterface|null
-     */
-    public function getOrder(): ?OrderInterface
+    public function getTemplateDir(): string
     {
-        $result = null;
-        $id = $this->getOrderIdFromRequest();
-
-        try {
-            if ($id > 0) {
-                $result = $this->orderRepository->get(id: $id);
-            }
-        } catch (Throwable $error) {
-            $this->log->exception(error: $error);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get order id from request - if request includes "order_id" or "invoice_id" number. Returns 0 if not found.
-     *
-     * @return int
-     */
-    private function getOrderIdFromRequest(): int
-    {
-        $result = 0;
-
-        try {
-            $request = $this->getRequest();
-            $orderId = (int)$request->getParam(key: 'order_id');
-            $invoiceId = (int)$request->getParam(key: 'invoice_id');
-            $creditmemoId = (int)$request->getParam(key: 'creditmemo_id');
-
-            if ($orderId !== 0) {
-                $result = $orderId;
-            } elseif ($invoiceId !== 0) {
-                $result = (int)$this->invoiceRepo
-                    ->get(id: $invoiceId)
-                    ->getOrderId();
-            } elseif ($creditmemoId !== 0) {
-                $result = (int)$this->creditmemoRepo
-                    ->get(id: $creditmemoId)
-                    ->getOrderId();
-            }
-        } catch (Exception $e) {
-            $this->log->exception(error: $e);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Check if widget is enabled.
-     *
-     * @param OrderInterface $order
-     * @return bool
-     */
-    private function isEnabled(
-        OrderInterface $order
-    ): bool {
-        if (!($order->getPayment() instanceof OrderPaymentInterface)) {
-            throw new RuntimeException(
-                message: 'Missing payment data on order ' . $order->getIncrementId()
-            );
-        }
-
-        return $this->paymentMethods->isResursBankMethod(
-            code: $order->getPayment()->getMethod()
-        );
+        return 'payment-information';
     }
 }

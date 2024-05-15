@@ -11,14 +11,8 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Magento\Sales\Block\Order\View"
-                   template="Resursbank_Ordermanagement::sales/order/view/info/payment_history.phtml"
+            <block class="Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentHistory"
                    name="resursbank.ordermanagement.payment_history">
-                <arguments>
-                    <argument name="view_model" xsi:type="object">
-                        Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentHistory
-                    </argument>
-                </arguments>
             </block>
         </referenceContainer>
     </body>

@@ -1,0 +1,35 @@
+<?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentHistory;
+
+/** @var PaymentHistory $block */
+/** @var Escaper $escaper */
+?>
+
+<div id="resursbank-ordermanagement-order-view-payment-history"
+     data-bind="scope: 'payment-history'">
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "payment-history": {
+                        "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
+                        "events": <?= /* @noEscape */ $block->getTableDataFromOrder() ?>,
+                        "heading": "<?= $escaper->escapeHtml($block->getHeading()) ?>"
+                    }
+                }
+            }
+        }
+    }
+</script>
