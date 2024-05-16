@@ -16,27 +16,20 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order as OrderModel;
 use ReflectionException;
 use Resursbank\Core\Helper\Order;
-use Resursbank\Ecom\Exception\ApiException;
 use Resursbank\Ecom\Exception\AttributeCombinationException;
-use Resursbank\Ecom\Exception\AuthException;
 use Resursbank\Ecom\Exception\ConfigException;
-use Resursbank\Ecom\Exception\CurlException;
 use Resursbank\Ecom\Exception\FilesystemException;
 use Resursbank\Ecom\Exception\TranslationException;
-use Resursbank\Ecom\Exception\Validation\EmptyValueException;
 use Resursbank\Ecom\Exception\Validation\IllegalTypeException;
 use Resursbank\Ecom\Exception\Validation\IllegalValueException;
 use Resursbank\Ecom\Exception\Validation\MissingValueException;
-use Resursbank\Ecom\Exception\ValidationException;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\Entry;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\EntryCollection;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\Event;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\Result;
 use Resursbank\Ecom\Lib\Model\PaymentHistory\User;
-use Resursbank\Ecom\Lib\Model\Rco\Checkout;
 use Resursbank\Ecom\Module\PaymentHistory\DataHandler\DataHandlerInterface;
 use Resursbank\Ecom\Module\PaymentHistory\Translator;
-use Resursbank\Ecom\Module\Rco\Repository;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
 use Resursbank\Ordermanagement\Model\PaymentHistory as PaymentHistoryModel;
 use Resursbank\Ordermanagement\Model\PaymentHistoryFactory as PaymentHistoryModelFactory;
@@ -98,7 +91,16 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
                 createdAt: date(format: 'Y-m-d H:i:s', timestamp: $entry->time)
             );
 
-            $this->syncOrder(order: $order, entry: $entry);
+            // Sync order state/status when certain events occur.
+            if (in_array(
+                needle: $entry->event,
+                haystack: [
+                    Event::REACHED_ORDER_SUCCESS_PAGE,
+                    Event::CALLBACK_AUTHORIZATION
+                ]
+            )) {
+                $this->syncOrder(order: $order, entry: $entry);
+            }
 
             $model->setStatusTo(status: $order->getStatus());
             $model->setStateTo(state: $order->getState());
@@ -207,6 +209,86 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
     }
 
     /**
+     * Sync order based on checkout status.
+     *
+     * NOTE: This method is a placeholder for the actual implementations made
+     * through plugins.
+     *
+     * @param OrderInterface $order
+     * @param Entry $entry
+     * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    // phpcs:disable
+    public function syncOrder(
+        OrderInterface $order,
+        Entry $entry
+    ): void {
+    }
+    // phpcs:enable
+
+    /**
+     * Handle processing payment.
+     *
+     * NOTE: made public to allow access from plugins.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function handleProcessingPayment(OrderInterface $order): void
+    {
+        $order->setState(state: OrderModel::STATE_NEW);
+        $order->setStatus(status: 'pending');
+        $this->orderRepository->save(entity: $order);
+    }
+
+    /**
+     * Handle payment frozen.
+     *
+     * NOTE: made public to allow access from plugins.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function handleFrozenPayment(OrderInterface $order): void
+    {
+        $order->setState(state: OrderModel::STATE_PAYMENT_REVIEW);
+        $order->setStatus(status: OrderModel::STATE_PAYMENT_REVIEW);
+        $this->orderRepository->save(entity: $order);
+    }
+
+    /**
+     * Handle payment cancelled.
+     *
+     * NOTE: made public to allow access from plugins.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function handleCancelledPayment(OrderInterface $order): void
+    {
+        $order->setState(state: OrderModel::STATE_CANCELED);
+        $order->setStatus(status: 'canceled');
+        $this->orderRepository->save(entity: $order);
+    }
+
+    /**
+     * Handle payment failed.
+     *
+     * NOTE: made public to allow access from plugins.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    public function handleFailedPayment(
+        OrderInterface $order
+    ): void {
+        $order->setState(state: OrderModel::STATE_CANCELED);
+        $order->setStatus(status: 'canceled');
+        $this->orderRepository->save(entity: $order);
+    }
+
+    /**
      * Convert a PaymentHistory legacy model to Entry model for Ecom widget.
      *
      * @param PaymentHistoryModel $paymentHistory
@@ -280,123 +362,6 @@ class PaymentHistoryDataHandler implements DataHandlerInterface
         return  $event === Event::LEGACY ?
             $paymentHistory->eventLabel(event: $paymentHistory->getEvent()) :
             '';
-    }
-
-    /**
-     * Resolve payment/checkout instance matching supplied payment id.
-     *
-     * @param Entry $entry
-     * @return Checkout
-     * @throws ApiException
-     * @throws AuthException
-     * @throws ConfigException
-     * @throws CurlException
-     * @throws EmptyValueException
-     * @throws IllegalTypeException
-     * @throws IllegalValueException
-     * @throws JsonException
-     * @throws ReflectionException
-     * @throws ValidationException
-     */
-    private function getCheckout(
-        Entry $entry
-    ): Checkout {
-        return Repository::get(id: $entry->paymentId);
-    }
-
-    /**
-     * Sync order based on checkout status.
-     *
-     * @param OrderInterface $order
-     * @param Entry $entry
-     * @return void
-     * @throws ApiException
-     * @throws AuthException
-     * @throws ConfigException
-     * @throws CurlException
-     * @throws EmptyValueException
-     * @throws IllegalTypeException
-     * @throws IllegalValueException
-     * @throws JsonException
-     * @throws ReflectionException
-     * @throws ValidationException
-     */
-    public function syncOrder(
-        OrderInterface $order,
-        Entry $entry
-    ): void {
-        if (!in_array(
-            needle: $entry->event,
-            haystack: [Event::REACHED_ORDER_SUCCESS_PAGE, Event::CALLBACK_AUTHORIZATION]
-        )
-        ) {
-            return;
-        }
-
-        $checkout = $this->getCheckout(entry: $entry);
-
-        if ($checkout->isCancelled()) {
-            $this->handleCancelledPayment(order: $order);
-        } elseif ($checkout->isFailed()) {
-            $this->handleFailedPayment(order: $order);
-        } elseif ($checkout->isFrozen()) {
-            $this->handleFrozenPayment(order: $order);
-        } elseif ($checkout->isProcessing() || $checkout->isCaptured()) {
-            $this->handleProcessingPayment(order: $order);
-        }
-    }
-
-    /**
-     * Handle processing payment.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleProcessingPayment(OrderInterface $order): void
-    {
-        $order->setState(state: OrderModel::STATE_NEW);
-        $order->setStatus(status: 'pending');
-        $this->orderRepository->save(entity: $order);
-    }
-
-    /**
-     * Handle payment frozen.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleFrozenPayment(OrderInterface $order): void
-    {
-        $order->setState(state: OrderModel::STATE_PAYMENT_REVIEW);
-        $order->setStatus(status: OrderModel::STATE_PAYMENT_REVIEW);
-        $this->orderRepository->save(entity: $order);
-    }
-
-    /**
-     * Handle payment cancelled.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleCancelledPayment(OrderInterface $order): void
-    {
-        $order->setState(state: OrderModel::STATE_CANCELED);
-        $order->setStatus(status: 'canceled');
-        $this->orderRepository->save(entity: $order);
-    }
-
-    /**
-     * Handle payment failed.
-     *
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function handleFailedPayment(
-        OrderInterface $order
-    ): void {
-        $order->setState(state: OrderModel::STATE_CANCELED);
-        $order->setStatus(status: 'canceled');
-        $this->orderRepository->save(entity: $order);
     }
 
     /**

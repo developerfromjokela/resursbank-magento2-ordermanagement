@@ -9,8 +9,9 @@ declare(strict_types=1);
 namespace Resursbank\Ordermanagement\Plugin\Block\Adminhtml\Sales\Order\View;
 
 use Exception;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Sales\Block\Adminhtml\Order\View\Info;
-use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation as PaymentBlock;
+use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Log;
 
@@ -23,35 +24,15 @@ use Resursbank\Ordermanagement\Helper\Log;
 class AppendPaymentInfo
 {
     /**
-     * @var PaymentBlock
-     */
-    private PaymentBlock $paymentBlock;
-
-    /**
-     * @var Log
-     */
-    private Log $log;
-
-    /**
-     * Payment API helper.
-     *
-     * @var ApiPayment
-     */
-    private ApiPayment $apiPayment;
-
-    /**
-     * @param PaymentBlock $paymentBlock
      * @param Log $log
      * @param ApiPayment $apiPayment
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
-        PaymentBlock $paymentBlock,
-        Log $log,
-        ApiPayment $apiPayment
+        private readonly Log $log,
+        private readonly ApiPayment $apiPayment,
+        private readonly ObjectManagerInterface $objectManager
     ) {
-        $this->paymentBlock = $paymentBlock;
-        $this->log = $log;
-        $this->apiPayment = $apiPayment;
     }
 
     /**
@@ -68,9 +49,8 @@ class AppendPaymentInfo
     ): string {
         try {
             if ($this->apiPayment->validateOrder($subject->getOrder())) {
-                $result = $this->paymentBlock
-                        ->setNameInLayout('resursbank_payment_info')
-                        ->toHtml() . $result;
+                $block = $this->objectManager->create(PaymentInformation::class);
+                $result = $block->toHtml() . $result;
             }
         } catch (Exception $e) {
             $this->log->error($e->getMessage());
