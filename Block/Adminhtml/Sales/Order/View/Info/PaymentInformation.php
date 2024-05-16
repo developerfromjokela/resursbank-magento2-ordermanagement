@@ -19,7 +19,6 @@ use Resursbank\Ecom\Module\PaymentMethod\Enum\CurrencyFormat;
 use Throwable;
 use Magento\Checkout\Helper\Data;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Core\Helper\PaymentMethods;
@@ -39,6 +38,11 @@ use function is_string;
  */
 class PaymentInformation extends EcomWidget
 {
+    /**
+     * @var null|array
+     */
+    private ?array $paymentInfo = null;
+
     /**
      * @param Context $context
      * @param InvoiceRepositoryInterface $invoiceRepo
@@ -80,22 +84,6 @@ class PaymentInformation extends EcomWidget
             ecom: $ecom,
             data: $data
         );
-    }
-
-    /**
-     * @var null|array
-     */
-    private ?array $paymentInfo = null;
-
-    /**
-     * Set order property.
-     *
-     * @param OrderInterface $order
-     */
-    public function setOrder(
-        OrderInterface $order
-    ): void {
-        $this->order = $order;
     }
 
     /**
