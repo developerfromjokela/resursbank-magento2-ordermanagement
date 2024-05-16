@@ -21,6 +21,11 @@
             name="resursbank_ordermanagement_update_order_status"
             type="Resursbank\Ordermanagement\Plugin\Order\UpdateStatus"
             sortOrder="10"/>
+
+        <!-- Track info about client reaching success page, Ecom only. -->
+        <plugin
+            name="resursbank_ordermanagement_order_track_result"
+            type="Resursbank\Ordermanagement\Plugin\Order\TrackResult"/>
     </type>
 
     <!-- Events occruing after failed order placement. -->

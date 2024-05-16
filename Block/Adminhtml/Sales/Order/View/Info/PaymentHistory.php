@@ -118,7 +118,6 @@ class PaymentHistory extends EcomWidget
      */
     public function getTableDataFromOrder(): string
     {
-        $result = '{}';
         $data = [];
 
         foreach ($this->getEvents() as $event) {
