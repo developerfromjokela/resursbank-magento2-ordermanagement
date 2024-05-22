@@ -7,10 +7,10 @@
 declare(strict_types=1);
 
 use Magento\Framework\Escaper;
-use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing;
+use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList\Deprecated;
 
 /**
- * @var Listing $block
+ * @var Deprecated $block
  * @var Escaper $escaper
  */
 ?>
@@ -29,11 +29,11 @@ use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing;
     </div>
 <?php else: ?>
     <p class="error-message">
-    <?= $escaper->escapeHtml(__(
-        'No registered callbacks found. Update callbacks, if ' .
-        'you don\'t get a list of &quot;Registered ' .
-        'Callbacks&quot;, please verify that the provided ' .
-        'username and password are accurate.'
-    )) ?>
+        <?= $escaper->escapeHtml(__(
+            'No registered callbacks found. Update callbacks, if ' .
+            'you don\'t get a list of &quot;Registered ' .
+            'Callbacks&quot;, please verify that the provided ' .
+            'username and password are accurate.'
+        )) ?>
     </p>
 <?php endif; ?>

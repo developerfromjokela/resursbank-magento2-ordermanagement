@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom;
+namespace Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList;
 
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
@@ -25,7 +25,7 @@ use Throwable;
 /**
  * List callback URLs utilised by API to communicate with website.
  */
-class CallbackList extends Field
+class Ecom extends Field
 {
     /**
      * @param Context $context
@@ -42,7 +42,7 @@ class CallbackList extends Field
         public readonly Scope $scope
     ) {
         $this->setTemplate(
-            template: 'Resursbank_Ordermanagement::system/config/callback-list.phtml'
+            template: 'Resursbank_Ordermanagement::system/config/callback-list/ecom.phtml'
         );
 
         parent::__construct($context);
