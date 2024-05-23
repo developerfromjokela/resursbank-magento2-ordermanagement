@@ -6,14 +6,14 @@
 
 declare(strict_types=1);
 
-namespace Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback;
+namespace Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList;
 
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Resursbank\Ordermanagement\Helper\Callback as CallbackHelper;
 
-class Listing extends Field
+class Deprecated extends Field
 {
     /**
      * @var CallbackHelper
@@ -28,7 +28,7 @@ class Listing extends Field
         Context $context,
         CallbackHelper $callbackHelper
     ) {
-        $this->setTemplate('system/config/callback/listing.phtml');
+        $this->setTemplate('system/config/callback-list/deprecated.phtml');
         $this->callbackHelper = $callbackHelper;
 
         parent::__construct($context);

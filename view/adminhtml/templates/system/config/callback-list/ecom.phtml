@@ -8,10 +8,10 @@ declare(strict_types=1);
 
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
-use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom\CallbackList;
+use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList\Ecom;
 
 /**
- * @var CallbackList $block
+ * @var Ecom $block
  * @var SecureHtmlRenderer $secureRenderer
  * @var Escaper $escaper
  */
@@ -31,6 +31,6 @@ $widget = $block->getWidget();
     ?>
 
     <?=
-        $escaper->escapeHtml(data: $widget->content, allowedTags: ['div', 'p'])
+    $escaper->escapeHtml(data: $widget->content, allowedTags: ['div', 'p'])
     ?>
 <?php endif; ?>

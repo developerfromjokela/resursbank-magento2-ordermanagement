@@ -61,14 +61,14 @@
                         </depends>
                     </field>
                     <field id="url_list" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing</frontend_model>
+                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList\Deprecated</frontend_model>
                         <config_path>resursbank/callbacks/url_list</config_path>
                         <depends>
                             <field id="*/resursbank_section/api/flow" separator=",">simplified,rco</field>
                         </depends>
                     </field>
                     <field id="callback_list" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Ecom\CallbackList</frontend_model>
+                        <frontend_model>Resursbank\Ordermanagement\Block\Adminhtml\System\Config\CallbackList\Ecom</frontend_model>
                         <config_path>resursbank/api/callback_list</config_path>
                         <depends>
                             <field id="*/resursbank_section/api/flow" separator=",">rcoplus,mapi</field>
