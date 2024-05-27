@@ -71,13 +71,39 @@ class OrderConverter extends AbstractConverter
                     is_string($shippingMethod) ? $shippingMethod : '',
                     (string) $entity->getShippingDescription(),
                     (float) $entity->getShippingInclTax(),
-                    $this->getTaxPercentage(
-                        (int) $entity->getId(),
-                        'shipping'
-                    )
+                    $this->getShippingVatPct(order: $entity)
                 )
             )
         );
+    }
+
+    /**
+     * Order-specific way to get shipping VAT.
+     *
+     * For some reason the approach used by AbstractConverter::getTaxPercentage
+     * won't work for order objects as it appears that the tax information has
+     * not yet been written to the `sales_order_tax` and `sales_order_tax_item`
+     * tables when this converter is used during order placement.
+     *
+     * @param OrderInterface $order
+     * @return float
+     */
+    private function getShippingVatPct(
+        OrderInterface $order
+    ): float {
+        $result = 0.0;
+
+        foreach ($order->getExtensionAttributes()->getItemAppliedTaxes() as $item) {
+            if ($item->getType() === 'shipping') {
+                $appliedTaxes = $item->getAppliedTaxes();
+                if (is_array(value: $appliedTaxes) && isset($appliedTaxes[0])) {
+                    $result = $appliedTaxes[0]->getPercent();
+                    break;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
