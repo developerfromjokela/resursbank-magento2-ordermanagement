@@ -21,6 +21,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Payment;
 use Resursbank\Core\Exception\PaymentDataException;
+use Resursbank\Core\Gateway\Command;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Config;
@@ -32,7 +33,7 @@ use Resursbank\RBEcomPHP\ResursBank;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Refund implements CommandInterface
+class Refund extends Command implements CommandInterface
 {
     use CommandTraits;
 

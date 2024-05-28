@@ -19,6 +19,7 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\OrderRepository;
 use Magento\Store\Model\StoreManagerInterface;
+use Resursbank\Core\Gateway\Command;
 use Resursbank\Core\Helper\Api;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
@@ -29,7 +30,7 @@ use Resursbank\Ordermanagement\Helper\Config;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Cancel implements CommandInterface
+class Cancel extends Command implements CommandInterface
 {
     /**
      * @var Log

@@ -19,6 +19,7 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Sales\Model\OrderRepository;
 use Magento\Store\Model\StoreManagerInterface;
 use Resursbank\Core\Exception\PaymentDataException;
+use Resursbank\Core\Gateway\Command;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface as History;
 use Resursbank\Ordermanagement\Helper\ApiPayment;
 use Resursbank\Ordermanagement\Helper\Config;
@@ -31,7 +32,7 @@ use Resursbank\RBEcomPHP\ResursBank;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Capture implements CommandInterface
+class Capture extends Command implements CommandInterface
 {
     use CommandTraits;
 
