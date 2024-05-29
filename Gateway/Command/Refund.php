@@ -35,8 +35,6 @@ use Resursbank\RBEcomPHP\ResursBank;
  */
 class Refund extends Command implements CommandInterface
 {
-    use CommandTraits;
-
     /**
      * @var Log
      */

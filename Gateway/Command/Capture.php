@@ -34,8 +34,6 @@ use Resursbank\RBEcomPHP\ResursBank;
  */
 class Capture extends Command implements CommandInterface
 {
-    use CommandTraits;
-
     /**
      * @var Log
      */
