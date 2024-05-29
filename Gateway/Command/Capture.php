@@ -167,7 +167,10 @@ class Capture extends Command implements CommandInterface
     ): void {
         // Shortcut for improved readability.
         $history = &$this->paymentHistory;
-        $payment = $this->getPayment($data);
+        $payment = $this->getPayment(
+            commandSubject: $commandSubject,
+            log: $this->log
+        );
         $amount = $this->getAmount($commandSubject);
 
         // Log API method being called.

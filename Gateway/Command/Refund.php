@@ -115,7 +115,7 @@ class Refund extends Command implements CommandInterface
 
             // Skip refunding online if payment is already refunded.
             if ($connection->canCredit($paymentId)) {
-                $this->refund($data, $connection, $paymentId);
+                $this->refund($data, $connection, $paymentId, $commandSubject);
             }
         } catch (Exception $e) {
             // Log error.
@@ -154,15 +154,17 @@ class Refund extends Command implements CommandInterface
      * @param PaymentDataObjectInterface $data
      * @param ResursBank $connection
      * @param string $paymentId
+     * @param array $commandSubject
      * @return void
      * @throws AlreadyExistsException
      * @throws PaymentDataException
-     * @throws Exception
+     * @throws PaymentException
      */
     private function refund(
         PaymentDataObjectInterface $data,
         ResursBank $connection,
-        string $paymentId
+        string $paymentId,
+        array $commandSubject
     ): void {
         // Shortcut for improved readability.
         $history = &$this->paymentHistory;
@@ -177,7 +179,10 @@ class Refund extends Command implements CommandInterface
         $this->addOrderLines(
             $connection,
             $this->creditmemoConverter->convert(
-                $this->getCreditmemo($this->getPayment($data))
+                $this->getCreditmemo($this->getPayment(
+                    commandSubject: $commandSubject,
+                    log: $this->log
+                ))
             )
         );
 
