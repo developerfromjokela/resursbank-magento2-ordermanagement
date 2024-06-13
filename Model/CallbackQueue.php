@@ -218,7 +218,7 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
         // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
-                phrase: __('orderInterface not an instance of Order')
+                phrase: __('rb-orderinterface-not-instance-of-order')
             );
         }
 
@@ -227,7 +227,10 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                phrase: __('Failed to locate order ' . $paymentId)
+                phrase: __(
+                    'rb-failed-to-locate-order',
+                    $paymentId
+                )
             );
         }
 
@@ -254,7 +257,11 @@ class CallbackQueue extends AbstractModel implements CallbackQueueInterface
 
         if ($ourDigest !== $digest) {
             throw new CallbackValidationException(
-                phrase: __("Invalid digest - PaymentId: $paymentId. Digest: $digest")
+                phrase: __(
+                    'rb-invalid-digest',
+                    $paymentId,
+                    $digest
+                )
             );
         }
     }

@@ -106,7 +106,7 @@ class Callback implements CallbackInterface
 
             if ($order === null) {
                 throw new HttpException(
-                    message: __('rb-callback-error-order-not-found'),
+                    message: __('rb-callback-error-order-not-found')->getText(),
                     code: 503
                 );
             }
@@ -155,7 +155,7 @@ class Callback implements CallbackInterface
             $this->log->exception(error: $error);
 
             throw new WebapiException(
-                phrase: __('Failed to process test callback.'),
+                phrase: __('rb-failed-to-process-test-callback'),
                 httpCode: 503
             );
         }

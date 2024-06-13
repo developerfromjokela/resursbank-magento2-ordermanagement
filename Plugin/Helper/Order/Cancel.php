@@ -83,10 +83,12 @@ class Cancel
                 $payment = $result->getPayment();
 
                 if (!($payment instanceof OrderPaymentInterface)) {
-                    throw new InvalidDataException(__(
-                        'Payment does not exist for order ' .
-                        $result->getIncrementId()
-                    ));
+                    throw new InvalidDataException(
+                        __(
+                            'rb-payment-does-not-exist-for-order',
+                            $result->getIncrementId()
+                        )
+                    );
                 }
 
                 /* @noinspection PhpUndefinedMethodInspection */

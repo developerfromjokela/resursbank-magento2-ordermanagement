@@ -112,7 +112,7 @@ class PaymentHistoryRepository implements PaymentHistoryRepositoryInterface
         if (!$history->getId()) {
             throw new NoSuchEntityException(
                 __(
-                    'Unable to find payment history entry with ID %1',
+                    'rb-unable-to-find-payment-history-entry',
                     $identifier
                 )
             );

@@ -57,7 +57,7 @@ class TrackInvoice implements ObserverInterface
             $invoice = $observer->getData('invoice');
 
             if (!($invoice instanceof InvoiceModel)) {
-                throw new InvalidDataException(__('Missing invoice data.'));
+                throw new InvalidDataException(__('rb-missing-invoice-data'));
             }
 
             $this->invoice->setInvoice($invoice);

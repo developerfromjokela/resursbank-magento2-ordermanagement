@@ -89,18 +89,22 @@ class Payment implements ObserverInterface
         $order = $observer->getData(key: 'order');
 
         if (!($order instanceof OrderInterface)) {
-            throw new InvalidDataException(phrase: __(
-                'Order could not be retrieved from the observed subject\'s ' .
-                'data.'
-            ));
+            throw new InvalidDataException(
+                phrase: __(
+                    'rb-order-could-not-be-retrieved-from-subject'
+                )
+            );
         }
 
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new InvalidDataException(phrase: __(
-                'Payment does not exist for order ' . $order->getIncrementId()
-            ));
+            throw new InvalidDataException(
+                phrase: __(
+                    'rb-payment-does-not-exist-for-order',
+                    $order->getIncrementId()
+                )
+            );
         }
 
         return $payment;
@@ -143,10 +147,12 @@ class Payment implements ObserverInterface
         $phEventName = $this->getPaymentHistoryEvent(eventName: $eventName);
 
         if ($phEventName === '') {
-            throw new InvalidDataException(phrase: __(sprintf(
-                'No payment history event name found with observed event %s',
-                $eventName
-            )));
+            throw new InvalidDataException(
+                phrase: __(
+                    'rb-no-payment-history-event-name-found',
+                    $eventName
+                )
+            );
         }
 
         $entry->setPaymentId(identifier: $paymentId)

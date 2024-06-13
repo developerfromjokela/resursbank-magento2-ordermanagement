@@ -97,7 +97,7 @@ class CreditmemoConverter extends AbstractConverter
 
         if ((float) $entity->getGrandTotal() < 0.0) {
             throw new LocalizedException(
-                __('Resurs Bank does not support negative credit memos.')
+                __('rb-does-not-support-negative-credit-memos')
             );
         }
 
@@ -184,7 +184,7 @@ class CreditmemoConverter extends AbstractConverter
         if ($fee !== 0.0) {
             $result[] = $this->itemFactory->create(data: [
                 PaymentItem::KEY_ART_NO => $this->getAdjustmentArtNo(),
-                PaymentItem::KEY_DESCRIPTION => (string) __('Adjustment'),
+                PaymentItem::KEY_DESCRIPTION => (string) __('rb-description-adjustment'),
                 PaymentItem::KEY_QUANTITY => 1,
                 PaymentItem::KEY_UNIT_MEASURE => 'st',
                 PaymentItem::KEY_UNIT_AMOUNT_WITHOUT_VAT => $fee,
