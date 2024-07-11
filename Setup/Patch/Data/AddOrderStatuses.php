@@ -72,9 +72,10 @@ class AddOrderStatuses implements DataPatchInterface
 
         foreach ($this->resursbankStatuses->statuses() as $status) {
             $this->moduleDataSetup->getConnection()->insertOnDuplicate(
-                $this->moduleDataSetup->getTable('sales_order_status_state'),
+                $this->moduleDataSetup->getTable('sales_order_status'),
                 [
-                    'status' => $status['status']
+                    'status' => $status['status'],
+                    'label' => $status['label']
                 ]
             );
         }
