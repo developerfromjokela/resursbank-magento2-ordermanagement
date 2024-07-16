@@ -94,10 +94,12 @@ class LogFailure implements ArgumentInterface
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new InvalidDataException(phrase: __(
-                'Payment does not exist for order ' .
-                $order->getIncrementId()
-            ));
+            throw new InvalidDataException(
+                phrase: __(
+                    'rb-payment-does-not-exist-for-order',
+                    $order->getIncrementId()
+                )
+            );
         }
 
         return (int) $payment->getEntityId();

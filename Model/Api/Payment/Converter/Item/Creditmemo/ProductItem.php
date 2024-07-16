@@ -181,7 +181,7 @@ class ProductItem extends AbstractItem
         if ($product === null) {
             throw new PaymentDataException(
                 __(
-                    'Failed to resolve order item from creditmemo item %1',
+                    'rb-failed-to-resolve-order-item-from-creditmemo-item',
                     $this->product->getId()
                 )
             );

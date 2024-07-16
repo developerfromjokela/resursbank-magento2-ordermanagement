@@ -126,7 +126,7 @@ class Cancel implements CommandInterface
             $history->entryFromCmd($data, History::EVENT_CANCEL_FAILED);
 
             // Pass safe error upstream.
-            throw new PaymentException(__('Failed to cancel payment.'));
+            throw new PaymentException(__('rb-failed-to-cancel-payment'));
         }
 
         return null;

@@ -123,13 +123,13 @@ class Test implements HttpGetActionInterface
             $this->cacheTypeList->cleanType('config');
 
             $this->message->addSuccessMessage(
-                __('Test callback was sent.')->getText()
+                __('rb-test-callback-was-sent')->getText()
             );
         } catch (Exception $e) {
             $this->log->exception($e);
 
             $this->message->addErrorMessage(
-                __('Test callback could not be triggered.')->getText()
+                __('rb-test-callback-could-not-be-triggered')->getText()
             );
         }
 

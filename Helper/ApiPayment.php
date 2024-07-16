@@ -85,7 +85,7 @@ class ApiPayment extends AbstractHelper
 
         if ($connection === null) {
             throw new PaymentDataException(
-                __('Failed to resolve API connection from order information.')
+                __('rb-failed-to-resolve-api-connection')
             );
         }
 

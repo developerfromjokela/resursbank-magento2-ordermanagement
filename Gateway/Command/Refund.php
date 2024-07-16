@@ -124,7 +124,7 @@ class Refund implements CommandInterface
             $history->entryFromCmd($data, History::EVENT_REFUND_FAILED);
 
             // Pass safe error upstream.
-            throw new PaymentException(__('Failed to refund payment.'));
+            throw new PaymentException(__('rb-failed-to-refund-payment'));
         }
 
         return null;
@@ -143,7 +143,7 @@ class Refund implements CommandInterface
         $memo = $payment->getCreditmemo();
 
         if (!($memo instanceof Creditmemo)) {
-            throw new PaymentDataException(__('Invalid credit memo.'));
+            throw new PaymentDataException(__('rb-invalid-credit-memo'));
         }
 
         return $memo;

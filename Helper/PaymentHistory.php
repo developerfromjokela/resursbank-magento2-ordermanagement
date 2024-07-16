@@ -79,10 +79,12 @@ class PaymentHistory extends AbstractHelper
         $payment = $order->getPayment();
 
         if (!($payment instanceof OrderPaymentInterface)) {
-            throw new LocalizedException(phrase: __(
-                'Payment does not exist for order ' .
-                $order->getIncrementId()
-            ));
+            throw new LocalizedException(
+                phrase: __(
+                    'rb-payment-does-not-exist-for-order',
+                    $order->getIncrementId()
+                )
+            );
         }
 
         $stateFrom = $order->getState();
@@ -198,12 +200,12 @@ class PaymentHistory extends AbstractHelper
                 $result = Order::STATE_CLOSED;
                 break;
             default:
-                throw new ResolveOrderStatusFailedException(phrase: __(
-                    sprintf(
-                        'Order state (%s) could not be converted.',
+                throw new ResolveOrderStatusFailedException(
+                    phrase: __(
+                        'rb-order-state-could-not-be-converted',
                         $paymentStatus
                     )
-                ));
+                );
         }
 
         return $result;
@@ -235,12 +237,12 @@ class PaymentHistory extends AbstractHelper
                 $result = Order::STATE_CLOSED;
                 break;
             default:
-                throw new ResolveOrderStatusFailedException(phrase: __(
-                    sprintf(
-                        'Order status (%s) could not be converted.',
+                throw new ResolveOrderStatusFailedException(
+                    phrase: __(
+                        'rb-order-status-could-not-be-converted',
                         $paymentStatus
                     )
-                ));
+                );
         }
 
         return $result;

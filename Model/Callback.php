@@ -224,7 +224,7 @@ class Callback implements CallbackInterface
         // a method.
         if (!($this->orderInterface instanceof Order)) {
             throw new LocalizedException(
-                phrase: __('orderInterface not an instance of Order')
+                phrase: __('rb-orderinterface-not-instance-of-order')
             );
         }
 
@@ -233,7 +233,10 @@ class Callback implements CallbackInterface
 
         if (!$order->getId()) {
             throw new OrderNotFoundException(
-                phrase: __('Failed to locate order ' . $paymentId)
+                phrase: __(
+                    'rb-failed-to-locate-order',
+                    $paymentId
+                )
             );
         }
 
@@ -282,7 +285,10 @@ class Callback implements CallbackInterface
     {
         if (!($order->getPayment() instanceof OrderPaymentInterface)) {
             throw new RuntimeException(
-                phrase: __('Missing payment data on order %1', $order->getId())
+                phrase: __(
+                    'rb-missing-payment-data-on-order',
+                    $order->getId()
+                )
             );
         }
 

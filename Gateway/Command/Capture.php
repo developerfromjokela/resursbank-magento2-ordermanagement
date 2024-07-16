@@ -132,7 +132,7 @@ class Capture implements CommandInterface
             $history->entryFromCmd($data, History::EVENT_CAPTURE_FAILED);
 
             // Pass safe error upstream.
-            throw new PaymentException(__('Failed to capture payment.'));
+            throw new PaymentException(__('rb-failed-to-capture-payment'));
         }
 
         return null;
@@ -209,7 +209,7 @@ class Capture implements CommandInterface
         array $data
     ): float {
         if (!isset($data['amount']) || !is_numeric($data['amount'])) {
-            throw new PaymentDataException(__('Missing expected key amount.'));
+            throw new PaymentDataException(__('rb-missing-expected-key-amount'));
         }
 
         return (float) $data['amount'];

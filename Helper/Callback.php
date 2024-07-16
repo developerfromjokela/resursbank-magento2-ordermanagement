@@ -139,7 +139,7 @@ class Callback extends AbstractHelper
 
         if (!($store instanceof Store)) {
             throw new LocalizedException(
-                phrase: __('$store not an instance of Store')
+                phrase: __('rb-not-an-instance-of-store')
             );
         }
 
@@ -190,7 +190,7 @@ class Callback extends AbstractHelper
 
         if (!($store instanceof Store)) {
             throw new LocalizedException(
-                phrase: __('$store not an instance of Store')
+                phrase: __('rb-not-an-instance-of-store')
             );
         }
 

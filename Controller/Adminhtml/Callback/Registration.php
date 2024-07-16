@@ -82,12 +82,12 @@ class Registration implements HttpGetActionInterface
             $this->callbackHelper->register();
 
             $this->message->addSuccessMessage(
-                __('Callback URLs were successfully registered.')->getText()
+                __('rb-callback-urls-successfully-registered')->getText()
             );
         } catch (Exception $e) {
             $this->log->exception($e);
             $this->message->addErrorMessage(
-                __('Callback URLs failed to register.')->getText()
+                __('rb-callback-urls-failed-to-register')->getText()
             );
         }
 

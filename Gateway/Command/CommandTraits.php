@@ -71,11 +71,13 @@ trait CommandTraits
         $payment = $data->getPayment();
 
         if (!$payment instanceof Payment) {
-            throw new PaymentDataException(phrase: __(
-                'Unexpected payment entity. Expected %1 but got %2.',
-                Payment::class,
-                get_class(object: $data->getPayment())
-            ));
+            throw new PaymentDataException(
+                phrase: __(
+                    'rb-unexpected-payment-entity',
+                    Payment::class,
+                    get_class(object: $data->getPayment())
+                )
+            );
         }
 
         return $payment;

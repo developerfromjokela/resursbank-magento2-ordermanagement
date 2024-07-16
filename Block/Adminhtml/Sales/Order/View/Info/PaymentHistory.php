@@ -143,7 +143,7 @@ class PaymentHistory extends EcomWidget
     public function getHeading(): Phrase
     {
         return __(
-            '#%1 Payment History [%2]',
+            'rb-payment-history',
             $this->order->getIncrementId(),
             $this->getOrderEnvironment()
         );
