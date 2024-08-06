@@ -6,30 +6,28 @@
 
 declare(strict_types=1);
 
-use Magento\Framework\Escaper;
 use Resursbank\Ordermanagement\Block\Adminhtml\System\Config\Callback\Listing;
 
 /**
  * @var Listing $block
- * @var Escaper $escaper
  */
 ?>
 
 <?php $callbacks = $block->callbackHelper->fetch(); ?>
 
 <?php if (count($callbacks)): ?>
-    <h3><?= $escaper->escapeHtml(__('Registered Callbacks')) ?></h3>
+    <h3><?= $block->escapeHtml(__('Registered Callbacks')) ?></h3>
     <div style="max-width: 290px; overflow-x: scroll;">
         <?php foreach ($callbacks as $callback): ?>
-            <p style="font-weight: bold;">[<?= $escaper->escapeHtml($callback->eventType) ?>]</p>
+            <p style="font-weight: bold;">[<?= $block->escapeHtml($callback->eventType) ?>]</p>
             <p style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed #c0c0c0;">
-                <?= $escaper->escapeHtml($callback->uriTemplate) ?>
+                <?= $block->escapeHtml($callback->uriTemplate) ?>
             </p>
         <?php endforeach; ?>
     </div>
 <?php else: ?>
     <p class="error-message">
-<?= $escaper->escapeHtml(__(
+<?= $block->escapeHtml(__(
     'No registered callbacks found. Update callbacks, if ' .
     'you don\'t get a list of &quot;Registered ' .
     'Callbacks&quot;, please verify that the provided ' .

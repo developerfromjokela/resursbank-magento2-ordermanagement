@@ -6,13 +6,11 @@
 
 declare(strict_types=1);
 
-use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use Magento\Sales\Model\Order;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentHistory;
 
 /** @var Template $block */
-/** @var Escaper $escaper */
 /** @var PaymentHistory $viewModel */
 /** @var Order $order */
 
@@ -26,7 +24,7 @@ if (isset($block)) {
 ?>
 
 <?php // Didn't combine if-blocks because PHPStan will complain unnecessarily. ?>
-<?php if (isset($escaper, $viewModel, $order)): ?>
+<?php if (isset($viewModel, $order)): ?>
     <?php if ($viewModel->visible($order)): ?>
         <div id="resursbank-ordermanagement-order-view-payment-history"
              data-bind="scope: 'payment-history'">
@@ -41,7 +39,7 @@ if (isset($block)) {
                             "payment-history": {
                                 "component": "Resursbank_Ordermanagement/js/sales/order/view/info/payment-history",
                                 "events": <?= /* @noEscape */ $viewModel->getTableDataFromOrder($order) ?>,
-                                "heading": "<?= $escaper->escapeHtml($viewModel->getHeading($order)) ?>"
+                                "heading": "<?= $block->escapeHtml($viewModel->getHeading($order)) ?>"
                             }
                         }
                     }

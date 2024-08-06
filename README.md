@@ -1,14 +1,15 @@
-# Resurs Bank - Magento 2 module - Order Management
+# Resurs Bank - Magento 2 module - Order Management - Backport
 
 ## Description
 
-Functionality to interact with payments at Resurs Bank.
+Functionality to interact with payments at Resurs Bank, backported for older Magento.
 
 ---
 
 ## Prerequisites
 
-* [Magento 2](https://devdocs.magento.com/guides/v2.4/install-gde/bk-install-guide.html) [Supports Magento 2.4.1+]
+* [Magento 2](https://devdocs.magento.com/guides/v2.4/install-gde/bk-install-guide.html) [Supports Magento 2.3.x+]
+* PHP 7.4 minimum
 
 ---
 

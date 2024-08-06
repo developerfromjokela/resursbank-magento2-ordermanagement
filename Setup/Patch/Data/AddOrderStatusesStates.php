@@ -64,13 +64,13 @@ class AddOrderStatusesStates implements DataPatchInterface
         $this->moduleDataSetup->getConnection()->startSetup();
 
         $table = $this->moduleDataSetup->getTable(
-            tableName: 'sales_order_status_state'
+            'sales_order_status_state'
         );
 
         foreach ($this->resursbankStatuses->statuses() as $status) {
             $this->moduleDataSetup->getConnection()->insertOnDuplicate(
-                table: $table,
-                data: [
+                $table,
+                [
                     'status' => $status['status'],
                     'state' => $status['state'],
                     'is_default' => 0,

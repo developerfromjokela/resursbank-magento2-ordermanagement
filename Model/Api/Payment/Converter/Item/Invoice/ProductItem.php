@@ -91,14 +91,14 @@ class ProductItem extends AbstractItem
      * @inheritDoc
      * @throws PaymentDataException
      */
-    public function getVatPct(): int
+    public function getVatPct(): float
     {
         $product = $this->getOrderItem();
         $result = $this->isBundle() && !$this->hasFixedPrice() ?
             0.0 :
             (float) $product->getTaxPercent();
 
-        return (int) round($result);
+        return round($result);
     }
 
     /**

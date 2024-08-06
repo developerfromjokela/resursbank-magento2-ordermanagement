@@ -6,14 +6,12 @@
 
 declare(strict_types=1);
 
-use Magento\Framework\Escaper;
 use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Ordermanagement\Block\Adminhtml\Sales\Order\View\Info\PaymentInformation;
 use Resursbank\Ordermanagement\ViewModel\Adminhtml\Sales\Order\View\Info\PaymentInformation as ViewModel;
 
 /** @var PaymentInformation $block */
 /** @var ViewModel $viewModel */
-/** @var Escaper $escaper */
 
 if (isset($block)) {
     $viewModel = $block->getViewModel();
@@ -34,19 +32,19 @@ if (isset($viewModel, $block)) {
 ?>
 
 <?php // Didn't combine if-blocks because PHPStan will complain unnecessarily. ?>
-<?php if (isset($block, $viewModel, $order, $escaper)): ?>
+<?php if (isset($block, $viewModel, $order)): ?>
     <?php if ($viewModel->isEnabled($order)): ?>
         <?php if (empty($viewModel->getPaymentInformation())): ?>
             <div class="field-group">
                 <p class="error-message">
-                    <?= $escaper->escapeHtml(__('Payment information could not be retrieved from Resurs Bank.'))  ?>
+                    <?= $block->escapeHtml(__('Payment information could not be retrieved from Resurs Bank.'))  ?>
                 </p>
             </div>
         <?php else: ?>
             <section class="admin__page-section resursbank-ordermanagement-payment-information">
                 <div class="admin__page-section-title">
                     <span class="title">
-                        <?= $escaper->escapeHtml(__('Payment')) ?>
+                        <?= $block->escapeHtml(__('Payment')) ?>
                     </span>
                     <div class="resursbank-logo">
                         <div class="img"></div>
@@ -61,64 +59,64 @@ if (isset($viewModel, $block)) {
                                 <tbody>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('ID')) ?>
+                                            <?= $block->escapeHtml(__('ID')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml($viewModel->getPaymentId()) ?>
+                                            <?= $block->escapeHtml($viewModel->getPaymentId()) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Amount')) ?>
+                                            <?= $block->escapeHtml(__('Amount')) ?>
                                         </th>
                                         <td>
                                             <span class="price">
-                                                <?= $escaper->escapeHtml($viewModel->getPaymentTotal()) ?>
+                                                <?= $block->escapeHtml($viewModel->getPaymentTotal()) ?>
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Limit')) ?>
+                                            <?= $block->escapeHtml(__('Limit')) ?>
                                         </th>
                                         <td>
                                             <span class="price">
-                                                <?= $escaper->escapeHtml($viewModel->getPaymentLimit()) ?>
+                                                <?= $block->escapeHtml($viewModel->getPaymentLimit()) ?>
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Status')) ?>
+                                            <?= $block->escapeHtml(__('Status')) ?>
 
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml(__($viewModel->getPaymentStatus())) ?>
+                                            <?= $block->escapeHtml(__($viewModel->getPaymentStatus())) ?>
 
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Frozen')) ?>
+                                            <?= $block->escapeHtml(__('Frozen')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml(__(($viewModel->isFrozen() ? 'Yes' : 'No'))) ?>
+                                            <?= $block->escapeHtml(__(($viewModel->isFrozen() ? 'Yes' : 'No'))) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Fraud')) ?>
+                                            <?= $block->escapeHtml(__('Fraud')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml(__(($viewModel->isFraud() ? 'Yes' : 'No'))) ?>
+                                            <?= $block->escapeHtml(__(($viewModel->isFraud() ? 'Yes' : 'No'))) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Payment Method')) ?>
+                                            <?= $block->escapeHtml(__('Payment Method')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml(__($viewModel->getPaymentMethodName())) ?>
+                                            <?= $block->escapeHtml(__($viewModel->getPaymentMethodName())) ?>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -130,7 +128,7 @@ if (isset($viewModel, $block)) {
                     <div class="admin__page-section-item">
                         <div class="admin__page-section-item-title">
                             <span class="title">
-                                <?= $escaper->escapeHtml(__('Customer')) ?>
+                                <?= $block->escapeHtml(__('Customer')) ?>
                             </span>
                         </div>
                         <div class="admin__page-section-item-content">
@@ -138,39 +136,39 @@ if (isset($viewModel, $block)) {
                                 <tbody>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Name')) ?>
+                                            <?= $block->escapeHtml(__('Name')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml($viewModel->getCustomerName()) ?>
+                                            <?= $block->escapeHtml($viewModel->getCustomerName()) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Address')) ?>
+                                            <?= $block->escapeHtml(__('Address')) ?>
 
                                         </th>
                                         <td>
                                             <?php foreach ($viewModel->getCustomerAddress() as $value): ?>
-                                                <?= $escaper->escapeHtml($value) ?>
+                                                <?= $block->escapeHtml($value) ?>
                                                 <br />
                                             <?php endforeach; ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Telephone')) ?>
+                                            <?= $block->escapeHtml(__('Telephone')) ?>
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml($viewModel->getCustomerTelephone()) ?>
+                                            <?= $block->escapeHtml($viewModel->getCustomerTelephone()) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>
-                                            <?= $escaper->escapeHtml(__('Email')) ?>
+                                            <?= $block->escapeHtml(__('Email')) ?>
 
                                         </th>
                                         <td>
-                                            <?= $escaper->escapeHtml($viewModel->getCustomerEmail()) ?>
+                                            <?= $block->escapeHtml($viewModel->getCustomerEmail()) ?>
                                         </td>
                                     </tr>
                                 </tbody>
