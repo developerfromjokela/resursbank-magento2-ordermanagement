@@ -16,7 +16,6 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Resursbank\Ordermanagement\Helper\Log;
 use Resursbank\Ordermanagement\Helper\Config;
 use Resursbank\Ordermanagement\Api\Data\PaymentHistoryInterface;
-use Magento\Sales\Model\Order\Payment\Operations\SaleOperation;
 use Resursbank\Ordermanagement\Helper\ResursbankStatuses;
 use Resursbank\Core\Helper\PaymentMethods;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
@@ -32,11 +31,6 @@ class CreateInvoice
      * @var Log
      */
     private Log $log;
-
-    /**
-     * @var SaleOperation
-     */
-    private SaleOperation $saleOperation;
 
     /**
      * @var PaymentMethods
@@ -65,7 +59,6 @@ class CreateInvoice
 
     /**
      * @param Log $log
-     * @param SaleOperation $saleOperation
      * @param PaymentMethods $paymentMethods
      * @param PaymentHistoryFactory $phFactory
      * @param PaymentHistoryRepositoryInterface $phRepository
@@ -74,7 +67,6 @@ class CreateInvoice
      */
     public function __construct(
         Log $log,
-        SaleOperation $saleOperation,
         PaymentMethods $paymentMethods,
         PaymentHistoryFactory $phFactory,
         PaymentHistoryRepositoryInterface $phRepository,
@@ -82,7 +74,6 @@ class CreateInvoice
         Config $config
     ) {
         $this->log = $log;
-        $this->saleOperation = $saleOperation;
         $this->paymentMethods = $paymentMethods;
         $this->phFactory = $phFactory;
         $this->phRepository = $phRepository;
@@ -110,7 +101,6 @@ class CreateInvoice
                 if (!$this->hasCreatedInvoice($order->getPayment())) {
                     $this->trackPaymentHistoryEvent($order->getPayment());
                     $this->log->info('Invoicing ' . $order->getIncrementId());
-                    $this->saleOperation->execute($order->getPayment());
                 }
             }
         } catch (Exception $e) {
